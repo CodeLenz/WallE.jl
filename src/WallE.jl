@@ -3,10 +3,10 @@
 #
 module WallE
 
-export WallE
+export Wall_E
 
 
-function WallE(f::Function, df::Function, x0::Array{Float64},
+function Wall_E(f::Function, df::Function, x0::Array{Float64},
                 ci::Array{Float64}, cs::Array{Float64},
                 flag_show::Bool=true,
                 niter=0,  tol_norm=1E-6,
