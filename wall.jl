@@ -68,8 +68,12 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
 
   # Vamos manter uma cópia dos valores das variáveis
   # de projeto nas últimas 3 iterações 
-  x1 = Array{Float64}(undef,nx)
-  x2 = Array{Float64}(undef,nx)
+  x1 = zeros(nx) #Array{Float64}(undef,nx)
+  x2 = zeros(nx) #Array{Float64}(undef,nx)
+
+  # Limites móveis efetivos
+  x_min = zeros(nx)
+  x_max = zeros(nx)
 
   # Valor de referência. f0 será utilizado durante o line-search
   # e objetivo_inicial será utilizado para avaliarmos o quanto
@@ -119,8 +123,48 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       # Atualiza o contador de iterações
       contador += 1
 
-      # Cópia para análise de direção de minimizãção
+      # Cópia para análise de direção de minimização
       Doriginal = copy(D)
+
+       # Se a iteração for maior do que 3, então podemos começar a 
+       # ajustar os limites móveis pelo histórico de cada variável
+       if iter>3
+
+          for i=1:nx
+
+             # Variações
+             Δ1 = x0[i]-x1[i] 
+             Δ2 = x1[i]-x2[i]
+
+             # Ajustes
+             if Δ1*Δ2 > 0.0
+                # Boas vibrações...podemos aumentar o lm
+                limite_movel[i] *= fator_aumento_limite_movel
+
+             elseif Δ1*Δ2 < 0.0
+                # Bad vibes...
+                limite_movel[i] *= fator_diminuicao_limite_movel
+
+             end
+
+             # Testa limites dos ajustes
+             limite_movel[i] = max(limite_movel_minimo,
+                               min(limite_movel_inicial,limite_movel[i]))
+
+          end # for i  
+       end # if iter > 3
+
+       #
+       # Vamos calcular os limites móveis, sempre respeitando
+       # as restrições laterais. Nas primeiras 2 iterações
+       # o limite móvel é o inicial (que é o máximo)
+       #
+       x_min .= max.(ci, (UM.-limite_movel).*x0 ) 
+       x_max .= min.(cs, (UM.+limite_movel).*x0 )
+ 
+       # Atualiza x1 e x2
+       x2 .= x1
+       x1 .= x0
 
       # Testa para ver se alguma variável de projeto que já 
       # está no box será levada para fora do box (por causa
@@ -128,7 +172,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       # box e zeramos as componentes do gradiente. Também
       # geramos uma lista de elementos bloqueados.
       Ilast = copy(Iblock)
-      Iblock, nblock_inf, nblock_sup = Select_Sets!(D,x0,ci,cs)
+      Iblock, nblock_inf, nblock_sup = Select_Sets!(D,x0,x_min,x_max)
 
       # Calcula a norma atual das posições não bloqueadas do gradiente
       norma_anterior = norma
@@ -181,45 +225,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
        # Passo no começo da busca
        passo0 = passo
 
-       # Se a iteração for maior do que 3, então podemos começar a 
-       # ajustar os limites móveis pelo histórico de cada variável
-       if iter>=3
-
-          for i=1:nx
-
-             # Variações
-             Δ1 = x0[i]-x1[i] 
-             Δ2 = x1[i]-x2[i]
-
-             @show i, Δ1*Δ2  
-
-             # Ajustes
-             if Δ1*Δ2 > 0.0
-                # Boas vibrações...podemos aumentar o lm
-                limite_movel[i] *= fator_aumento_limite_movel
-
-             elseif Δ1*Δ2 < 0.0
-                # Bad vibes...
-                limite_movel[i] *= fator_diminuicao_limite_movel
-
-             end
-
-             # Testa limites dos ajustes
-             limite_movel[i] = max(limite_movel_minimo,
-                               min(limite_movel_inicial,limite_movel[i]))
-
-             @show limite_movel[i]
-
-          end # for i  
-       end # if iter > 3
-
-       #
-       # Vamos calcular os limites móveis, sempre respeitando
-       # as restrições laterais.
-       #
-       x_min = max.(ci, (UM.-limite_movel).*x0 ) 
-       x_max = min.(cs, (UM.+limite_movel).*x0 )
- 
+       
 
        # Testa passos até que o valor fique muito pequeno
        while passo > passo_minimo
@@ -282,11 +288,9 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
 
        #print(" Iteração interna $(iter) | norma $(norma) | metodo $(method)::$(number_fletcher) | nblock $(length(Iblock)) | passo $(passo) | $(produto_busca)                                \r")
        #flush(stdout)
+       
+       
 
-       # Atualiza x1 e x2
-       x2 .= x1
-       x1 .= x0
- 
      # Se chegamos aqui, então devemos testar pela
      # convergência da norma.
      if flag_conv
@@ -320,8 +324,11 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       println("Converg. por norma : ", flag_conv)
       println("Direção de min.    : ", flag_minimizacao)
       println("Passo final        : ", passo)
-      println("Limite móvel mínimo: ", minimum(limite_movel))
-      println("Limite móvel máximo: ", maximum(limite_movel))
+      println("fator móvel mínimo : ", minimum(limite_movel))
+      println("fator móvel máximo : ", maximum(limite_movel))
+      println("Limite móvel mínimo: ", minimum(x_min))
+      println("Limite móvel máximo: ", maximum(x_max))
+      
       println("Tempo total [min]  : ", tempo/60.0)
       println("********************************************************")
   end
