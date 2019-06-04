@@ -3,6 +3,8 @@
 #
 module WallE
 
+using LinearAlgebra
+
 export Wall_E
 
 
