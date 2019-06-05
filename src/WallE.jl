@@ -117,6 +117,9 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
   # Número de iterações seguidas com gradientes conjugados
   number_fletcher = 1
 
+  # Indica se usou GC em algum momento
+  usou_fletcher = false
+
   ####################### LOOP PRINCIPAL #######################
   tempo = @elapsed for iter=1:niter
 
@@ -207,6 +210,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
          number_fletcher = 1
       else
          method="Fletcher"
+         usou_fletcher = true
          number_fletcher += 1
          beta = (norma/norma_anterior)^2
          d .= -D .+ beta*d
@@ -331,6 +335,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       println("Converg. por norma : ", flag_conv)
       println("Direção de min.    : ", flag_minimizacao)
       println("Passo final        : ", passo)
+      println("Usou GC            : ", usou_fletcher)
       println("fator móvel mínimo : ", minimum(limite_movel))
       println("fator móvel máximo : ", maximum(limite_movel))
       println("Limite móvel mínimo: ", minimum(x_min))
