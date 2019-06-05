@@ -191,7 +191,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
 
       # Se a tolerância da norma for satisfeita, setamos 
       # o flag_conv como verdadeiro e saimos do loop iter
-      if norma<=tol_norm || norm_blocked <= tol
+      if norma<=tol_norm || norm_blocked <= tol_norm
          flag_conv = true
          break
       end
