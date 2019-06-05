@@ -1,4 +1,9 @@
 name = "WallE"
 uuid = "409c7e06-86dc-11e9-30a5-6d15a9183e58"
 authors = ["CodeLenz <eduardobarplenz@gmail.com>"]
+repo-url = "https://github.com/CodeLenz/WallE.git"
 version = "0.1.0"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
