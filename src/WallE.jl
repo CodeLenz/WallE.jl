@@ -61,6 +61,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
 
   # Norma 2 (começa no valor máximo para Float64)
   norma = maxintfloat(Float64)
+  norm_blocked = norma
 
   # Norma do passo anterior
   norma_anterior = norma
@@ -340,13 +341,15 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       println("fator móvel máximo : ", maximum(limite_movel))
       println("Limite móvel mínimo: ", minimum(x_min))
       println("Limite móvel máximo: ", maximum(x_max))
+      println("Normas (free/block(: ", norma,norm_blocked)
+      
       
       println("Tempo total [min]  : ", tempo/60.0)
       println("********************************************************")
   end
 
   # Returns the solution, convergence flag and last norm
-  return x0, flag_conv, norma
+  return x0, flag_conv, norma, norm_blocked
 
 end
 
