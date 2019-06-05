@@ -130,8 +130,6 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       # Calcula a derivada de f, chamando df(x)
       D .= df(x0)
 
-      @show D
-
       # Atualiza o contador de iterações
       contador += 1
 
@@ -184,7 +182,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       # box e zeramos as componentes do gradiente. Também
       # geramos uma lista de elementos bloqueados.
       Ilast = copy(Iblock)
-      Iblock, nblock_inf, nblock_sup = Select_Sets!(D,x0,x_min,x_max)
+      Iblock, nblock_inf, nblock_sup, norm_blocked = Select_Sets!(D,x0,x_min,x_max)
 
       # Calcula a norma atual das posições não bloqueadas do gradiente
       norma_anterior = norma
@@ -192,7 +190,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
 
       # Se a tolerância da norma for satisfeita, setamos 
       # o flag_conv como verdadeiro e saimos do loop iter
-      if norma<=tol_norm
+      if norma<=tol_norm || norm_blocked <= tol
          flag_conv = true
          break
       end
@@ -364,24 +362,29 @@ function Select_Sets!(D::Array{Float64},x::Array{Float64},
       # Empty set
       Iblock = Int64[]; sizehint!(Iblock,length(x))
 
+      # Norm of blocked directions
+      norm_blocked = 0.0
+
       # Test for any box constraint
       nblock_sup = 0
       nblock_inf = 0
       @inbounds for i in LinearIndices(D)
           if D[i]>=0.0 &&  x[i]<=ci[i]
              x[i] = ci[i]
+             norm_blocked += D[i]^2
              D[i] = 0.0
              nblock_inf += 1
              push!(Iblock,i)
           elseif  D[i]<=0.0 && x[i]>=cs[i]
-             D[i] = 0.0
              x[i] = cs[i]
+             norm_blocked += D[i]^2
+             D[i] = 0.0
              nblock_sup += 1
              push!(Iblock,i)
           end
       end
 
-      return Iblock, nblock_inf, nblock_sup
+      return Iblock, nblock_inf, nblock_sup, sqrt(norm_blocked)
     end
 
 
