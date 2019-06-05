@@ -341,7 +341,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       println("fator móvel máximo : ", maximum(limite_movel))
       println("Limite móvel mínimo: ", minimum(x_min))
       println("Limite móvel máximo: ", maximum(x_max))
-      println("Normas (free/block(: ", norma,norm_blocked)
+      println("Normas (free/block): ", norma," ",norm_blocked)
       
       
       println("Tempo total [min]  : ", tempo/60.0)

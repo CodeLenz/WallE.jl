@@ -30,6 +30,6 @@ function Test3()
 
    
     # Chama o otimizador
-    x_opt, flag, norma = Wall_E(f,df,x0,ci,cs,true,500)
+    x_opt, flag, norma, norma_block = Wall_E(f,df,x0,ci,cs,true,500)
 
 end
