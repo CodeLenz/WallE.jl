@@ -130,6 +130,8 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       # Calcula a derivada de f, chamando df(x)
       D .= df(x0)
 
+      @show D
+
       # Atualiza o contador de iterações
       contador += 1
 
