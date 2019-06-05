@@ -61,7 +61,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
 
   # Norma 2 (começa no valor máximo para Float64)
   norma = maxintfloat(Float64)
-  norm_blocked = norma
+  norm_blocked = maxintfloat(Float64)
 
   # Norma do passo anterior
   norma_anterior = norma
@@ -365,7 +365,8 @@ function Select_Sets!(D::Array{Float64},x::Array{Float64},
       # Empty set
       Iblock = Int64[]; sizehint!(Iblock,length(x))
 
-      # Norm of blocked directions
+      # Norm of blocked directions. If we do not block any
+      # direction, than we must return something really large
       norm_blocked = 0.0
 
       # Test for any box constraint
@@ -387,7 +388,13 @@ function Select_Sets!(D::Array{Float64},x::Array{Float64},
           end
       end
 
-      return Iblock, nblock_inf, nblock_sup, sqrt(norm_blocked)
+      if nblock_sup >0 || nblock_inf >0
+         norm_blocked = sqrt(norm_blocked)
+      else
+         norm_blocked = maxintfloat(Float64)
+      end
+ 
+      return Iblock, nblock_inf, nblock_sup, norm_blocked
     end
 
 
