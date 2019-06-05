@@ -3,8 +3,13 @@ using WallE
 
 
 #
-# Minimiza uma função sem com restrições laterais
+# Minimiza uma função  com restrições laterais
 #  f(x,y) = x(y-3)^2 + 4*x
+#
+#  -2 <= x <= ∞
+#   0 <= y <= ∞ 
+#
+# Solução em [0,0]
 #
 function f(x) 
    return x[1]*(x[2]-3)^2 + 4*x[1]
