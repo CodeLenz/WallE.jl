@@ -15,8 +15,8 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
                 passo_inicial=5.0, 
                 fator_corte = 0.5,
                 passo_minimo = 1E-10,
-                limite_movel_inicial = 0.1,
-                limite_movel_minimo = 0.01,
+                limite_movel_inicial = 0.2,
+                limite_movel_minimo = 0.001,
                 fator_aumento_limite_movel = 1.1,
                 fator_diminuicao_limite_movel = 0.7)
 
@@ -109,6 +109,9 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
   # Direção de busca 
   d = zeros(nx)
 
+  # Direção de busca anterior
+  da = zeros(nx)
+
   # Vetor gradiente
   D = zeros(nx)
 
@@ -196,6 +199,9 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
          break
       end
 
+      # Cópia da direção de busca anterior
+      da .= d 
+
       # Dependendo da situação, calculamos a direção de minimização
       # por Steepest Descent ou por Gradientes Conjugados (Fletcher and Reeves)
       # Steepest é selecionado se:
@@ -238,7 +244,6 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
        passo0 = passo
 
        
-
        # Testa passos até que o valor fique muito pequeno
        while passo > passo_minimo
 
@@ -388,6 +393,8 @@ function Select_Sets!(D::Array{Float64},x::Array{Float64},
           end
       end
 
+      # Avoid a null norm when there is no variable 
+      # being blocked.
       if nblock_sup >0 || nblock_inf >0
          norm_blocked = sqrt(norm_blocked)
       else
