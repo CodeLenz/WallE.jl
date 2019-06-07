@@ -29,7 +29,10 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
   if niter==0
      niter = 2*nx
   end
-  println("Wall_E::número máximo de iterações internas:: ",niter)
+  
+  if flag_show
+     println("Wall_E::número máximo de iterações internas:: ",niter)
+  end
 
   # Testa para ver se as dimensões das restrições laterais estão OK
   @assert length(ci)==nx "Steepest_Descent_Proj:: size(ci)!=size(x0)"
