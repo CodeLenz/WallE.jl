@@ -140,45 +140,13 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
       # Cópia para análise de direção de minimização
       Doriginal = copy(D)
 
-       # Se a iteração for maior do que 3, então podemos começar a 
-       # ajustar os limites móveis pelo histórico de cada variável
-       if iter>3
-
-          for i=1:nx
-
-             # Variações
-             Δ1 = x0[i]-x1[i] 
-             Δ2 = x1[i]-x2[i]
-
-             # Ajustes
-             if Δ1*Δ2 > 0.0
-                # Boas vibrações...podemos aumentar o lm
-                limite_movel[i] *= fator_aumento_limite_movel
-
-             elseif Δ1*Δ2 < 0.0
-                # Bad vibes...
-                limite_movel[i] *= fator_diminuicao_limite_movel
-
-             end
-
-             # Testa limites dos ajustes
-             limite_movel[i] = max(limite_movel_minimo,
-                               min(limite_movel_inicial,limite_movel[i]))
-
-          end # for i  
-       end # if iter > 3
-
-       #
-       # Vamos calcular os limites móveis, sempre respeitando
-       # as restrições laterais. Nas primeiras 2 iterações
-       # o limite móvel é o inicial (que é o máximo)
-       #
-       x_min .= max.(ci, (UM.-limite_movel).*x0 ) 
-       x_max .= min.(cs, (UM.+limite_movel).*x0 )
- 
-       # Atualiza x1 e x2
-       x2 .= x1
-       x1 .= x0
+      # Calcula os limites móveis
+      Moving_Limits!(limite_movel, x_min,x_max, x0, x1, x2, 
+                     nx,iter,fator_aumento_limite_movel,
+                     fator_diminuicao_limite_movel,limite_movel_minimo,
+                     limite_movel_inicial,ci,cs)
+       
+      
 
       # Testa para ver se alguma variável de projeto que já 
       # está no box será levada para fora do box (por causa
@@ -441,3 +409,60 @@ function Select_Sets!(D::Array{Float64},x::Array{Float64},
     end
 
 end # module
+
+
+
+#
+# Atualiza limite_movel, x_min e x_max
+#
+function Moving_Limits!(limite_movel::Array{Float64}, x_min::Array{Float64},x_max::Array{Float64},
+                        x0::Array{Float64}, x1::Array{Float64},x2::Array{Float64},
+                        nx::Int64, iter::Int64, 
+                        fator_aumento_limite_movel::Float64,
+                        fator_diminuicao_limite_movel::Float64,limite_movel_minimo::Float64,
+                        limite_movel_inicial::Float64,ci::Array{Float64},cs::Array{Float64} )
+
+
+       # Se a iteração for maior do que 3, então podemos começar a 
+       # ajustar os limites móveis pelo histórico de cada variável
+
+       if iter>3
+
+          for i=1:nx
+
+             # Variações
+             Δ1 = x0[i]-x1[i] 
+             Δ2 = x1[i]-x2[i]
+
+             # Ajustes
+             if Δ1*Δ2 > 0.0
+                # Boas vibrações...podemos aumentar o lm
+                limite_movel[i] *= fator_aumento_limite_movel
+
+             elseif Δ1*Δ2 < 0.0
+                # Bad vibes...
+                limite_movel[i] *= fator_diminuicao_limite_movel
+
+             end
+
+             # Testa limites dos ajustes
+             limite_movel[i] = max(limite_movel_minimo,
+                               min(limite_movel_inicial,limite_movel[i]))
+
+          end # for i  
+       end # if iter > 3
+
+       #
+       # Vamos calcular os limites móveis, sempre respeitando
+       # as restrições laterais. Nas primeiras 2 iterações
+       # o limite móvel é o inicial (que é o máximo)
+       #
+       x_min .= max.(ci, (UM.-limite_movel).*x0 ) 
+       x_max .= min.(cs, (UM.+limite_movel).*x0 )
+
+       # Atualiza x1 e x2
+       x2 .= x1
+       x1 .= x0
+
+end
+ 
