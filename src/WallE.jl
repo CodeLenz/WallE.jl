@@ -115,8 +115,6 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
   # Vetor gradiente
   D = zeros(nx)
 
-  # Vetor unitário
-  UM = ones(nx)
 
   # Número de iterações seguidas com gradientes conjugados
   number_fletcher = 1
@@ -426,6 +424,9 @@ function Moving_Limits!(limite_movel::Array{Float64}, x_min::Array{Float64},x_ma
 
        if iter>3
 
+          # Vetor unitário
+          UM = ones(nx)
+
           for i=1:nx
 
              # Variações
@@ -465,5 +466,5 @@ function Moving_Limits!(limite_movel::Array{Float64}, x_min::Array{Float64},x_ma
 end
  
 
- 
+
 end # module
