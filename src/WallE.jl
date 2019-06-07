@@ -408,8 +408,6 @@ function Select_Sets!(D::Array{Float64},x::Array{Float64},
 
     end
 
-end # module
-
 
 
 #
@@ -466,3 +464,6 @@ function Moving_Limits!(limite_movel::Array{Float64}, x_min::Array{Float64},x_ma
 
 end
  
+
+ 
+end # module
