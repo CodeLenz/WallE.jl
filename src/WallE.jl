@@ -422,10 +422,10 @@ function Moving_Limits!(limite_movel::Array{Float64}, x_min::Array{Float64},x_ma
        # Se a iteração for maior do que 3, então podemos começar a 
        # ajustar os limites móveis pelo histórico de cada variável
 
-       if iter>3
+      # Vetor unitário
+      UM = ones(nx)
 
-          # Vetor unitário
-          UM = ones(nx)
+       if iter>3
 
           for i=1:nx
 
