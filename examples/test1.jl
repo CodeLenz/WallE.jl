@@ -1,5 +1,5 @@
 using LinearAlgebra
-using WallE
+#using WallE
 
 #
 # Minimiza uma função sem que restrições laterais
@@ -24,6 +24,6 @@ function Test1()
     cs =  Inf*ones(2)
 
     # Chama o otimizador
-    x_opt, flag, norma, norma_block = Wall_E(f,df,x0,ci,cs,true,100)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,true,200)
 
 end
