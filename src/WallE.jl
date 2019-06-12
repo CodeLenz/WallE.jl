@@ -774,7 +774,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       if iter>1
 
          # Free positions 
-         free_x = filter(x->!(x in (Iblock_m || Iblock_M)),lvar)
+         free_x = filter(x-> !(x in Iblock_m) && !(x in Iblock_M),lvar)
 
          # Norm of the free positions 
          norma = norm(D[free_x])
