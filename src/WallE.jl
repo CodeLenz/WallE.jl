@@ -610,6 +610,9 @@ end
       # Flag of improvement (or not)
       improved = true
 
+      # Flag of first improvement
+      first_improvement = false
+
       while true
  
         iter += 1
@@ -633,24 +636,45 @@ end
 
         # And the condition is 
         fn = f(xn)
-        #@show fn, last_f, iter
-        if  fn < last_f
+        
+        # At some point we must improve the function. When it 
+        # happens, we can try do do better. So first, we must
+        # try to perform better than the initial point
+        if fn < f0 && !first_improvement
+
+           # Ok, we improved 
+           #@show fn, f0
+           first_improvement = true
+           improved = true
+
+        end
+        
+        # Decrease the step if not improved
+        if !first_improvement 
+          #@show α
            α *= τ
-        else
-           # leave the while..Lets just take care of the 
-           # first iteration
-           if iter==1
-             last_f = fn
-             last_x .= xn
+           # Lower bound for the step
+           if α < 1E-12
+              improved = false
+              break
            end
-           break
         end
 
-        # Check for a lower bound for α
-        if α < 1E-12
-          improved = false
+        # So, if first_improvement is set, we can try to 
+        # improve it even more
+        if  fn < last_f && first_improvement
+           #println("aqui")
+           α *= τ
+           # Lower bound for the step
+           if α < 1E-12
+              improved = false
+              break
+           end
+        elseif fn > last_f && first_improvement
+          # We cannot improve it 
           break
         end
+        
 
         last_f = fn
         last_x = copy(xn)
@@ -719,7 +743,6 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       @assert x0[i]<=cs[i] "Wall_E2:: x0[$i] deve ser menor do que cs[$i] $(x0[i]) $(cs[i])"
   end
 
-
   # Incializa variáveis internas
 
   # Copia o ponto de entrada para um vetor de estimativa de 
@@ -729,11 +752,9 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
   # Flag que indica se o otimizador saiu pela tolerância da norma2
   flag_conv = false
 
-
   # Norma 2 (começa no valor máximo para Float64)
   norma = maxintfloat(Float64)
 
- 
   # Valor do passo (line-search)
   # Aqui usamos uma versão muito simples do backtracking, então
   # o passo inicial deve ser "elevado"
@@ -764,10 +785,8 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
   # Vetor gradiente
   D = zeros(nx)
 
-  # Será verdadeiro se a tolerância
-  # na norma do gradiente for satisfeita
-  flag_conv_interna = false
-
+  delta_m = Float64[]
+  delta_M = Float64[]
 
   ####################### LOOP PRINCIPAL #######################
   tempo = @elapsed for iter=1:niter
@@ -782,7 +801,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       if iter>1
 
          # Free positions 
-         free_x = filter(x-> !(x in Iblock_m) && !(x in Iblock_M),lvar)
+         free_x = filter(x-> (!(x in Iblock_m) && !(x in Iblock_M)),lvar)
 
          # Norm of the free positions 
          norma = norm(D[free_x])
@@ -844,7 +863,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       end
       println("Bloqueios          : ", length(Iblock_m)," ",length(Iblock_M))
       println("Numero de iterações: ", contador , " de ",niter)
-      println("Converg. por norma : ", flag_conv)
+      println("Converg. por norma : ", flag_conv, " ", all(delta_m .>= 0.0)," ",all(delta_M .<= 0.0))
       #println("Direção de min.    : ", flag_minimizacao)
       #println("Passo final        : ", passo)
       #println("Usou GC            : ", usou_fletcher)
