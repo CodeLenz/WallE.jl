@@ -760,7 +760,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       # Norma de D
       norma = norm(D) 
 
-      @show norma, f0
+      #@show norma, f0
 
       # Se a tolerância da norma for satisfeita, setamos 
       # o flag_conv como verdadeiro e saimos do loop iter
