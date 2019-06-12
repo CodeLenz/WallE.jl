@@ -767,7 +767,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       # It iter > 1, than we can consider just the 
       # free (not blocked) variables to evaluate the norm
       if iter>1
-         free_x = filter(x->!(x in Iblock),le)
+         free_x = filter(x->!(x in Iblock),lvar)
          norma = norm(D[free_x])
       end
 
