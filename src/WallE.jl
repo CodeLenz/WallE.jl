@@ -657,6 +657,14 @@ end
 
       end # while
 
+      # Additional check. It we not improve, than 
+      # indicate and keep the original values
+      if last_f >= f0
+         improved = false
+         last_f = f0
+         last_x = x0
+      end
+
       # We should have a better point by now
       return last_x, last_f, improved, Iblock_m, Iblock_M
  
@@ -785,6 +793,14 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
          # Blocked by above. They must be negative
          delta_M = D[Iblock_M]
 
+         # TODO -> ficar preso nos limites móveis não é uma 
+         # condição real de bloqueio, pois pode haver movimento
+         # nesta direção em iterações subsequentes. No entanto,
+         # caso a variável não seja bloquada no ótimo, podemos
+         # tratar como uma restrição lateral, o que seria errado....
+         # 
+
+         # We need to fullfll all the first order conditions..
          if norma<=tol_norm && all(delta_m .>= 0.0) && all(delta_M .<= 0.0)
           flag_conv = true
           break
