@@ -687,6 +687,10 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
      println("Wall_E2::número máximo de iterações internas:: ",niter)
   end
 
+  # Lista com todas as variáveis. Será utilizado para gerarmos 
+  # uma lista de variáveis livres (complemento das bloqueadas)
+  lvar = 1:nx
+
   # Testa para ver se as dimensões das restrições laterais estão OK
   @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
   @assert length(cs)==nx "Wall_E2:: size(cs)!=size(x0)"
@@ -760,7 +764,12 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       # Norma de D
       norma = norm(D) 
 
-      #@show norma, f0
+      # It iter > 1, than we can consider just the 
+      # free (not blocked) variables to evaluate the norm
+      if iter>1
+         free_x = filter(x->!(x in Iblock),le)
+         norma = norm(D[free_x])
+      end
 
       # Se a tolerância da norma for satisfeita, setamos 
       # o flag_conv como verdadeiro e saimos do loop iter
