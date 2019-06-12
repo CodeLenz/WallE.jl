@@ -690,6 +690,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
   # Lista com todas as variáveis. Será utilizado para gerarmos 
   # uma lista de variáveis livres (complemento das bloqueadas)
   lvar = 1:nx
+  Iblock = Int64[]
 
   # Testa para ver se as dimensões das restrições laterais estão OK
   @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
@@ -754,6 +755,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
   # Será verdadeiro se a tolerância
   # na norma do gradiente for satisfeita
   flag_conv_interna = false
+
 
   ####################### LOOP PRINCIPAL #######################
   tempo = @elapsed for iter=1:niter
