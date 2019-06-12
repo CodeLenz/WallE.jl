@@ -482,19 +482,20 @@ end
     function Wall2!(x::Array{Float64},ci::Array{Float64},cs::Array{Float64})
 
           # List of Blocked variables
-          Iblock_x = Int64[]
+          Iblock_m = Int64[]
+          Iblock_M = Int64[]
 
           for i in LinearIndices(x)
             if x[i]<=ci[i] 
                x[i] = ci[i]
-               push!(Iblock_x,i)
+               push!(Iblock_m,i)
             elseif  x[i]>=cs[i] 
                x[i] = cs[i]
-               push!(Iblock_x,i)
+               push!(Iblock_M,i)
             end
           end  
 
-          return Iblock_x 
+          return Iblock_m, Iblock_M
    end
 
    #
@@ -519,7 +520,8 @@ end
       fn = f0
 
       # Blocked variables
-      Iblock = Int64[] 
+      Iblock_m = Int64[] 
+      Iblock_M = Int64[] 
 
       # Counter
       iter = 0
@@ -536,7 +538,7 @@ end
 
         # Projects the point into the boundary δS, modifying
         # xn 
-        Iblock = Wall2!(xn,ci,cs)
+        Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
 
         # The effective step is then 
         # (remember that we already projected xn into the box)
@@ -569,7 +571,7 @@ end
       end # while
 
       # We should have a better point by now
-      return xn, fn, Iblock
+      return xn, fn, Iblock_m, Iblock_M
  
    end
 
@@ -594,8 +596,9 @@ end
       xn = copy(x0) 
       fn = f0
 
-      # Blocked variables
-      Iblock = Int64[] 
+      # Blocked variables (m = - , M = +)
+      Iblock_m = Int64[] 
+      Iblock_M = Int64[] 
 
       # Counter
       iter = 0
@@ -616,7 +619,7 @@ end
 
         # Projects the point into the boundary δS, modifying
         # xn 
-        Iblock = Wall2!(xn,ci,cs)
+        Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
 
         # The effective step is then 
         # (remember that we already projected xn into the box)
@@ -655,7 +658,7 @@ end
       end # while
 
       # We should have a better point by now
-      return last_x, last_f, improved, Iblock
+      return last_x, last_f, improved, Iblock_m, Iblock_M
  
    end
 
@@ -690,7 +693,8 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
   # Lista com todas as variáveis. Será utilizado para gerarmos 
   # uma lista de variáveis livres (complemento das bloqueadas)
   lvar = 1:nx
-  Iblock = Int64[]
+  Iblock_m = Int64[]
+  Iblock_M = Int64[]
 
   # Testa para ver se as dimensões das restrições laterais estão OK
   @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
@@ -766,33 +770,44 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       # Norma de D
       norma = norm(D) 
 
-      # It iter > 1, than we can consider just the 
-      # free (not blocked) variables to evaluate the norm
-      #if iter>1
-      #   free_x = filter(x->!(x in Iblock),lvar)
-      #   norma = norm(D[free_x])
-      #end
+      # It iter > 1, than we can consider the optimality condition
+      if iter>1
 
-      # Se a tolerância da norma for satisfeita, setamos 
-      # o flag_conv como verdadeiro e saimos do loop iter
-      if norma<=tol_norm 
-         flag_conv = true
-         break
+         # Free positions 
+         free_x = filter(x->!(x in (Iblock_m || Iblock_M)),lvar)
+
+         # Norm of the free positions 
+         norma = norm(D[free_x])
+ 
+         # Blocked by below. They must be positive
+         delta_m = D[Iblock_m]
+
+         # Blocked by above. They must be negative
+         delta_M = D[Iblock_M]
+
+         if norma<=tol_norm && all(delta_m .>= 0.0) && all(delta_M .<= 0.0)
+          flag_conv = true
+          break
+        end
+
       end
 
       # Atualiza o contador de iterações
       contador += 1
 
       # Calcula os limites móveis
+      #=
       Moving_Limits!(limite_movel, x_min,x_max, x0, x1, x2, 
                      nx,iter,fator_aumento_limite_movel,
                      fator_diminuicao_limite_movel,limite_movel_minimo,
                      limite_movel_inicial,ci,cs)
-       
+      =# 
+      x_min .= ci
+      x_max .= cs
 
       # Armijo com próximo ponto, novo valor do objetivo e variáveis
       # bloqueadas
-      x0, f0, improved, Iblock = Crude_LS(x0,f0,D,x_min,x_max,f)
+      x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,f)
 
       if !improved
         println("The solution cannot be improved during the line-search")
@@ -811,7 +826,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       if objetivo_inicial!=0.0 && f0!=0.0
          println("% de min.          : ", 100*(f0-objetivo_inicial)/objetivo_inicial )
       end
-      #println("Bloqueios          : ", nblock_inf," ",nblock_sup)
+      println("Bloqueios          : ", length(Iblock_m)," ",length(Iblock_M))
       println("Numero de iterações: ", contador , " de ",niter)
       println("Converg. por norma : ", flag_conv)
       #println("Direção de min.    : ", flag_minimizacao)
