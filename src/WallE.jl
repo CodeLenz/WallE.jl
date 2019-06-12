@@ -550,7 +550,7 @@ end
 
         # And the condition is 
         fn = f(xn)
-        @show fn, f0 + c*m, α, length(Iblock)
+        #@show fn, f0 + c*m, α, length(Iblock)
         if  fn < (f0 + c*m)
            break 
         else
@@ -630,7 +630,7 @@ end
 
         # And the condition is 
         fn = f(xn)
-        @show fn, last_f, iter
+        #@show fn, last_f, iter
         if  fn < last_f
            α *= τ
         else
