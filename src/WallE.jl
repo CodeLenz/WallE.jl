@@ -664,7 +664,7 @@ end
 function Wall_E2(f::Function, df::Function, x0::Array{Float64},
                  ci::Array{Float64}, cs::Array{Float64},
                  flag_show::Bool=true,
-                 niter=0,  tol_norm=1E-6,
+                 niter=2000,  tol_norm=1E-6,
                  passo_inicial=5.0, 
                  fator_corte = 0.5,
                  passo_minimo = 1E-10,
