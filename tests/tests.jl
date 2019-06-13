@@ -28,7 +28,7 @@ using Test
     cs =  Inf*ones(2)
 
     # Chama o otimizador
-    x_opt, flag, norma, norma_block = WallE.Wall_E2(f,df,x0,ci,cs,false,100)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,false,100)
  
     # The test
     @test isapprox(x_opt,[3.0 ; 5.0],rtol=1E-2)
@@ -70,7 +70,7 @@ end # testset
 
        
     # Chama o otimizador
-    x_opt, flag, norma, norma_block = WallE.Wall_E2(f,df,x0,ci,cs,false,500)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,false,500)
 
     @test isapprox(x_opt,[0.0;0.0],atol=1E-6)
 
@@ -105,7 +105,7 @@ end # testset
 
 
     # Chama o otimizador
-    x_opt, flag, norma, norma_block = WallE.Wall_E2(f,df,x0,ci,cs,false)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,false)
 
     @test isapprox(x_opt,[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-2)
 
