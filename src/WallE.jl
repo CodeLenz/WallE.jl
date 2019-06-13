@@ -736,6 +736,9 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
                  fator_diminuicao_limite_movel = 0.7)
 
 
+  # We should not use moving limits by now
+  @assert !limites_moveis "Wall_E2::do not use moving limits by now"
+
   # Numero de variáveis de projeto
   nx = length(x0)
 
