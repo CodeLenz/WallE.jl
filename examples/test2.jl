@@ -1,5 +1,5 @@
 using LinearAlgebra
-#using WallE
+using WallE
 
 #
 # Minimiza uma função sem com restrições laterais

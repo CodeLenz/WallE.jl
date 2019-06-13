@@ -5,9 +5,473 @@ module WallE
 
 using LinearAlgebra
 
-export Wall_E, Wall_E2
+export Wall_E2
 
 
+    #
+    # Applies the "wall" x .= max.(ci,min.(x,cs)) --> Modifies x
+    # and indicates if any variable is projected into one of the
+    # boundaries.
+    #
+    function Wall2!(x::Array{Float64},ci::Array{Float64},cs::Array{Float64})
+
+          # List of Blocked variables
+          Iblock_m = Int64[]
+          Iblock_M = Int64[]
+
+          for i in LinearIndices(x)
+            if x[i]<=ci[i] 
+               x[i] = ci[i]
+               push!(Iblock_m,i)
+            elseif  x[i]>=cs[i] 
+               x[i] = cs[i]
+               push!(Iblock_M,i)
+            end
+          end  
+
+          return Iblock_m, Iblock_M
+   end
+
+   
+   #
+   # Crude LS over f(x)
+   #
+   # The idea is quite simple: Start with a "large" step α
+   # and seek for a first descent of the objective function. 
+   # This condition is set in the variable first_improvement.
+   # Until this point, this line search is the same used
+   # before (accept the fist α and leave). This implementation
+   # goes a little bit further and keeps cutting α by τ while 
+   # f keeps decreasing. 
+   # Thus, we can find a much better α than before, but without the 
+   # burden of a "fine" line searc, with a larger computational 
+   # cost when compared to the original procedure.
+   #
+   # This subroutine also returns the set of blocked variables
+   # in two sets: Iblock_m for the variables at the lower bound
+   # and Iblock_M for the variables at the upper bound.
+   #
+   function Crude_LS(x0::Array{Float64},f0::Float64,D::Array{Float64},
+                     ci::Array{Float64},cs::Array{Float64},
+                     f::Function, α::Float64=10.0, α_min::Float64=1E-8,
+                     τ::Float64=0.5)
+
+
+      # Normalize D if its not yet normalized
+      D = D./norm(D)
+
+      # "Optimal" point and function value
+      xn = copy(x0) 
+      fn = f0
+
+      # Blocked variables (m = - , M = +)
+      Iblock_m = Int64[] 
+      Iblock_M = Int64[] 
+
+      # Counter
+      iter = 0
+
+      # Lets keep track of the minimization
+      last_f = fn
+      last_x = copy(xn)
+
+      # Flag of improvement (or not)
+      improved = true
+
+      # Flag of first improvement
+      first_improvement = false
+
+      while true
+ 
+        iter += 1
+
+        # Evaluate the canditate point
+        xn = x0 .- α*D
+
+        # Projects the point into the boundary δS, modifying
+        # xn 
+        Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
+
+        # The effective step is then 
+        # (remember that we already projected xn into the box)
+        Δx = xn .- x0
+        
+        # Such that m is given by 
+        m = dot(D,Δx)
+
+        # That should be negative
+        if m≈0.0 
+           if !first_improvement
+              improved = false
+           end
+           break   
+        end
+        #@assert m < 0.0 "Crude_LS::not a descent direction $m"
+
+        # And the condition is 
+        fn = f(xn)
+        
+        # At some point we must improve the function. When it 
+        # happens, we can try do do better. So first, we must
+        # try to perform better than the initial point
+        if fn < f0 && !first_improvement
+
+           # Ok, we improved 
+           #println("Improved ",fn," ",f0," ",iter)
+           #@show fn, f0
+           first_improvement = true
+           improved = true
+
+        end
+        
+        # Decrease the step if not improved
+        if !first_improvement 
+          #@show α
+           α *= τ
+           #println("Decreasing the step for first improvement ",α)
+           # Lower bound for the step
+           if α < α_min
+              improved = false
+              break
+           end
+        end
+
+        # So, if first_improvement is set, we can try to 
+        # improve it even more
+        if  fn < last_f && first_improvement
+           #println("Improving even more ", fn)
+           #println("aqui")
+           α *= τ
+           # Lower bound for the step
+           if α < α_min
+              #println("α minimo!")
+              break
+           end
+        elseif fn >= last_f && first_improvement
+          # We cannot improve it 
+          #println("Not more improvement ",fn," ",f0)
+          break
+        end
+         
+         
+        last_f = fn
+        last_x = copy(xn)
+
+      #@show iter, α, fn, first_improvement
+
+      end # while
+
+
+
+      # Additional check. If we not improve f, than 
+      # indicate and keep the original values
+      if !first_improvement  #last_f >= f0
+         #println("The line search did not improved the result")
+         improved = false
+         last_f = f0
+         last_x = x0
+      end
+
+      # We should have a better point by now
+      return last_x, last_f, improved, Iblock_m, Iblock_M
+ 
+   end
+
+
+
+function Wall_E2(f::Function, df::Function, x0::Array{Float64},
+                 ci::Array{Float64}, cs::Array{Float64},
+                 flag_show::Bool=true,
+                 niter=2000,  tol_norm=1E-6,
+                 passo_inicial=5.0, 
+                 fator_corte = 0.5,
+                 passo_minimo = 1E-10,
+                 limites_moveis::Bool=false,
+                 limite_movel_inicial = 0.2,
+                 limite_movel_minimo = 0.001,
+                 fator_aumento_limite_movel = 1.1,
+                 fator_diminuicao_limite_movel = 0.7)
+
+
+  # We should not use moving limits by now
+  @assert !limites_moveis "Wall_E2::do not use moving limits by now"
+
+  # Numero de variáveis de projeto
+  nx = length(x0)
+
+  # Se o número de iterações não for informado, utilizamos um múltiplo
+  # do número de variáveis
+  if niter==0
+     niter = 2*nx
+  end
+  
+  if flag_show
+     println("Wall_E2::número máximo de iterações internas:: ",niter)
+  end
+
+  # Lista com todas as variáveis. Será utilizado para gerarmos 
+  # uma lista de variáveis livres (complemento das bloqueadas)
+  lvar = 1:nx
+  Iblock_m = Int64[]
+  Iblock_M = Int64[]
+
+  # Testa para ver se as dimensões das restrições laterais estão OK
+  @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
+  @assert length(cs)==nx "Wall_E2:: size(cs)!=size(x0)"
+
+  # Assert para verificar se  ci .<= cs
+  for i=1:nx
+      @assert ci[i]<=cs[i] "Wall_E2:: ci deve ser .<= cs "
+  end
+
+  # Não podemos aceitar qualquer x0 que viole as restrições laterais
+  for i=1:nx
+      @assert x0[i]>=ci[i] "Wall_E2:: x0[$i] deve ser maior do que ci[$i] $(x0[i]) $(ci[i])"
+      @assert x0[i]<=cs[i] "Wall_E2:: x0[$i] deve ser menor do que cs[$i] $(x0[i]) $(cs[i])"
+  end
+
+  # Incializa variáveis internas
+
+  # Copia o ponto de entrada para um vetor de estimativa de 
+  # próximo ponto (a ser utilizado no line-search)
+  xe = copy(x0)
+
+  # Flag que indica se o otimizador saiu pela tolerância da norma2
+  flag_conv = false
+
+  # Norma 2 (começa no valor máximo para Float64)
+  norma = maxintfloat(Float64)
+
+  # Valor do passo (line-search)
+  # Aqui usamos uma versão muito simples do backtracking, então
+  # o passo inicial deve ser "elevado"
+  passo = passo_inicial
+
+  # Limites móveis. Todos iniciam no valor máximo
+  limite_movel = limite_movel_inicial*ones(nx)
+
+  # Vamos manter uma cópia dos valores das variáveis
+  # de projeto nas últimas 3 iterações 
+  x1 = zeros(nx) #Array{Float64}(undef,nx)
+  x2 = zeros(nx) #Array{Float64}(undef,nx)
+
+  # Limites móveis efetivos
+  x_min = zeros(nx)
+  x_max = zeros(nx)
+
+  # Valor de referência. f0 será utilizado durante o line-search
+  # e objetivo_inicial será utilizado para avaliarmos o quanto
+  # de melhoria tivemos durante todo o processo. f1 será o valor
+  # da estimativa no line-search
+  f0 = f(x0)
+  objetivo_inicial = f0
+ 
+  # Número de iterações efetivas
+  contador = 0
+
+  # Vetor gradiente
+  D = zeros(nx)
+
+  delta_m = Float64[]
+  delta_M = Float64[]
+
+  ####################### LOOP PRINCIPAL #######################
+  tempo = @elapsed for iter=1:niter
+
+      # Calcula a derivada de f, chamando df(x)
+      D .= df(x0)
+ 
+      # Norma de D
+      norma = norm(D) 
+
+      # It iter > 1, than we can consider the optimality condition
+      if iter>1
+
+         # Free positions 
+         free_x = filter(x-> (!(x in Iblock_m) && !(x in Iblock_M)),lvar)
+
+         # Norm of the free positions 
+         norma = norm(D[free_x])
+ 
+         # Blocked by below. They must be positive
+         delta_m = D[Iblock_m]
+
+         # Blocked by above. They must be negative
+         delta_M = D[Iblock_M]
+
+         # TODO -> ficar preso nos limites móveis não é uma 
+         # condição real de bloqueio, pois pode haver movimento
+         # nesta direção em iterações subsequentes. No entanto,
+         # caso a variável não seja bloquada no ótimo, podemos
+         # tratar como uma restrição lateral, o que seria errado.
+         # Então, por hora, não vamos utilizar os limites móveis
+         # e um LS mais fino.
+         # 
+
+         # We need to fullfll all the first order conditions..
+         if norma<=tol_norm && all(delta_m .>= 0.0) && all(delta_M .<= 0.0)
+          flag_conv = true
+          break
+        end
+
+      end
+
+      # Atualiza o contador de iterações
+      contador += 1
+
+      # Calcula os limites móveis
+      if limites_moveis
+          Moving_Limits!(limite_movel, x_min,x_max, x0, x1, x2, 
+                         nx,iter,fator_aumento_limite_movel,
+                         fator_diminuicao_limite_movel,limite_movel_minimo,
+                         limite_movel_inicial,ci,cs)
+      else
+         # Não estamos utilizando limites móveis.
+         x_min .= ci
+         x_max .= cs
+      end
+
+      # Armijo com próximo ponto, novo valor do objetivo e variáveis
+      # bloqueadas
+      x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,f)
+
+      if !improved
+        println("The solution cannot be improved during the line-search")
+        break
+      end
+
+  end # for interno
+       
+
+  # Tivemos uma solução
+  if flag_show
+      println("\n********************************************************")
+      println("Final do Steepest com projeção")
+      println("Objetivo inicial   : ", objetivo_inicial)
+      println("Objetivo final     : ", f0)
+      if objetivo_inicial!=0.0 && f0!=0.0
+         println("% de min.          : ", 100*(f0-objetivo_inicial)/objetivo_inicial )
+      end
+      println("Bloqueios          : ", length(Iblock_m)," ",length(Iblock_M))
+      println("Numero de iterações: ", contador , " de ",niter)
+      println("Converg. por norma : ", flag_conv, " ", all(delta_m .>= 0.0)," ",all(delta_M .<= 0.0))
+      #println("Direção de min.    : ", flag_minimizacao)
+      #println("Passo final        : ", passo)
+      #println("Usou GC            : ", usou_fletcher)
+      if limites_moveis
+         println("fator móvel mínimo : ", minimum(limite_movel))
+         println("fator móvel máximo : ", maximum(limite_movel))
+         println("Limite móvel mínimo: ", minimum(x_min))
+         println("Limite móvel máximo: ", maximum(x_max))
+      end
+      println("Norma              : ", norma)
+      
+      
+      println("Tempo total [min]  : ", tempo/60.0)
+      println("********************************************************")
+  end
+
+  # Returns the solution, convergence flag and last norm
+  return x0, flag_conv, norma
+
+end
+
+
+
+
+######################################################################
+############################ NEEDS TESTING ###########################
+######################################################################
+
+   #
+   # Armijo's Bactracking LS ove f(x)
+   #
+   function Modified_Armijo(x0::Array{Float64},f0::Float64,D::Array{Float64},
+                            ci::Array{Float64},cs::Array{Float64},
+                            f::Function)
+
+      # Fixed parameters
+      c = 0.1
+      τ = 0.5
+
+      # Normalize D if its not yet normalized
+      D = D./norm(D)
+
+      # First value of α
+      α = 10.0
+
+      # "Optimal" point and function value
+      xn = copy(x0) 
+      fn = f0
+
+      # Blocked variables
+      Iblock_m = Int64[] 
+      Iblock_M = Int64[] 
+
+      # Counter
+      iter = 0
+
+      # The rigth hand side of the inequality is variable 
+      # in this version. So we will skip the loop when
+      # the search condition is true
+      while true
+ 
+        iter += 1
+
+        # Evaluate the canditate point
+        xn = x0 .- α*D
+
+        # Projects the point into the boundary δS, modifying
+        # xn 
+        Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
+
+        # The effective step is then 
+        # (remember that we already projected xn into the box)
+        Δx = xn .- x0
+        
+        # Such that m is given by 
+        m = dot(D,Δx)
+
+        # That should be negative
+        @assert m < 0.0 "Armijo::not a descent direction"
+
+        # And the condition is 
+        fn = f(xn)
+        #@show fn, f0 + c*m, α, length(Iblock)
+        if  fn < (f0 + c*m)
+           break 
+        else
+           α *= τ
+        end
+
+        # Check for a lower bound for α
+        # TODO
+        if α < 1E-8
+          break
+        end
+
+        last_f = fn
+        last_x = copy(xn)
+
+      end # while
+
+      # We should have a better point by now
+      return xn, fn, Iblock_m, Iblock_M
+ 
+   end
+
+
+
+
+
+
+
+
+
+
+######################################################################
+############################ LEGACY VERSION ##########################
+######################################################################
 function Wall_E(f::Function, df::Function, x0::Array{Float64},
                 ci::Array{Float64}, cs::Array{Float64},
                 flag_show::Bool=true,
@@ -469,455 +933,6 @@ function Moving_Limits!(limite_movel::Array{Float64}, x_min::Array{Float64},x_ma
 end
  
 
-##########################################################################
-##########################################################################
-##########################################################################
-#
-# ALTERAÇÕES DA DOCUMENTAÇÃO
-#
-    #
-    # Applies the "wall" x .= max.(ci,min.(x,cs)) --> Modifies x
-    # and indicates if any variable is projected
-    #
-    function Wall2!(x::Array{Float64},ci::Array{Float64},cs::Array{Float64})
-
-          # List of Blocked variables
-          Iblock_m = Int64[]
-          Iblock_M = Int64[]
-
-          for i in LinearIndices(x)
-            if x[i]<=ci[i] 
-               x[i] = ci[i]
-               push!(Iblock_m,i)
-            elseif  x[i]>=cs[i] 
-               x[i] = cs[i]
-               push!(Iblock_M,i)
-            end
-          end  
-
-          return Iblock_m, Iblock_M
-   end
-
-   #
-   # Armijo's Bactracking LS ove f(x)
-   #
-   function Modified_Armijo(x0::Array{Float64},f0::Float64,D::Array{Float64},
-                            ci::Array{Float64},cs::Array{Float64},
-                            f::Function)
-
-      # Fixed parameters
-      c = 0.1
-      τ = 0.5
-
-      # Normalize D if its not yet normalized
-      D = D./norm(D)
-
-      # First value of α
-      α = 10.0
-
-      # "Optimal" point and function value
-      xn = copy(x0) 
-      fn = f0
-
-      # Blocked variables
-      Iblock_m = Int64[] 
-      Iblock_M = Int64[] 
-
-      # Counter
-      iter = 0
-
-      # The rigth hand side of the inequality is variable 
-      # in this version. So we will skip the loop when
-      # the search condition is true
-      while true
- 
-        iter += 1
-
-        # Evaluate the canditate point
-        xn = x0 .- α*D
-
-        # Projects the point into the boundary δS, modifying
-        # xn 
-        Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
-
-        # The effective step is then 
-        # (remember that we already projected xn into the box)
-        Δx = xn .- x0
-        
-        # Such that m is given by 
-        m = dot(D,Δx)
-
-        # That should be negative
-        @assert m < 0.0 "Armijo::not a descent direction"
-
-        # And the condition is 
-        fn = f(xn)
-        #@show fn, f0 + c*m, α, length(Iblock)
-        if  fn < (f0 + c*m)
-           break 
-        else
-           α *= τ
-        end
-
-        # Check for a lower bound for α
-        # TODO
-        if α < 1E-8
-          break
-        end
-
-        last_f = fn
-        last_x = copy(xn)
-
-      end # while
-
-      # We should have a better point by now
-      return xn, fn, Iblock_m, Iblock_M
- 
-   end
-
-
-   #
-   # Crude LS over f(x)
-   #
-   # The idea is quite simple: Start with a "large" step α
-   # and seek for a first descent of the objective function. 
-   # This condition is set in the variable first_improvement.
-   # Until this point, this line search is the same used
-   # before (accept the fist α and leave). This implementation
-   # goes a little bit further and keeps cutting α by τ while 
-   # f keeps decreasing. 
-   # Thus, we can find a much better α than before, but without the 
-   # burden of a "fine" line searc, with a larger computational 
-   # cost when compared to the original procedure.
-   #
-   # This subroutine also returns the set of blocked variables
-   # in two sets: Iblock_m for the variables at the lower bound
-   # and Iblock_M for the variables at the upper bound.
-   #
-   function Crude_LS(x0::Array{Float64},f0::Float64,D::Array{Float64},
-                     ci::Array{Float64},cs::Array{Float64},
-                     f::Function, α::Float64=10.0, α_min::Float64=1E-8,
-                     τ::Float64=0.5)
-
-
-      # Normalize D if its not yet normalized
-      D = D./norm(D)
-
-      # "Optimal" point and function value
-      xn = copy(x0) 
-      fn = f0
-
-      # Blocked variables (m = - , M = +)
-      Iblock_m = Int64[] 
-      Iblock_M = Int64[] 
-
-      # Counter
-      iter = 0
-
-      # Lets keep track of the minimization
-      last_f = fn
-      last_x = copy(xn)
-
-      # Flag of improvement (or not)
-      improved = true
-
-      # Flag of first improvement
-      first_improvement = false
-
-      while true
- 
-        iter += 1
-
-        # Evaluate the canditate point
-        xn = x0 .- α*D
-
-        # Projects the point into the boundary δS, modifying
-        # xn 
-        Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
-
-        # The effective step is then 
-        # (remember that we already projected xn into the box)
-        Δx = xn .- x0
-        
-        # Such that m is given by 
-        m = dot(D,Δx)
-
-        # That should be negative
-        if m≈0.0 
-           if !first_improvement
-              improved = false
-           end
-           break   
-        end
-        #@assert m < 0.0 "Crude_LS::not a descent direction $m"
-
-        # And the condition is 
-        fn = f(xn)
-        
-        # At some point we must improve the function. When it 
-        # happens, we can try do do better. So first, we must
-        # try to perform better than the initial point
-        if fn < f0 && !first_improvement
-
-           # Ok, we improved 
-           #println("Improved ",fn," ",f0," ",iter)
-           #@show fn, f0
-           first_improvement = true
-           improved = true
-
-        end
-        
-        # Decrease the step if not improved
-        if !first_improvement 
-          #@show α
-           α *= τ
-           #println("Decreasing the step for first improvement ",α)
-           # Lower bound for the step
-           if α < α_min
-              improved = false
-              break
-           end
-        end
-
-        # So, if first_improvement is set, we can try to 
-        # improve it even more
-        if  fn < last_f && first_improvement
-           #println("Improving even more ", fn)
-           #println("aqui")
-           α *= τ
-           # Lower bound for the step
-           if α < α_min
-              #println("α minimo!")
-              break
-           end
-        elseif fn >= last_f && first_improvement
-          # We cannot improve it 
-          #println("Not more improvement ",fn," ",f0)
-          break
-        end
-         
-         
-        last_f = fn
-        last_x = copy(xn)
-
-      #@show iter, α, fn, first_improvement
-
-      end # while
-
-
-
-      # Additional check. If we not improve f, than 
-      # indicate and keep the original values
-      if !first_improvement  #last_f >= f0
-         #println("The line search did not improved the result")
-         improved = false
-         last_f = f0
-         last_x = x0
-      end
-
-      # We should have a better point by now
-      return last_x, last_f, improved, Iblock_m, Iblock_M
- 
-   end
-
-
-
-function Wall_E2(f::Function, df::Function, x0::Array{Float64},
-                 ci::Array{Float64}, cs::Array{Float64},
-                 flag_show::Bool=true,
-                 niter=2000,  tol_norm=1E-6,
-                 passo_inicial=5.0, 
-                 fator_corte = 0.5,
-                 passo_minimo = 1E-10,
-                 limites_moveis::Bool=false,
-                 limite_movel_inicial = 0.2,
-                 limite_movel_minimo = 0.001,
-                 fator_aumento_limite_movel = 1.1,
-                 fator_diminuicao_limite_movel = 0.7)
-
-
-  # We should not use moving limits by now
-  @assert !limites_moveis "Wall_E2::do not use moving limits by now"
-
-  # Numero de variáveis de projeto
-  nx = length(x0)
-
-  # Se o número de iterações não for informado, utilizamos um múltiplo
-  # do número de variáveis
-  if niter==0
-     niter = 2*nx
-  end
-  
-  if flag_show
-     println("Wall_E2::número máximo de iterações internas:: ",niter)
-  end
-
-  # Lista com todas as variáveis. Será utilizado para gerarmos 
-  # uma lista de variáveis livres (complemento das bloqueadas)
-  lvar = 1:nx
-  Iblock_m = Int64[]
-  Iblock_M = Int64[]
-
-  # Testa para ver se as dimensões das restrições laterais estão OK
-  @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
-  @assert length(cs)==nx "Wall_E2:: size(cs)!=size(x0)"
-
-  # Assert para verificar se  ci .<= cs
-  for i=1:nx
-      @assert ci[i]<=cs[i] "Wall_E2:: ci deve ser .<= cs "
-  end
-
-  # Não podemos aceitar qualquer x0 que viole as restrições laterais
-  for i=1:nx
-      @assert x0[i]>=ci[i] "Wall_E2:: x0[$i] deve ser maior do que ci[$i] $(x0[i]) $(ci[i])"
-      @assert x0[i]<=cs[i] "Wall_E2:: x0[$i] deve ser menor do que cs[$i] $(x0[i]) $(cs[i])"
-  end
-
-  # Incializa variáveis internas
-
-  # Copia o ponto de entrada para um vetor de estimativa de 
-  # próximo ponto (a ser utilizado no line-search)
-  xe = copy(x0)
-
-  # Flag que indica se o otimizador saiu pela tolerância da norma2
-  flag_conv = false
-
-  # Norma 2 (começa no valor máximo para Float64)
-  norma = maxintfloat(Float64)
-
-  # Valor do passo (line-search)
-  # Aqui usamos uma versão muito simples do backtracking, então
-  # o passo inicial deve ser "elevado"
-  passo = passo_inicial
-
-  # Limites móveis. Todos iniciam no valor máximo
-  limite_movel = limite_movel_inicial*ones(nx)
-
-  # Vamos manter uma cópia dos valores das variáveis
-  # de projeto nas últimas 3 iterações 
-  x1 = zeros(nx) #Array{Float64}(undef,nx)
-  x2 = zeros(nx) #Array{Float64}(undef,nx)
-
-  # Limites móveis efetivos
-  x_min = zeros(nx)
-  x_max = zeros(nx)
-
-  # Valor de referência. f0 será utilizado durante o line-search
-  # e objetivo_inicial será utilizado para avaliarmos o quanto
-  # de melhoria tivemos durante todo o processo. f1 será o valor
-  # da estimativa no line-search
-  f0 = f(x0)
-  objetivo_inicial = f0
- 
-  # Número de iterações efetivas
-  contador = 0
-
-  # Vetor gradiente
-  D = zeros(nx)
-
-  delta_m = Float64[]
-  delta_M = Float64[]
-
-  ####################### LOOP PRINCIPAL #######################
-  tempo = @elapsed for iter=1:niter
-
-      # Calcula a derivada de f, chamando df(x)
-      D .= df(x0)
- 
-      # Norma de D
-      norma = norm(D) 
-
-      # It iter > 1, than we can consider the optimality condition
-      if iter>1
-
-         # Free positions 
-         free_x = filter(x-> (!(x in Iblock_m) && !(x in Iblock_M)),lvar)
-
-         # Norm of the free positions 
-         norma = norm(D[free_x])
- 
-         # Blocked by below. They must be positive
-         delta_m = D[Iblock_m]
-
-         # Blocked by above. They must be negative
-         delta_M = D[Iblock_M]
-
-         # TODO -> ficar preso nos limites móveis não é uma 
-         # condição real de bloqueio, pois pode haver movimento
-         # nesta direção em iterações subsequentes. No entanto,
-         # caso a variável não seja bloquada no ótimo, podemos
-         # tratar como uma restrição lateral, o que seria errado.
-         # Então, por hora, não vamos utilizar os limites móveis
-         # e um LS mais fino.
-         # 
-
-         # We need to fullfll all the first order conditions..
-         if norma<=tol_norm && all(delta_m .>= 0.0) && all(delta_M .<= 0.0)
-          flag_conv = true
-          break
-        end
-
-      end
-
-      # Atualiza o contador de iterações
-      contador += 1
-
-      # Calcula os limites móveis
-      if limites_moveis
-          Moving_Limits!(limite_movel, x_min,x_max, x0, x1, x2, 
-                         nx,iter,fator_aumento_limite_movel,
-                         fator_diminuicao_limite_movel,limite_movel_minimo,
-                         limite_movel_inicial,ci,cs)
-      else
-         # Não estamos utilizando limites móveis.
-         x_min .= ci
-         x_max .= cs
-      end
-
-      # Armijo com próximo ponto, novo valor do objetivo e variáveis
-      # bloqueadas
-      x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,f)
-
-      if !improved
-        println("The solution cannot be improved during the line-search")
-        break
-      end
-
-  end # for interno
-       
-
-  # Tivemos uma solução
-  if flag_show
-      println("\n********************************************************")
-      println("Final do Steepest com projeção")
-      println("Objetivo inicial   : ", objetivo_inicial)
-      println("Objetivo final     : ", f0)
-      if objetivo_inicial!=0.0 && f0!=0.0
-         println("% de min.          : ", 100*(f0-objetivo_inicial)/objetivo_inicial )
-      end
-      println("Bloqueios          : ", length(Iblock_m)," ",length(Iblock_M))
-      println("Numero de iterações: ", contador , " de ",niter)
-      println("Converg. por norma : ", flag_conv, " ", all(delta_m .>= 0.0)," ",all(delta_M .<= 0.0))
-      #println("Direção de min.    : ", flag_minimizacao)
-      #println("Passo final        : ", passo)
-      #println("Usou GC            : ", usou_fletcher)
-      if limites_moveis
-         println("fator móvel mínimo : ", minimum(limite_movel))
-         println("fator móvel máximo : ", maximum(limite_movel))
-         println("Limite móvel mínimo: ", minimum(x_min))
-         println("Limite móvel máximo: ", maximum(x_max))
-      end
-      println("Norma              : ", norma)
-      
-      
-      println("Tempo total [min]  : ", tempo/60.0)
-      println("********************************************************")
-  end
-
-  # Returns the solution, convergence flag and last norm
-  return x0, flag_conv, norma
-
-end
 
 
 
