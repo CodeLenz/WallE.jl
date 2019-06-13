@@ -592,6 +592,9 @@ end
       # First value of α
       α = 10.0
 
+      # Minimum value
+      α_min = 1E-8
+
       # "Optimal" point and function value
       xn = copy(x0) 
       fn = f0
@@ -632,7 +635,13 @@ end
         m = dot(D,Δx)
 
         # That should be negative
-        @assert m < 0.0 "Crude_LS::not a descent direction"
+        if m≈0.0 
+           if !first_improvement
+              improved = false
+           end
+           break   
+        end
+        #@assert m < 0.0 "Crude_LS::not a descent direction $m"
 
         # And the condition is 
         fn = f(xn)
@@ -643,6 +652,7 @@ end
         if fn < f0 && !first_improvement
 
            # Ok, we improved 
+           println("Improved ",fn," ",f0," ",iter)
            #@show fn, f0
            first_improvement = true
            improved = true
@@ -653,8 +663,9 @@ end
         if !first_improvement 
           #@show α
            α *= τ
+           #println("Decreasing the step for first improvement ",α)
            # Lower bound for the step
-           if α < 1E-12
+           if α < α_min
               improved = false
               break
            end
@@ -663,31 +674,42 @@ end
         # So, if first_improvement is set, we can try to 
         # improve it even more
         if  fn < last_f && first_improvement
+           #println("Improving even more ", fn)
            #println("aqui")
            α *= τ
            # Lower bound for the step
-           if α < 1E-12
-              improved = false
+           if α < α_min
+              #println("α minimo!")
               break
            end
-        elseif fn > last_f && first_improvement
+        elseif fn >= last_f && first_improvement
           # We cannot improve it 
+          #println("Not more improvement ",fn," ",f0)
           break
         end
-        
-
+         
+         
         last_f = fn
         last_x = copy(xn)
 
+      #@show iter, α, fn, first_improvement
+
       end # while
+
+
 
       # Additional check. It we not improve, than 
       # indicate and keep the original values
-      if last_f >= f0
+      if !first_improvement  #last_f >= f0
+         println("The line search did not improved the result")
          improved = false
          last_f = f0
          last_x = x0
       end
+
+      #if α==α_min
+      #  println("α_min is set")
+      #end
 
       # We should have a better point by now
       return last_x, last_f, improved, Iblock_m, Iblock_M
