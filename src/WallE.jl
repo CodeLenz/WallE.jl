@@ -576,24 +576,32 @@ end
    end
 
 
-  #
-   # Crude LS ove f(x)
+   #
+   # Crude LS over f(x)
+   #
+   # The idea is quite simple: Start with a "large" step α
+   # and seek for a first descent of the objective function. 
+   # This condition is set in the variable first_improvement.
+   # Until this point, this line search is the same used
+   # before (accept the fist α and leave). This implementation
+   # goes a little bit further and keeps cutting α by τ while 
+   # f keeps decreasing. 
+   # Thus, we can find a much better α than before, but without the 
+   # burden of a "fine" line searc, with a larger computational 
+   # cost when compared to the original procedure.
+   #
+   # This subroutine also returns the set of blocked variables
+   # in two sets: Iblock_m for the variables at the lower bound
+   # and Iblock_M for the variables at the upper bound.
    #
    function Crude_LS(x0::Array{Float64},f0::Float64,D::Array{Float64},
                      ci::Array{Float64},cs::Array{Float64},
-                     f::Function)
+                     f::Function, α::Float64=10.0, α_min::Float64=1E-8,
+                     τ::Float64=0.5)
 
-      # Fixed parameters (decrease of the step length)
-      τ = 0.5
 
       # Normalize D if its not yet normalized
       D = D./norm(D)
-
-      # First value of α
-      α = 10.0
-
-      # Minimum value
-      α_min = 1E-8
 
       # "Optimal" point and function value
       xn = copy(x0) 
@@ -698,18 +706,14 @@ end
 
 
 
-      # Additional check. It we not improve, than 
+      # Additional check. If we not improve f, than 
       # indicate and keep the original values
       if !first_improvement  #last_f >= f0
-         println("The line search did not improved the result")
+         #println("The line search did not improved the result")
          improved = false
          last_f = f0
          last_x = x0
       end
-
-      #if α==α_min
-      #  println("α_min is set")
-      #end
 
       # We should have a better point by now
       return last_x, last_f, improved, Iblock_m, Iblock_M
@@ -725,6 +729,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
                  passo_inicial=5.0, 
                  fator_corte = 0.5,
                  passo_minimo = 1E-10,
+                 limites_moveis::Bool=false,
                  limite_movel_inicial = 0.2,
                  limite_movel_minimo = 0.001,
                  fator_aumento_limite_movel = 1.1,
@@ -838,7 +843,9 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
          # condição real de bloqueio, pois pode haver movimento
          # nesta direção em iterações subsequentes. No entanto,
          # caso a variável não seja bloquada no ótimo, podemos
-         # tratar como uma restrição lateral, o que seria errado....
+         # tratar como uma restrição lateral, o que seria errado.
+         # Então, por hora, não vamos utilizar os limites móveis
+         # e um LS mais fino.
          # 
 
          # We need to fullfll all the first order conditions..
@@ -853,14 +860,16 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       contador += 1
 
       # Calcula os limites móveis
-      #=
-      Moving_Limits!(limite_movel, x_min,x_max, x0, x1, x2, 
-                     nx,iter,fator_aumento_limite_movel,
-                     fator_diminuicao_limite_movel,limite_movel_minimo,
-                     limite_movel_inicial,ci,cs)
-      =# 
-      x_min .= ci
-      x_max .= cs
+      if limites_moveis
+          Moving_Limits!(limite_movel, x_min,x_max, x0, x1, x2, 
+                         nx,iter,fator_aumento_limite_movel,
+                         fator_diminuicao_limite_movel,limite_movel_minimo,
+                         limite_movel_inicial,ci,cs)
+      else
+         # Não estamos utilizando limites móveis.
+         x_min .= ci
+         x_max .= cs
+      end
 
       # Armijo com próximo ponto, novo valor do objetivo e variáveis
       # bloqueadas
@@ -889,10 +898,12 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       #println("Direção de min.    : ", flag_minimizacao)
       #println("Passo final        : ", passo)
       #println("Usou GC            : ", usou_fletcher)
-      println("fator móvel mínimo : ", minimum(limite_movel))
-      println("fator móvel máximo : ", maximum(limite_movel))
-      println("Limite móvel mínimo: ", minimum(x_min))
-      println("Limite móvel máximo: ", maximum(x_max))
+      if limites_moveis
+         println("fator móvel mínimo : ", minimum(limite_movel))
+         println("fator móvel máximo : ", maximum(limite_movel))
+         println("Limite móvel mínimo: ", minimum(x_min))
+         println("Limite móvel máximo: ", maximum(x_max))
+      end
       println("Norma              : ", norma)
       
       
