@@ -652,7 +652,7 @@ end
         if fn < f0 && !first_improvement
 
            # Ok, we improved 
-           println("Improved ",fn," ",f0," ",iter)
+           #println("Improved ",fn," ",f0," ",iter)
            #@show fn, f0
            first_improvement = true
            improved = true
