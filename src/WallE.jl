@@ -42,9 +42,9 @@ export Wall_E2
    # Until this point, this line search is the same used
    # before (accept the fist α and leave). This implementation
    # goes a little bit further and keeps cutting α by τ while 
-   # f keeps decreasing. 
+   # f keeps decreasing if flag_refine_LS is true. 
    # Thus, we can find a much better α than before, but without the 
-   # burden of a "fine" line searc, with a larger computational 
+   # burden of a "fine" line search, with a larger computational 
    # cost when compared to the original procedure.
    #
    # This subroutine also returns the set of blocked variables
@@ -286,7 +286,8 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
   delta_M = Float64[]
 
   ####################### LOOP PRINCIPAL #######################
-  tempo = @elapsed @showprogress 1 "Minimizing..." for iter=1:niter
+  tempo = @elapsed 
+  begin @showprogress 1 "Minimizing..." for iter=1:niter
 
       # Calcula a derivada de f, chamando df(x)
       D .= df(x0)
@@ -352,7 +353,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       end
 
   end # for interno
-       
+  end # block    
 
   # Tivemos uma solução
   if flag_show
