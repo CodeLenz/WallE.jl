@@ -53,7 +53,8 @@ export Wall_E2
    #
    function Crude_LS(x0::Array{Float64},f0::Float64,D::Array{Float64},
                      ci::Array{Float64},cs::Array{Float64},
-                     f::Function, α::Float64=10.0, α_min::Float64=1E-8,
+                     f::Function, flag_refine_LS::Bool,
+                     α::Float64=10.0, α_min::Float64=1E-8,
                      τ::Float64=0.5)
 
 
@@ -138,22 +139,30 @@ export Wall_E2
 
         # So, if first_improvement is set, we can try to 
         # improve it even more
-        if  fn < last_f && first_improvement
-           #println("Improving even more ", fn)
-           #println("aqui")
-           α *= τ
-           # Lower bound for the step
-           if α < α_min
+        if flag_refine_LS 
+          if  fn < last_f && first_improvement
+            #println("Improving even more ", fn)
+            #println("aqui")
+            α *= τ
+            # Lower bound for the step
+            if α < α_min
               #println("α minimo!")
               break
-           end
-        elseif fn >= last_f && first_improvement
-          # We cannot improve it 
-          #println("Not more improvement ",fn," ",f0)
-          break
+            end
+          elseif fn >= last_f && first_improvement
+             # We cannot improve it 
+             #println("Not more improvement ",fn," ",f0)
+             break
+          end
+        else
+          # we dont want to improve it anymore, 
+          # so we can leave the main loop. We just have 
+          # to assure that at least one good point was found
+          if first_improvement
+            break
+          end
         end
-         
-         
+
         last_f = fn
         last_x = copy(xn)
 
@@ -181,6 +190,7 @@ export Wall_E2
 
 function Wall_E2(f::Function, df::Function, x0::Array{Float64},
                  ci::Array{Float64}, cs::Array{Float64},
+                 flag_refine_LS::Bool=true,
                  flag_show::Bool=true,
                  niter=2000,  tol_norm=1E-6,
                  passo_inicial=5.0, 
@@ -333,7 +343,8 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
 
       # Armijo com próximo ponto, novo valor do objetivo e variáveis
       # bloqueadas
-      x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,f)
+      x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
+                                                      f,flag_refine_LS)
 
       if !improved
         println("The solution cannot be improved during the line-search")
