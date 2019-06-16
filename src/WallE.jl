@@ -286,8 +286,8 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
   delta_M = Float64[]
 
   ####################### LOOP PRINCIPAL #######################
-  tempo = @elapsed 
-  begin @showprogress 1 "Minimizing..." for iter=1:niter
+  tempo = @elapsed  begin
+  @showprogress 1 "Minimizing..." for iter=1:niter
 
       # Calcula a derivada de f, chamando df(x)
       D .= df(x0)
