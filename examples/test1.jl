@@ -24,6 +24,6 @@ function Test1()
     cs =  Inf*ones(2)
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,true,200)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,true,true,200)
 
 end
