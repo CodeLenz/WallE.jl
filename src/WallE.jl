@@ -456,8 +456,8 @@ end
 
         # And the condition is 
         fn = f(xn)
-        @show fn, f0, fn-f0, (c/α)*norm(Δx)^2, α
-        if  abs(fn - f0) <= (c/α)*norm(Δx)^2 
+        @show fn, f0, f0-fn, (c/α)*norm(Δx)^2, α
+        if   f0 - fn  >=  (c/α)*norm(Δx)^2 
             break 
         else
            α *= τ
