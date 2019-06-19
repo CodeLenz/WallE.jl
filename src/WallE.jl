@@ -427,6 +427,9 @@ end
       # Counter
       iter = 0
 
+      # CHeck if the solutions has improved
+      improved = true
+
       # The rigth hand side of the inequality is variable 
       # in this version. So we will skip the loop when
       # the search condition is true
@@ -454,7 +457,7 @@ end
         # And the condition is 
         fn = f(xn)
         @show fn, f0, fn-f0, (c/α)*norm(Δx)^2, α
-        if  fn - f0 <= (c/α)*norm(Δx)^2 
+        if  fn - f0 <= -(c/α)*norm(Δx)^2 
             break 
         else
            α *= τ
@@ -466,13 +469,9 @@ end
           break
         end
 
-        last_f = fn
-        last_x = copy(xn)
-
       end # while
 
       # Asserts that f improved
-      improved = true
       if fn >= f_ref
         improved = false
         xn .= x0
