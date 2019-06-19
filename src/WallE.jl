@@ -404,7 +404,7 @@ end
                             f::Function)
 
       # Fixed parameters
-      c = 0.1
+      c = 0.5
       τ = 0.5
 
       # Reference value
@@ -453,7 +453,7 @@ end
 
         # And the condition is 
         fn = f(xn)
-        @show fn, f0, fn-f0, (c/α)*norm(Δx)^2
+        @show fn, f0, fn-f0, (c/α)*norm(Δx)^2, α
         if  fn - f0 <= (c/α)*norm(Δx)^2 
             break 
         else
