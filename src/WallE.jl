@@ -344,8 +344,14 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
 
       # Armijo com próximo ponto, novo valor do objetivo e variáveis
       # bloqueadas
-      x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
-                                                      f,flag_refine_LS)
+      #x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
+      #                                                f,flag_refine_LS)
+
+
+      x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,f0,D,
+                                                            x_min,x_max,
+                                                            f)
+
 
       if !improved
         println("The solution cannot be improved during the line-search")
@@ -388,15 +394,10 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
 
 end
 
-
-
-
-######################################################################
-############################ NEEDS TESTING ###########################
-######################################################################
-
+#
+   # Armijo's Bactracking LS over f(x). Here we are using 
+   # the Bertseka's proposal
    #
-   # Armijo's Bactracking LS ove f(x)
    #
    function Modified_Armijo(x0::Array{Float64},f0::Float64,D::Array{Float64},
                             ci::Array{Float64},cs::Array{Float64},
@@ -405,6 +406,9 @@ end
       # Fixed parameters
       c = 0.1
       τ = 0.5
+
+      # Reference value
+      f_ref = f0
 
       # Normalize D if its not yet normalized
       D = D./norm(D)
@@ -449,9 +453,9 @@ end
 
         # And the condition is 
         fn = f(xn)
-        #@show fn, f0 + c*m, α, length(Iblock)
-        if  fn < (f0 + c*m)
-           break 
+        @show fn, f0, fn-f0, (c/α)*norm(Δx)^2
+        if  fn - f0 <= (c/α)*norm(Δx)^2 
+            break 
         else
            α *= τ
         end
@@ -467,17 +471,27 @@ end
 
       end # while
 
+      # Asserts that f improved
+      improved = true
+      if fn >= f_ref
+        improved = false
+        xn .= x0
+        fn  = f_ref
+      end
+
       # We should have a better point by now
-      return xn, fn, Iblock_m, Iblock_M
+      return xn, fn, improved, Iblock_m, Iblock_M
  
    end
 
 
 
 
+######################################################################
+############################ NEEDS TESTING ###########################
+######################################################################
 
-
-
+   
 
 
 
