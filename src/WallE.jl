@@ -404,7 +404,7 @@ end
                             f::Function)
 
       # Fixed parameters
-      c = 0.5
+      c = 0.9
       τ = 0.5
 
       # Reference value
