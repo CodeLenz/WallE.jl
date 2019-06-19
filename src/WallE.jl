@@ -344,12 +344,12 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
 
       # Armijo com próximo ponto, novo valor do objetivo e variáveis
       # bloqueadas
-      #x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
-      #                                                f,flag_refine_LS)
+      x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
+                                                      f,flag_refine_LS)
 
 
-      x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,f0,D,
-                                                            x_min,x_max,
+      #x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,f0,D,
+      #                                                      x_min,x_max,
                                                             f)
 
 
