@@ -17,7 +17,7 @@ end
 function Test1()
 
     # Ponto inicial
-    x0 = 10*rand(2)
+    x0 = zeros(2) #10*rand(2)
 
     # Restrições laterais
     ci = -Inf*ones(2)

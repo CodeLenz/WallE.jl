@@ -344,13 +344,12 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
 
       # Armijo com próximo ponto, novo valor do objetivo e variáveis
       # bloqueadas
-      x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
-                                                      f,flag_refine_LS)
+      #x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
+      #                                                f,flag_refine_LS)
 
 
-      #x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,f0,D,
-      #                                                      x_min,x_max,
-                                                            f)
+      x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,f0,D,
+                                                            x_min,x_max,f)
 
 
       if !improved
@@ -404,7 +403,7 @@ end
                             f::Function)
 
       # Fixed parameters
-      c = 0.9
+      c = 0.1
       τ = 0.5
 
       # Reference value
@@ -414,7 +413,9 @@ end
       D = D./norm(D)
 
       # First value of α
-      α = 10.0
+      α = 1.0
+      α = 1.0 / max(0.1,minimum(D))
+      #println("-------- $α -----------------")
 
       # "Optimal" point and function value
       xn = copy(x0) 
@@ -452,12 +453,15 @@ end
         m = dot(D,Δx)
 
         # That should be negative
-        @assert m < 0.0 "Armijo::not a descent direction"
+        if m >= 0.0 
+           improved = false
+           break
+        end
 
         # And the condition is 
         fn = f(xn)
-        @show fn, f0, f0-fn, (c/α)*norm(Δx)^2, α
-        if   f0 - fn  >=  (c/α)*norm(Δx)^2 
+        #@show fn, f0, fn-f0, (c/α)*norm(Δx)^2, α
+        if   fn - f0  <=  (c/α)*norm(Δx)^2 && fn < f0
             break 
         else
            α *= τ
