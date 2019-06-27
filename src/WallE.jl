@@ -33,160 +33,7 @@ export Wall_E2
    end
 
    
-   #
-   # Crude LS over f(x)
-   #
-   # The idea is quite simple: Start with a "large" step α
-   # and seek for a first descent of the objective function. 
-   # This condition is set in the variable first_improvement.
-   # Until this point, this line search is the same used
-   # before (accept the fist α and leave). This implementation
-   # goes a little bit further and keeps cutting α by τ while 
-   # f keeps decreasing if flag_refine_LS is true. 
-   # Thus, we can find a much better α than before, but without the 
-   # burden of a "fine" line search, with a larger computational 
-   # cost when compared to the original procedure.
-   #
-   # This subroutine also returns the set of blocked variables
-   # in two sets: Iblock_m for the variables at the lower bound
-   # and Iblock_M for the variables at the upper bound.
-   #
-   function Crude_LS(x0::Array{Float64},f0::Float64,D::Array{Float64},
-                     ci::Array{Float64},cs::Array{Float64},
-                     f::Function, flag_refine_LS::Bool,
-                     α::Float64=10.0, α_min::Float64=1E-8,
-                     τ::Float64=0.5)
-
-
-      # Normalize D if its not yet normalized
-      D = D./norm(D)
-
-      # "Optimal" point and function value
-      xn = copy(x0) 
-      fn = f0
-
-      # Blocked variables (m = - , M = +)
-      Iblock_m = Int64[] 
-      Iblock_M = Int64[] 
-
-      # Counter
-      iter = 0
-
-      # Lets keep track of the minimization
-      last_f = fn
-      last_x = copy(xn)
-
-      # Flag of improvement (or not)
-      improved = true
-
-      # Flag of first improvement
-      first_improvement = false
-
-      while true
- 
-        iter += 1
-
-        # Evaluate the canditate point
-        xn = x0 .- α*D
-
-        # Projects the point into the boundary δS, modifying
-        # xn 
-        Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
-
-        # The effective step is then 
-        # (remember that we already projected xn into the box)
-        Δx = xn .- x0
-        
-        # Such that m is given by 
-        m = dot(D,Δx)
-
-        # That should be negative
-        if m≈0.0 
-           if !first_improvement
-              improved = false
-           end
-           break   
-        end
-        #@assert m < 0.0 "Crude_LS::not a descent direction $m"
-
-        # And the condition is 
-        fn = f(xn)
-        
-        # At some point we must improve the function. When it 
-        # happens, we can try do do better. So first, we must
-        # try to perform better than the initial point
-        if fn < f0 && !first_improvement
-
-           # Ok, we improved 
-           #println("Improved ",fn," ",f0," ",iter)
-           #@show fn, f0
-           first_improvement = true
-           improved = true
-
-        end
-        
-        # Decrease the step if not improved
-        if !first_improvement 
-          #@show α
-           α *= τ
-           #println("Decreasing the step for first improvement ",α)
-           # Lower bound for the step
-           if α < α_min
-              improved = false
-              break
-           end
-        end
-
-        # So, if first_improvement is set, we can try to 
-        # improve it even more
-        if flag_refine_LS 
-          if  fn < last_f && first_improvement
-            #println("Improving even more ", fn)
-            #println("aqui")
-            α *= τ
-            # Lower bound for the step
-            if α < α_min
-              #println("α minimo!")
-              break
-            end
-          elseif fn >= last_f && first_improvement
-             # We cannot improve it 
-             #println("Not more improvement ",fn," ",f0)
-             break
-          end
-        else
-          # we dont want to improve it anymore, 
-          # so we can leave the main loop. We just have 
-          # to assure that at least one good point was found
-          if first_improvement
-            break
-          end
-        end
-
-        last_f = fn
-        last_x = copy(xn)
-
-      #@show iter, α, fn, first_improvement
-
-      end # while
-
-
-
-      # Additional check. If we not improve f, than 
-      # indicate and keep the original values
-      if !first_improvement  #last_f >= f0
-         #println("The line search did not improved the result")
-         improved = false
-         last_f = f0
-         last_x = x0
-      end
-
-      # We should have a better point by now
-      return last_x, last_f, improved, Iblock_m, Iblock_M
- 
-   end
-
-
+   
 
 function Wall_E2(f::Function, df::Function, x0::Array{Float64},
                  ci::Array{Float64}, cs::Array{Float64},
@@ -489,13 +336,169 @@ end
 
 
 
+######################################################################
+######################## NOT USING, BUT WORKING ######################
+######################################################################
+#
+   # Crude LS over f(x)
+   #
+   # The idea is quite simple: Start with a "large" step α
+   # and seek for a first descent of the objective function. 
+   # This condition is set in the variable first_improvement.
+   # Until this point, this line search is the same used
+   # before (accept the fist α and leave). This implementation
+   # goes a little bit further and keeps cutting α by τ while 
+   # f keeps decreasing if flag_refine_LS is true. 
+   # Thus, we can find a much better α than before, but without the 
+   # burden of a "fine" line search, with a larger computational 
+   # cost when compared to the original procedure.
+   #
+   # This subroutine also returns the set of blocked variables
+   # in two sets: Iblock_m for the variables at the lower bound
+   # and Iblock_M for the variables at the upper bound.
+   #
+   function Crude_LS(x0::Array{Float64},f0::Float64,D::Array{Float64},
+                     ci::Array{Float64},cs::Array{Float64},
+                     f::Function, flag_refine_LS::Bool,
+                     α::Float64=10.0, α_min::Float64=1E-8,
+                     τ::Float64=0.5)
+
+
+      # Normalize D if its not yet normalized
+      D = D./norm(D)
+
+      # "Optimal" point and function value
+      xn = copy(x0) 
+      fn = f0
+
+      # Blocked variables (m = - , M = +)
+      Iblock_m = Int64[] 
+      Iblock_M = Int64[] 
+
+      # Counter
+      iter = 0
+
+      # Lets keep track of the minimization
+      last_f = fn
+      last_x = copy(xn)
+
+      # Flag of improvement (or not)
+      improved = true
+
+      # Flag of first improvement
+      first_improvement = false
+
+      while true
+ 
+        iter += 1
+
+        # Evaluate the canditate point
+        xn = x0 .- α*D
+
+        # Projects the point into the boundary δS, modifying
+        # xn 
+        Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
+
+        # The effective step is then 
+        # (remember that we already projected xn into the box)
+        Δx = xn .- x0
+        
+        # Such that m is given by 
+        m = dot(D,Δx)
+
+        # That should be negative
+        if m≈0.0 
+           if !first_improvement
+              improved = false
+           end
+           break   
+        end
+        #@assert m < 0.0 "Crude_LS::not a descent direction $m"
+
+        # And the condition is 
+        fn = f(xn)
+        
+        # At some point we must improve the function. When it 
+        # happens, we can try do do better. So first, we must
+        # try to perform better than the initial point
+        if fn < f0 && !first_improvement
+
+           # Ok, we improved 
+           #println("Improved ",fn," ",f0," ",iter)
+           #@show fn, f0
+           first_improvement = true
+           improved = true
+
+        end
+        
+        # Decrease the step if not improved
+        if !first_improvement 
+          #@show α
+           α *= τ
+           #println("Decreasing the step for first improvement ",α)
+           # Lower bound for the step
+           if α < α_min
+              improved = false
+              break
+           end
+        end
+
+        # So, if first_improvement is set, we can try to 
+        # improve it even more
+        if flag_refine_LS 
+          if  fn < last_f && first_improvement
+            #println("Improving even more ", fn)
+            #println("aqui")
+            α *= τ
+            # Lower bound for the step
+            if α < α_min
+              #println("α minimo!")
+              break
+            end
+          elseif fn >= last_f && first_improvement
+             # We cannot improve it 
+             #println("Not more improvement ",fn," ",f0)
+             break
+          end
+        else
+          # we dont want to improve it anymore, 
+          # so we can leave the main loop. We just have 
+          # to assure that at least one good point was found
+          if first_improvement
+            break
+          end
+        end
+
+        last_f = fn
+        last_x = copy(xn)
+
+      #@show iter, α, fn, first_improvement
+
+      end # while
+
+
+
+      # Additional check. If we not improve f, than 
+      # indicate and keep the original values
+      if !first_improvement  #last_f >= f0
+         #println("The line search did not improved the result")
+         improved = false
+         last_f = f0
+         last_x = x0
+      end
+
+      # We should have a better point by now
+      return last_x, last_f, improved, Iblock_m, Iblock_M
+ 
+   end
+
+
 
 ######################################################################
 ############################ NEEDS TESTING ###########################
 ######################################################################
 
    
-
 
 
 ######################################################################
