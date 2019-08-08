@@ -37,7 +37,7 @@ export Wall_E2
 
 function Wall_E2(f::Function, df::Function, x0::Array{Float64},
                  ci::Array{Float64}, cs::Array{Float64},
-                 flag_refine_LS::Bool=true,
+                 flag_Armijo_LS::Bool=true,
                  flag_show::Bool=true,
                  niter=2000,  tol_norm=1E-6,
                  passo_inicial=5.0, 
@@ -194,9 +194,15 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       #x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
       #                                                f,flag_refine_LS)
 
-
-      x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,f0,D,
-                                                            x_min,x_max,f)
+      if flag_Armijo_LS
+          x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,f0,D,
+                                                                 x_min,x_max,f)
+      else
+          # Use Crude_LS ..
+          x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
+                                                          f,false)
+      end
+      
 
 
       if !improved
@@ -334,13 +340,7 @@ end
  
    end
 
-
-
-######################################################################
-######################## NOT USING, BUT WORKING ######################
-######################################################################
-#
-   # Crude LS over f(x)
+# Crude LS over f(x)
    #
    # The idea is quite simple: Start with a "large" step α
    # and seek for a first descent of the objective function. 
@@ -493,6 +493,12 @@ end
    end
 
 
+
+######################################################################
+######################## NOT USING, BUT WORKING ######################
+######################################################################
+#
+   
 
 ######################################################################
 ############################ NEEDS TESTING ###########################
