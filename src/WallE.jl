@@ -469,14 +469,13 @@ end
           end
         end
 
-        last_f = fn
-        last_x = copy(xn)
-
       #@show iter, α, fn, first_improvement
 
       end # while
 
-
+      # Updates minimized parameters after while loop
+      last_f = fn
+      last_x = copy(xn)
 
       # Additional check. If we not improve f, than 
       # indicate and keep the original values
