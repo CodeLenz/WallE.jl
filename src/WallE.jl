@@ -216,7 +216,11 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
   # Tivemos uma solução
   if flag_show
       println("\n********************************************************")
-      println("Final do Steepest com projeção")
+      if flag_Armijo_LS
+        println("Final do Armijo's Bactracking LS")
+      else
+        println("Final do Crude LS")
+      end
       println("Objetivo inicial   : ", objetivo_inicial)
       println("Objetivo final     : ", f0)
       if objetivo_inicial!=0.0 && f0!=0.0
@@ -267,7 +271,7 @@ end
 
       # First value of α
       α = 1.0
-      α = 1.0 / max(0.1,minimum(D))
+      α = 1.0 / max(0.01,minimum(D))
       #println("-------- $α -----------------")
 
       # "Optimal" point and function value
@@ -417,7 +421,9 @@ end
 
         # And the condition is 
         fn = f(xn)
-        
+
+        # @show iter, α, fn, first_improvement
+
         # At some point we must improve the function. When it 
         # happens, we can try do do better. So first, we must
         # try to perform better than the initial point
@@ -469,7 +475,8 @@ end
           end
         end
 
-      #@show iter, α, fn, first_improvement
+        # After checking everything, we update last_f
+        last_f = fn
 
       end # while
 
