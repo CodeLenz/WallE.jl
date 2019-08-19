@@ -198,7 +198,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       end
 
       ProgressMeter.next!(Prg; showvalues = [(:Norma,norma), (:Objetivo,f0),
-                        (:Grad(+),maximum(D)), (:Grad(-),minimum(D)),
+                        (:(Grad(+)),maximum(D)), (:(Grad(-)),minimum(D)),
                         (:Inferior,all(delta_m .>= -tol_norm)||isempty(delta_m)),
                         (:Superior,all(delta_M .<= tol_norm)||isempty(delta_M))],
                         valuecolor = :yellow)
@@ -223,9 +223,6 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       println("Numero de iterações: ", contador , " de ",niter)
       println("Converg. por norma : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
               " ",all(delta_M .<= tol_norm)||isempty(delta_M))
-      #println("Direção de min.    : ", flag_minimizacao)
-      #println("Passo final        : ", passo)
-      #println("Usou GC            : ", usou_fletcher)
       if limites_moveis
          println("fator móvel mínimo : ", minimum(limite_movel))
          println("fator móvel máximo : ", maximum(limite_movel))
@@ -265,7 +262,7 @@ end
 
       # First value of α
       α = 1.0
-      α = 1.0 / max(0.01,minimum(D))
+      α = 1.0 / max(0.02,min(minimum(D),5.0))
       #println("-------- $α -----------------")
 
       # "Optimal" point and function value
@@ -968,10 +965,6 @@ function Moving_Limits!(limite_movel::Array{Float64}, x_min::Array{Float64},x_ma
        x1 .= x0
 
 end
- 
-
-
-
 
 
 end # module
