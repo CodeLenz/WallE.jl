@@ -3,7 +3,7 @@
 #
 module WallE
 
-using LinearAlgebra, ProgressMeter
+using LinearAlgebra, ProgressMeter, Dates
 
 export Wall_E2
 
@@ -89,20 +89,11 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
 
   # Incializa variáveis internas
 
-  # Copia o ponto de entrada para um vetor de estimativa de 
-  # próximo ponto (a ser utilizado no line-search)
-  xe = copy(x0)
-
   # Flag que indica se o otimizador saiu pela tolerância da norma2
   flag_conv = false
 
   # Norma 2 (começa no valor máximo para Float64)
   norma = maxintfloat(Float64)
-
-  # Valor do passo (line-search)
-  # Aqui usamos uma versão muito simples do backtracking, então
-  # o passo inicial deve ser "elevado"
-  passo = passo_inicial
 
   # Limites móveis. Todos iniciam no valor máximo
   limite_movel = limite_movel_inicial*ones(nx)
@@ -134,7 +125,9 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
 
   ####################### LOOP PRINCIPAL #######################
   tempo = @elapsed  begin
-  @showprogress 1 "Minimizing..." for iter=1:niter
+  Prg = Progress(niter, 1, "Minimizing...")
+  
+    for iter=1:niter
 
       # Calcula a derivada de f, chamando df(x)
       D .= df(x0)
@@ -142,32 +135,33 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       # Norma de D
       norma = norm(D) 
 
-      # It iter > 1, than we can consider the optimality condition
+      # If iter > 1, than we can consider the optimality condition
       if iter>1
 
-         # Free positions 
-         free_x = filter(x-> (!(x in Iblock_m) && !(x in Iblock_M)),lvar)
+        # Free positions 
+        free_x = filter(x-> (!(x in Iblock_m) && !(x in Iblock_M)),lvar)
 
-         # Norm of the free positions 
-         norma = norm(D[free_x])
+        # Norm of the free positions 
+        norma = norm(D[free_x])
  
-         # Blocked by below. They must be positive
-         delta_m = D[Iblock_m]
+        # Blocked by below. They must be positive
+        delta_m = D[Iblock_m]
 
-         # Blocked by above. They must be negative
-         delta_M = D[Iblock_M]
+        # Blocked by above. They must be negative
+        delta_M = D[Iblock_M]
 
-         # TODO -> ficar preso nos limites móveis não é uma 
-         # condição real de bloqueio, pois pode haver movimento
-         # nesta direção em iterações subsequentes. No entanto,
-         # caso a variável não seja bloquada no ótimo, podemos
-         # tratar como uma restrição lateral, o que seria errado.
-         # Então, por hora, não vamos utilizar os limites móveis
-         # e um LS mais fino.
-         # 
+        # TODO -> ficar preso nos limites móveis não é uma 
+        # condição real de bloqueio, pois pode haver movimento
+        # nesta direção em iterações subsequentes. No entanto,
+        # caso a variável não seja bloquada no ótimo, podemos
+        # tratar como uma restrição lateral, o que seria errado.
+        # Então, por hora, não vamos utilizar os limites móveis
+        # e um LS mais fino.
+        # 
 
-         # We need to fullfll all the first order conditions..
-         if norma<=tol_norm && all(delta_m .>= 0.0) && all(delta_M .<= 0.0)
+        # We need to fullfll all the first order conditions..
+        if norma<=tol_norm && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+                            (all(delta_M .<= 0.0)||isempty(delta_M))
           flag_conv = true
           break
         end
@@ -191,27 +185,26 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
 
       # Armijo com próximo ponto, novo valor do objetivo e variáveis
       # bloqueadas
-      #x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
-      #                                                f,flag_refine_LS)
-
       if flag_Armijo_LS
-          x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,f0,D,
-                                                                 x_min,x_max,f)
+          x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,f0,D,x_min,x_max,f)
       else
           # Use Crude_LS ..
-          x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,
-                                                          f,false)
+          x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D,x_min,x_max,f,false)
       end
-      
-
 
       if !improved
         println("The solution cannot be improved during the line-search")
         break
       end
 
-  end # for interno
-  end # block    
+      ProgressMeter.next!(Prg; showvalues = [(:Norma,norma), (:Objetivo,f0),
+                        (:Grad(+),maximum(D)), (:Grad(-),minimum(D)),
+                        (:Inferior,all(delta_m .>= -tol_norm)||isempty(delta_m)),
+                        (:Superior,all(delta_M .<= tol_norm)||isempty(delta_M))],
+                        valuecolor = :yellow)
+
+      end # for interno
+    end # block
 
   # Tivemos uma solução
   if flag_show
@@ -228,7 +221,8 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       end
       println("Bloqueios          : ", length(Iblock_m)," ",length(Iblock_M))
       println("Numero de iterações: ", contador , " de ",niter)
-      println("Converg. por norma : ", flag_conv, " ", all(delta_m .>= 0.0)," ",all(delta_M .<= 0.0))
+      println("Converg. por norma : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
+              " ",all(delta_M .<= tol_norm)||isempty(delta_M))
       #println("Direção de min.    : ", flag_minimizacao)
       #println("Passo final        : ", passo)
       #println("Usou GC            : ", usou_fletcher)
@@ -241,7 +235,7 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
       println("Norma              : ", norma)
       
       
-      println("Tempo total [min]  : ", tempo/60.0)
+      println("Tempo total        : ", canonicalize(Dates.CompoundPeriod(Dates.Second(floor(Int64,tempo)))))
       println("********************************************************")
   end
 
@@ -250,9 +244,9 @@ function Wall_E2(f::Function, df::Function, x0::Array{Float64},
 
 end
 
-#
-   # Armijo's Bactracking LS over f(x). Here we are using 
-   # the Bertseka's proposal
+# Armijo's Bactracking LS over f(x)
+   # 
+   # Here we are using the Bertseka's proposal
    #
    #
    function Modified_Armijo(x0::Array{Float64},f0::Float64,D::Array{Float64},
@@ -267,7 +261,7 @@ end
       f_ref = f0
 
       # Normalize D if its not yet normalized
-      D = D./norm(D)
+      D /= norm(D)
 
       # First value of α
       α = 1.0
@@ -285,10 +279,10 @@ end
       # Counter
       iter = 0
 
-      # CHeck if the solutions has improved
+      # Check if the solutions has improved
       improved = true
 
-      # The rigth hand side of the inequality is variable 
+      # The right hand side of the inequality is variable 
       # in this version. So we will skip the loop when
       # the search condition is true
       while true
@@ -560,10 +554,6 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
 
   # Incializa variáveis internas
 
-  # Copia o ponto de entrada para um vetor de estimativa de 
-  # próximo ponto (a ser utilizado no line-search)
-  xe = copy(x0)
-
   # Flag que indica se o otimizador saiu pela tolerância da norma2
   flag_conv = false
 
@@ -706,7 +696,7 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
        # do loop principal
        produto_busca = dot(Doriginal,d)
        if produto_busca > 0.0
-           #print("\r Direção bloqueada não é mais minimizante $(number_fletcher)                                         ")
+           #print("\r Direção bloqueada não é mais minimizante $(number_fletcher)                 ")
            flag_conv_interna = true
            flag_minimizacao = false
            break
@@ -779,11 +769,14 @@ function Wall_E(f::Function, df::Function, x0::Array{Float64},
           end #if f1<f0
  
        end #while
-
-       #print(" Iteração interna $(iter) | norma $(norma) | metodo $(method)::$(number_fletcher) | nblock $(length(Iblock)) | passo $(passo) | $(produto_busca)                                \r")
-       #flush(stdout)
-       
-       
+    
+    #=
+    print(" Iteração interna $(iter) | norma $(norma) |
+           metodo $(method)::$(number_fletcher) |
+           nblock $(length(Iblock)) | passo $(passo) |
+           $(produto_busca)             \r")
+    flush(stdout)
+    =#
 
      # Se chegamos aqui, então devemos testar pela
      # convergência da norma.
