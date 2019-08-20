@@ -207,10 +207,11 @@ module WallE
     # Tivemos uma solução
     if flag_show
       println("\n********************************************************")
+      println("Final do loop principal de otimização")
       if flag_Armijo_LS
-        println("Final do Armijo's Bactracking LS")
+        println("Line Search      : Modified Armijo's Bactracking")
       else
-        println("Final do Crude LS")
+        println("Line Search      : Crude")
       end
       println("Objetivo inicial   : ", objetivo_inicial)
       println("Objetivo final     : ", f0)
