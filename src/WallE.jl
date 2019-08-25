@@ -77,6 +77,8 @@ module WallE
 
     # Flag para indicar que esta usando Gradientes Conjugados
     using_GC = false
+    cont_GC = 0
+    any_GC = false
 
     # Testa para ver se as dimensões das restrições laterais estão OK
     @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
@@ -157,12 +159,15 @@ module WallE
 
           # Se os elementos livres se mantiverem, podemos 
           # calcular uma direção de busca melhorada
-          if free_x==free_x_ant
+          if free_x==free_x_ant && cont_GC <= nx
             #println("POP")
             D0 .= D0 .- D1*(norma/norma_anterior)^2
             using_GC = true
+            any_GC = true
+            cont_GC += 1
           else
             using_GC = false
+            cont_GC = 0
           end
 
 
@@ -238,6 +243,7 @@ module WallE
       else
         println("Line Search      : Crude")
       end
+      println("Utilizou GC        : ", any_GC)
       println("Objetivo inicial   : ", objetivo_inicial)
       println("Objetivo final     : ", f0)
       if objetivo_inicial!=0.0 && f0!=0.0
