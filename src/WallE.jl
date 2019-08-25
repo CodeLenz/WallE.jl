@@ -70,6 +70,13 @@ module WallE
     lvar = 1:nx
     Iblock_m = Int64[]
     Iblock_M = Int64[]
+    free_x = Int64[]
+
+    # Variáveis livres da iteração anterior
+    free_x_ant = Int64[]
+
+    # Flag para indicar que esta usando Gradientes Conjugados
+    using_GC = false
 
     # Testa para ver se as dimensões das restrições laterais estão OK
     @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
@@ -93,6 +100,9 @@ module WallE
 
     # Norma 2 (começa no valor máximo para Float64)
     norma = maxintfloat(Float64)
+
+    # Norma anterior - para testarmos Fletcher
+    norma_anterior = norma
 
     # Limites móveis. Todos iniciam no valor máximo
     limite_movel = limite_movel_inicial*ones(nx)
@@ -130,16 +140,28 @@ module WallE
       for iter=1:niter
 
         # Calcula a derivada de f, chamando df(x)
-        D0 .= df(x0)
+        D0 .= -df(x0)
 
         # If iter > 1, than we can consider the optimality condition
         if iter>1
 
           # Free positions 
+          free_x_ant = copy(free_x)
           free_x = filter(x-> (!(x in Iblock_m) && !(x in Iblock_M)),lvar)
 
           # Norm of the free positions 
+          norma_anterior = norma
           norma = norm(D0[free_x])
+
+          # Se os elementos livres se mantiverem, podemos 
+          # calcular uma direção de busca melhorada
+          if free_x==free_x_ant
+            D0.= D0 + D1*(norma/norma_anterior)^2
+            using_GC = true
+          else
+            using_GC = false
+          end
+
 
           # Blocked by below. They must be positive
           delta_m = D0[Iblock_m]
@@ -158,7 +180,7 @@ module WallE
 
           # We need to fulfill all the first order conditions..
           if norma<=tol_norm && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
-                              (all(delta_M .<= 0.0)||isempty(delta_M))
+                                (all(delta_M .<= 0.0)||isempty(delta_M))
             flag_conv = true
             break
           end
@@ -195,7 +217,7 @@ module WallE
           break
         end
 
-        ProgressMeter.next!(Prg; showvalues = [(:Norma,norma), (:Objetivo,f0),
+        ProgressMeter.next!(Prg; showvalues = [(:Norma,norma), (:Objetivo,f0), (:GC,using_GC),
                           (:(Grad(+)),maximum(D0)), (:(Grad(-)),minimum(D0)),
                           (:Inferior,all(delta_m .>= -tol_norm)||isempty(delta_m)),
                           (:Superior,all(delta_M .<= tol_norm)||isempty(delta_M))],
@@ -288,7 +310,7 @@ module WallE
         iter += 1
 
         # Evaluate the canditate point
-        xn = x0 .- α*D0
+        xn = x0 .+ α*D0
 
         # Projects the point into the boundary δS, modifying
         # xn 
@@ -395,7 +417,7 @@ module WallE
         iter += 1
 
         # Evaluate the canditate point
-        xn = x0 .- α*D
+        xn = x0 .+ α*D
 
         # Projects the point into the boundary δS, modifying
         # xn 
@@ -578,7 +600,7 @@ module WallE
     limite_movel = limite_movel_inicial*ones(nx)
 
     # Vamos manter uma cópia dos valores das variáveis
-    # de projeto nas últimas 3 iterações 
+    # de projeto nas últimas 2 iterações 
     x1 = zeros(nx) #Array{Float64}(undef,nx)
     x2 = zeros(nx) #Array{Float64}(undef,nx)
 
