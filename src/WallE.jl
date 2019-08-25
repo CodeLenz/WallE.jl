@@ -159,7 +159,7 @@ module WallE
           # calcular uma direção de busca melhorada
           if free_x==free_x_ant
             #println("POP")
-            D0 .= D0 .+ D1*(norma/norma_anterior)^2
+            D0 .= D0 .- D1*(norma/norma_anterior)^2
             using_GC = true
           else
             using_GC = false
