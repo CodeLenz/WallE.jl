@@ -108,7 +108,7 @@ module WallE
     limite_movel = limite_movel_inicial*ones(nx)
 
     # Vamos manter uma cópia dos valores das variáveis
-    # de projeto nas últimas 3 iterações 
+    # de projeto nas últimas 2 iterações 
     x1 = zeros(nx) #Array{Float64}(undef,nx)
     x2 = zeros(nx) #Array{Float64}(undef,nx)
   
@@ -140,6 +140,7 @@ module WallE
       for iter=1:niter
 
         # Calcula a derivada de f, chamando df(x)
+        # Como é steepest DESCENT, usamos -gradiente
         D0 .= -df(x0)
 
         # If iter > 1, than we can consider the optimality condition
@@ -155,13 +156,13 @@ module WallE
 
           # Se os elementos livres se mantiverem, podemos 
           # calcular uma direção de busca melhorada
-          if free_x==free_x_ant
-            println("POP")
-            D0.= D0 .+ D1*(norma/norma_anterior)^2
-            using_GC = true
-          else
-            using_GC = false
-          end
+          #if free_x==free_x_ant
+          #  println("POP")
+          #  D0 .= D0 .+ D1*(norma/norma_anterior)^2
+          #  using_GC = true
+          #else
+          #  using_GC = false
+          #end
 
 
           # Blocked by below. They must be positive
@@ -311,7 +312,7 @@ module WallE
         iter += 1
 
         # Evaluate the canditate point
-        xn = x0 .+ α*D0
+        xn .= x0 .+ α*D0
 
         # Projects the point into the boundary δS, modifying
         # xn 
