@@ -141,7 +141,8 @@ module WallE
 
         # Calcula a derivada de f, chamando df(x)
         # Como é steepest DESCENT, usamos -gradiente
-        D0 .= -df(x0)
+        # no resto da rotina
+        D0 .= df(x0)
 
         # If iter > 1, than we can consider the optimality condition
         if iter>1
@@ -156,13 +157,13 @@ module WallE
 
           # Se os elementos livres se mantiverem, podemos 
           # calcular uma direção de busca melhorada
-          #if free_x==free_x_ant
-          #  println("POP")
-          #  D0 .= D0 .+ D1*(norma/norma_anterior)^2
-          #  using_GC = true
-          #else
-          #  using_GC = false
-          #end
+          if free_x==free_x_ant
+            #println("POP")
+            D0 .= D0 .+ D1*(norma/norma_anterior)^2
+            using_GC = true
+          else
+            using_GC = false
+          end
 
 
           # Blocked by below. They must be positive
@@ -312,7 +313,7 @@ module WallE
         iter += 1
 
         # Evaluate the canditate point
-        xn .= x0 .+ α*D0
+        xn .= x0 .- α*D0
 
         # Projects the point into the boundary δS, modifying
         # xn 
@@ -419,7 +420,7 @@ module WallE
         iter += 1
 
         # Evaluate the canditate point
-        xn = x0 .+ α*D
+        xn = x0 .- α*D
 
         # Projects the point into the boundary δS, modifying
         # xn 
