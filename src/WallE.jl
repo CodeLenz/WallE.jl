@@ -156,7 +156,8 @@ module WallE
           # Se os elementos livres se mantiverem, podemos 
           # calcular uma direção de busca melhorada
           if free_x==free_x_ant
-            D0.= D0 + D1*(norma/norma_anterior)^2
+            println("POP")
+            D0.= D0 .+ D1*(norma/norma_anterior)^2
             using_GC = true
           else
             using_GC = false
