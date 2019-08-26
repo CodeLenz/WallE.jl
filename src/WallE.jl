@@ -348,6 +348,7 @@ module WallE
 
         # That should be negative
         if m >= 0.0 
+           println("Armijo::Not a search direction $m")
            improved = false
            break
         end
