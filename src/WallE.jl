@@ -149,12 +149,11 @@ module WallE
 
         # Calcula a derivada de f, chamando df(x)
         # se for steepest DESCENT, usamos -gradiente
-        # no resto da rotina. Do contrário, utilizamos
-        # GC, tal que d = -(D - beta*Da)
+        # no resto da rotina. ##Do contrário, utilizamos
+        # GC, tal que d = -(D - beta*Da)##Desabilitado##
         Da .= D
         D  .= df(x0)
         d  .= D
-
 
         # If iter > 1, than we can consider the optimality condition
         if iter>1
@@ -165,7 +164,7 @@ module WallE
                                !(x in Iblock_M)),lvar)
 
           # Gradient, Free positions
-          Dfree = D[free_x] 
+          Dfree  = D[free_x] 
           Dafree = Da[free_x]
 
           # Norm of the free positions 
@@ -177,25 +176,23 @@ module WallE
 
           # Se os elementos livres se mantiverem, podemos 
           # calcular uma direção de busca melhorada
-          if free_x==free_x_ant && cont_GC <= nx
+          #if free_x==free_x_ant && cont_GC <= nx
             #println("POP")
-            beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
-            d .= D #.- da*beta
-            using_GC = true
-            any_GC = true
-            cont_GC += 1
-          else
-            using_GC = false
-            cont_GC = 0
-          end
-
+            #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
+          #  d .= D #.- da*beta
+          #  using_GC = true
+          #  any_GC = true
+          #  cont_GC += 1
+          #else
+          #  using_GC = false
+          #  cont_GC = 0
+          #end
 
           # Blocked by below. They must be positive
           delta_m = D[Iblock_m]
 
           # Blocked by above. They must be negative
           delta_M = D[Iblock_M]
-
 
           # We need to fulfill all the first order conditions..
           if norma<=tol_norm && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
@@ -210,16 +207,16 @@ module WallE
         contador += 1
 
         # Calcula os limites móveis
-        if limites_moveis
-            Moving_Limits!(limite_movel, x_min, x_max, x0, x1, x2, 
-                           nx, iter, fator_aumento_limite_movel,
-                           fator_diminuicao_limite_movel, limite_movel_minimo,
-                           limite_movel_inicial, ci, cs)
-        else
+        #if limites_moveis
+        #    Moving_Limits!(limite_movel, x_min, x_max, x0, x1, x2, 
+        #                   nx, iter, fator_aumento_limite_movel,
+        #                   fator_diminuicao_limite_movel, limite_movel_minimo,
+        #                   limite_movel_inicial, ci, cs)
+        #else
            # Não estamos utilizando limites móveis.
            x_min .= ci
            x_max .= cs
-        end
+        #end
 
         # Armijo com próximo ponto, novo valor do objetivo e variáveis
         # bloqueadas
@@ -263,7 +260,7 @@ module WallE
       println("Bloqueios          : ", length(Iblock_m)," ",length(Iblock_M))
       println("Numero de iterações: ", contador , " de ",niter)
       println("Converg. por norma : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
-                                                  " ",all(delta_M .<= tol_norm)||isempty(delta_M))
+                                                  " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
       if limites_moveis
         println("fator móvel mínimo : ", minimum(limite_movel))
         println("fator móvel máximo : ", maximum(limite_movel))
@@ -286,8 +283,8 @@ module WallE
   #
   #
   function Modified_Armijo(x0::Array{Float64},x1::Array{Float64},f0::Float64,
-                            d::Array{Float64},D::Array{Float64},Da::Array{Float64},
-                            ci::Array{Float64},cs::Array{Float64},f::Function)
+                           d::Array{Float64},D::Array{Float64},Da::Array{Float64},
+                           ci::Array{Float64},cs::Array{Float64},f::Function)
 
       # Fixed parameters
       c = 0.1
@@ -302,12 +299,9 @@ module WallE
       # First value of α
       # α = 1.0
       s = x0 .- x1
-      y = D .- Da
+      y = D  .- Da
       λ = dot(s,y)/dot(s,s)
       α = 1.0 / max(0.02,min(λ,10.0))
-
-      #α = 10.0
-
 
       # "Optimal" point and function value
       xn = copy(x0) 
