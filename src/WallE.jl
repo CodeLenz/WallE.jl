@@ -303,6 +303,8 @@ module WallE
       λ = dot(s,y)/dot(s,s)
       α = 1.0 / max(0.02,min(λ,10.0))
 
+      α = 10.0
+
       # "Optimal" point and function value
       xn = copy(x0) 
       fn = f0
