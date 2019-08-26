@@ -204,7 +204,7 @@ module WallE
             break
           end
 
-        end
+        end # if iter > 1
 
         # Atualiza o contador de iterações
         contador += 1
@@ -225,7 +225,7 @@ module WallE
         # bloqueadas
         if flag_Armijo_LS
           x0, x1, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
-                                                                         x_min,x_max,f)
+                                                                     x_min,x_max,f)
         else
           # Use Crude_LS ..
           x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,d,x_min,x_max,f,false)
