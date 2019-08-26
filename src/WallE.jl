@@ -180,7 +180,7 @@ module WallE
           if free_x==free_x_ant && cont_GC <= nx
             #println("POP")
             beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
-            d .= D .- da*beta
+            d .= D #.- da*beta
             using_GC = true
             any_GC = true
             cont_GC += 1
@@ -306,7 +306,7 @@ module WallE
       λ = dot(s,y)/dot(s,s)
       α = 1.0 / max(0.02,min(λ,10.0))
 
-      α = 10.0
+      #α = 10.0
 
 
       # "Optimal" point and function value
