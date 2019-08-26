@@ -223,7 +223,7 @@ module WallE
                                                                          x_min,x_max,f)
         else
           # Use Crude_LS ..
-          x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,D0,x_min,x_max,f,false)
+          x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,d,x_min,x_max,f,false)
         end
 
         if !improved
@@ -232,7 +232,7 @@ module WallE
         end
 
         ProgressMeter.next!(Prg; showvalues = [(:Norma,norma), (:Objetivo,f0), (:GC,using_GC),
-                          (:(Grad(+)),maximum(D0)), (:(Grad(-)),minimum(D0)),
+                          (:(Grad(+)),maximum(D)), (:(Grad(-)),minimum(D)),
                           (:Inferior,all(delta_m .>= -tol_norm)||isempty(delta_m)),
                           (:Superior,all(delta_M .<= tol_norm)||isempty(delta_M))],
                           valuecolor = :yellow)
