@@ -1,7 +1,3 @@
-using WallE
-using Test
-
-
 #
 # Function with no side constraints
 #
