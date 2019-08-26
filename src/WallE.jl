@@ -128,9 +128,13 @@ module WallE
     # Número de iterações efetivas
     contador = 0
 
-    # Vetor gradiente
-    D0 = zeros(nx)
-    D1 = zeros(nx)
+    # Vetor gradiente e anterior
+    D = zeros(nx)
+    Da = zeros(nx)
+
+    # Direção de busca e direção anterior
+    d  = zeros(nx)
+    da = zeros(nx)
 
     delta_m = Float64[]
     delta_M = Float64[]
@@ -144,7 +148,9 @@ module WallE
         # Calcula a derivada de f, chamando df(x)
         # Como é steepest DESCENT, usamos -gradiente
         # no resto da rotina
-        D0 .= df(x0)
+        Da .= D
+        D  .= df(x0)
+
 
         # If iter > 1, than we can consider the optimality condition
         if iter>1
@@ -153,16 +159,23 @@ module WallE
           free_x_ant = copy(free_x)
           free_x = filter(x-> (!(x in Iblock_m) && !(x in Iblock_M)),lvar)
 
+          # Gradient, Free positions
+          Dfree = D[free_x] 
+          Dafree = Da[free_x]
+
           # Norm of the free positions 
           norma_anterior = norma
-          norma = norm(D0[free_x])
+          norma = norm(Dfree)
+
+          # Backup - search direction
+          da .= d
 
           # Se os elementos livres se mantiverem, podemos 
           # calcular uma direção de busca melhorada
           if free_x==free_x_ant && cont_GC <= nx
             #println("POP")
-            beta = max(0.0, dot(D0,D0.-D1)/dot(D1,D1))
-            D0 .= D0 .- D1*beta
+            beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dfree,Dfree))
+            d .= D .- da*beta
             using_GC = true
             any_GC = true
             cont_GC += 1
@@ -173,19 +186,11 @@ module WallE
 
 
           # Blocked by below. They must be positive
-          delta_m = D0[Iblock_m]
+          delta_m = D[Iblock_m]
 
           # Blocked by above. They must be negative
-          delta_M = D0[Iblock_M]
+          delta_M = D[Iblock_M]
 
-          # TODO -> ficar preso nos limites móveis não é uma 
-          # condição real de bloqueio, pois pode haver movimento
-          # nesta direção em iterações subsequentes. No entanto,
-          # caso a variável não seja bloquada no ótimo, podemos
-          # tratar como uma restrição lateral, o que seria errado.
-          # Então, por hora, não vamos utilizar os limites móveis
-          # e um LS mais fino.
-          # 
 
           # We need to fulfill all the first order conditions..
           if norma<=tol_norm && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
@@ -214,7 +219,7 @@ module WallE
         # Armijo com próximo ponto, novo valor do objetivo e variáveis
         # bloqueadas
         if flag_Armijo_LS
-          x0, x1, D1, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,D0,D1,
+          x0, x1, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
                                                                          x_min,x_max,f)
         else
           # Use Crude_LS ..
@@ -276,7 +281,7 @@ module WallE
   #
   #
   function Modified_Armijo(x0::Array{Float64},x1::Array{Float64},f0::Float64,
-                            D0::Array{Float64},D1::Array{Float64},
+                            d::Array{Float64},D::Array{Float64},Da::Array{Float64},
                             ci::Array{Float64},cs::Array{Float64},f::Function)
 
       # Fixed parameters
@@ -286,13 +291,13 @@ module WallE
       # Reference value
       f_ref = f0
 
-      # Normalize D0 if its not yet normalized
-      D0 /= norm(D0)
+      # Normalize d if its not yet normalized
+      d /= norm(d)
 
       # First value of α
       # α = 1.0
       s = x0 .- x1
-      y = D0 .- D1
+      y = D .- Da
       λ = dot(s,y)/dot(s,s)
       α = 1.0 / max(0.02,min(λ,10.0))
 
@@ -320,7 +325,7 @@ module WallE
         iter += 1
 
         # Evaluate the canditate point
-        xn .= x0 .- α*D0
+        xn .= x0 .- α*d
 
         # Projects the point into the boundary δS, modifying
         # xn 
@@ -331,7 +336,7 @@ module WallE
         Δx = xn .- x0
         
         # Such that m is given by 
-        m = dot(D0,Δx)
+        m = dot(D,Δx)
 
         # That should be negative
         if m >= 0.0 
@@ -367,10 +372,9 @@ module WallE
 
       # Atualiza x1 e D1
       x1 .= x0
-      D1 .= D0
 
       # We should have a better point by now
-      return xn, x1, D1, fn, improved, Iblock_m, Iblock_M
+      return xn, x1, fn, improved, Iblock_m, Iblock_M
 
   end
 
