@@ -179,7 +179,7 @@ module WallE
           # calcular uma direção de busca melhorada
           if free_x==free_x_ant && cont_GC <= nx
             #println("POP")
-            beta = 0.0 # max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dfree,Dfree))
+            beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dfree,Dfree))
             d .= D .- da*beta
             using_GC = true
             any_GC = true
@@ -308,7 +308,7 @@ module WallE
 
       α = 10.0
 
-      
+
       # "Optimal" point and function value
       xn = copy(x0) 
       fn = f0
