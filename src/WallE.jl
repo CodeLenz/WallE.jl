@@ -161,7 +161,8 @@ module WallE
           # calcular uma direção de busca melhorada
           if free_x==free_x_ant && cont_GC <= nx
             #println("POP")
-            D0 .= D0 .- D1*(norma/norma_anterior)^2
+            beta = max(0.0, dot(D0,D0.-D1)/dot(D1,D1))
+            D0 .= D0 .- D1*beta
             using_GC = true
             any_GC = true
             cont_GC += 1
