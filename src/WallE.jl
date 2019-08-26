@@ -150,6 +150,7 @@ module WallE
         # no resto da rotina
         Da .= D
         D  .= df(x0)
+        d  .= D
 
 
         # If iter > 1, than we can consider the optimality condition
@@ -157,7 +158,8 @@ module WallE
 
           # Free positions 
           free_x_ant = copy(free_x)
-          free_x = filter(x-> (!(x in Iblock_m) && !(x in Iblock_M)),lvar)
+          free_x = filter(x-> (!(x in Iblock_m) && 
+                               !(x in Iblock_M)),lvar)
 
           # Gradient, Free positions
           Dfree = D[free_x] 
