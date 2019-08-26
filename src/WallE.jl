@@ -136,6 +136,8 @@ module WallE
     d  = zeros(nx)
     da = zeros(nx)
 
+    # Conjuntos utilizados para as condições de ótimo 
+    # nas paredes
     delta_m = Float64[]
     delta_M = Float64[]
 
@@ -146,8 +148,9 @@ module WallE
       for iter=1:niter
 
         # Calcula a derivada de f, chamando df(x)
-        # Como é steepest DESCENT, usamos -gradiente
-        # no resto da rotina
+        # se for steepest DESCENT, usamos -gradiente
+        # no resto da rotina. Do contrário, utilizamos
+        # GC, tal que d = -(D - beta*Da)
         Da .= D
         D  .= df(x0)
         d  .= D
@@ -176,7 +179,7 @@ module WallE
           # calcular uma direção de busca melhorada
           if free_x==free_x_ant && cont_GC <= nx
             #println("POP")
-            beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dfree,Dfree))
+            beta = 0.0 # max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dfree,Dfree))
             d .= D .- da*beta
             using_GC = true
             any_GC = true
@@ -372,7 +375,7 @@ module WallE
         fn  = f_ref
       end
 
-      # Atualiza x1 e D1
+      # Atualiza x1 
       x1 .= x0
 
       # We should have a better point by now
