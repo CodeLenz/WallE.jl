@@ -2,7 +2,7 @@ name = "WallE"
 uuid = "409c7e06-86dc-11e9-30a5-6d15a9183e58"
 authors = ["CodeLenz <eduardobarplenz@gmail.com>"]
 repo-url = "https://github.com/CodeLenz/WallE.git"
-version = "0.1.1"
+version = "0.2.0"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
