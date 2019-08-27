@@ -220,6 +220,9 @@ module WallE
                    α_min = 1E-8)
 
     
+    ######### TESTING #############
+    ENABLE_GC::Bool = false
+
     # Number of design variables
     nx = length(x0)
 
@@ -250,7 +253,7 @@ module WallE
     end
 
     if flag_show
-       println("Wall_E2::Maximum number of interal iterations:: ",niter)
+       println("Wall_E2::Maximum number of internal iterations:: ",niter)
     end
 
     # List of blocked variables. m is from below and M is from above 
@@ -348,6 +351,7 @@ module WallE
           
           # If the set of free variables is the same in two consecutive iterations,
           # we can try to use Conjugate Gradients
+        if ENABLE_GC
           if free_x==free_x_ant && cont_GC <= nx
              #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
              beta = (norma/previous_norm)^2
@@ -359,6 +363,7 @@ module WallE
             using_GC = false
             cont_GC = 0
           end
+        end
 
           # Extract the derivatives at the blocked positions. This is used
           # as a complementary optimality condition 
