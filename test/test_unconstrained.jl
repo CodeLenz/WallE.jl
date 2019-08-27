@@ -26,9 +26,12 @@
 
     # Chama o otimizador
     x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,100)
+    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,100,ENABLE_GC=true)
  
+
     # The test
     @test isapprox(x_opt,[3.0 ; 5.0],rtol=1E-2)
+    @test isapprox(x_opt_GC,[3.0 ; 5.0],rtol=1E-2)
 
     println("\n","# Resultado #")
     show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
