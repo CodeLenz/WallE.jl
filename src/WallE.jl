@@ -187,8 +187,8 @@ module WallE
 
   The inputs for this function are:
 
-      f::Function        -> Objective function f(x)->Float64
-      df::Function       -> Gradient of f(x). df(x)->Array{Float64,1}
+      f::Function        -> Objective function -> f(x)->Float64
+      df::Function       -> Gradient of f(x)   -> df(x)->Array{Float64,1}
       x0::Array{Float64} -> Initial point
       ci::Array{Float64} -> Lower side constraints
       cs::Array{Float64} -> Upper side constraints
@@ -315,6 +315,9 @@ module WallE
         # Evaluate the current gradient vector
         D  .= df(x0)
 
+        # Scale the gradient vector using the Euclidian Norm'
+        D .= D/norm(D)
+
         # Make a copy of the actual value of the search direction
         da .= d
 
@@ -378,13 +381,16 @@ module WallE
 
         end # if iter > 1
 
+        # Normalize the search direction
+        d .= d/norm(d)
+
         # Increment the iteration counter
         counter += 1
 
-        # Make a copy of the design variables
+        # Make a copy of the design variables of the 
+        # previous iterations
         x2 .= x1
         x1 .= x0
-
 
         # Line Search. Here, we are using the modified Armijo Backtracking
         # proposed by Bertsekas.
