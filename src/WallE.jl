@@ -284,19 +284,19 @@ module WallE
           norma = norm(Dfree)
 
           
-          # Se os elementos livres se mantiverem, podemos 
-          # calcular uma direção de busca melhorada
-          #if free_x==free_x_ant && cont_GC <= nx
-            #println("POP")
-            #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
-          #  d .= D #.- da*beta
-          #  using_GC = true
-          #  any_GC = true
-          #  cont_GC += 1
-          #else
-          #  using_GC = false
-          #  cont_GC = 0
-          #end
+          # If the set of free variables is the same in two consecutive iterations,
+          # we can try to use Conjugate Gradients
+          if free_x==free_x_ant && cont_GC <= nx
+             #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
+             beta = (norma/previous_norm)^2
+             d .= -D .+ da*beta
+             using_GC = true
+             any_GC = true
+             cont_GC += 1
+          else
+            using_GC = false
+            cont_GC = 0
+          end
 
           # Extract the derivatives at the blocked positions. This is used
           # as a complementary optimality condition 
