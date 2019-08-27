@@ -1,5 +1,5 @@
 #
-# Otimização por projeção no bounding-box
+# Unconstrained optimization with side constraints
 #
 module WallE
 
@@ -33,17 +33,42 @@ module WallE
             end
           end  
 
-          # Return the set of blocked variables.
+          # Return the sets of blocked variables.
           return Iblock_m, Iblock_M
    end
 
    
-
-  # Armijo's Bactracking LS over f(x)
+  #
+  #
+  # Armijo's Bactracking LS over f(x), respecting
+  # the side constraints.
   # 
   # Here we are using the Bertseka's proposal
   #
-  #
+  # 
+  """
+  Modified_Armijo 
+
+  Line search using a modified version of the Armijo's Backtracking
+  method. The modifications are made in order to constraint the 
+  candidate point into the set of feasible values defined by both
+  side constraints (ci and cs).
+
+  The inputs for this function are:
+      x0::Array{Float64} -> current point
+      x1::Array{Float64} -> previous point
+      f0::Float64        -> current value of the objective function 
+      d::Array{Float64}  -> search direction (minimization)
+      D::Array{Float64}  -> current gradient vector
+      Da::Array{Float64} -> previous gradient vector
+      ci::Array{Float64} -> lower side constraints
+      cs::Array{Float64} -> upper side constraints
+      f::Function        -> function of x to be minimized
+      cut_factor::Float64-> factor to decrease the step length
+      c::Float64         -> adjustment to the initial slope 
+      α_ini::Float64     -> initial step length
+      α_min::Float64     -> minimum value for the step lengt.
+  """
   function Modified_Armijo(x0::Array{Float64},x1::Array{Float64},f0::Float64,
                            d::Array{Float64},D::Array{Float64},Da::Array{Float64},
                            ci::Array{Float64},cs::Array{Float64},f::Function,
@@ -151,6 +176,40 @@ module WallE
   #
   # Main Function.
   #
+  """
+  Wall_E2 
+
+  Solve the problem
+
+  Min f(x)
+
+  where x ∈ ℜ^n and x ∈ [ci, cs]. 
+
+  The inputs for this function are:
+
+      f::Function        -> Objective function f(x)->Float64
+      df::Function       -> Gradient of f(x). df(x)->Array{Float64,1}
+      x0::Array{Float64} -> Initial point
+      ci::Array{Float64} -> Lower side constraints
+      cs::Array{Float64} -> Upper side constraints
+
+  Optional (with defaul values) inputs
+
+
+      niter::Int64       -> Maximum number of iterations
+      tol_norm::Float64  -> Tolerance for the norm
+      flag_show::Bool    -> Enable/Disable printing
+      cut_factor::Float64-> Factor to decrease the step length
+      α_ini::Float64     -> Initial step length
+      α_min::Float64     -> Minimum value for the step lengt.
+
+  Outputs: 
+
+       x0::Array{Float64} -> Optimal point
+       flag_conv::Bool    -> Satisfy/Do not satisfy the first order conditions
+       norma::Float64     -> Norm (just free variables)
+ 
+  """
   function Wall_E2(f::Function, df::Function, x0::Array{Float64},
                    ci::Array{Float64}, cs::Array{Float64},
                    niter=2000,  
