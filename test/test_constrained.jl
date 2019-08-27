@@ -31,7 +31,7 @@
 
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,true,true,1000)
 
 
     # The test
@@ -70,7 +70,7 @@
 
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,true,true,1000)
 
 
     # The test
@@ -117,7 +117,7 @@
 
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,true,true,1000)
 
     # The test
     resp = 10*ones(100); [resp[i]=i for i in 12:2:100]
