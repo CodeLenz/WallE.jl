@@ -84,7 +84,7 @@ module WallE
       # Initial estimative for α. If α_ini==0 we try to 
       # build an estimative based on the Barzilai method
       α = α_ini
-      if α==0.0 && norm(x0.-x1)>=1E-12
+      if α==0.0 && norm(x0.-x1)>=1E-16
          s = x0 .- x1
          y = D  .- Da
          α_try = dot(s,y)/dot(s,s)
@@ -100,6 +100,7 @@ module WallE
             α = α_try #1.0 / max(0.02,min(λ,10.0))
          end
       else
+        # On the first iteration there is no way to use Barzilai
         α = 10.0
       end
       
@@ -439,7 +440,7 @@ module WallE
       println("Initial objective      : ", initial_objective)
       println("Final objective        : ", f0)
       if initial_objective!=0.0 && f0!=0.0
-         println("% of minimization.  : ", 100*(f0-initial_objective)/initial_objective)
+      println("% of minimization.     : ", 100*(f0-initial_objective)/initial_objective)
       end
       println("Blocked variables      : ", length(Iblock_m)," ",length(Iblock_M))
       println("Number of iterations   : ", counter , " of ",niter)
