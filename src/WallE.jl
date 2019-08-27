@@ -360,7 +360,7 @@ module WallE
       println("Initial objective      : ", initial_objective)
       println("Final objective        : ", f0)
       if initial_objective!=0.0 && f0!=0.0
-         println("% of minimization.  : ", 100*(f0-objetivo_inicial)/objetivo_inicial )
+         println("% of minimization.  : ", 100*(f0-initial_objective)/initial_objective)
       end
       println("Blocked variables      : ", length(Iblock_m)," ",length(Iblock_M))
       println("Number of iterations   : ", counter , " of ",niter)
