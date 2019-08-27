@@ -225,7 +225,7 @@ module WallE
                    niter=2000,  
                    tol_norm=1E-6,
                    flag_show::Bool=true,
-                   α_ini = 10.0, 
+                   α_ini = 0.0, 
                    cut_factor = 0.5,
                    α_min = 1E-8)
 
