@@ -318,9 +318,6 @@ module WallE
         # Evaluate the current gradient vector
         D  .= df(x0)
 
-        # Scale the gradient vector using the Euclidian Norm'
-        D .= D/norm(D)
-
         # Make a copy of the actual value of the search direction
         da .= d
 
@@ -375,7 +372,7 @@ module WallE
           delta_M = D[Iblock_M]
 
           # We need to fulfill all the first order conditions..
-          if norma<=tol_norm && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+          if norma<=tol_norm*(1+abs(f0)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                 (all(delta_M .<= 0.0)||isempty(delta_M))
 
             # Convergence assessed by first order condition. Set the flag and
