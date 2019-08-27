@@ -230,12 +230,10 @@ module WallE
                    flag_show::Bool=true,
                    α_ini = 0.0, 
                    cut_factor = 0.5,
-                   α_min = 1E-8)
+                   α_min = 1E-8; ENABLE_GC::Bool=false)
 
     
-    ######### TESTING #############
-    ENABLE_GC::Bool = false
-
+  
     # Number of design variables
     nx = length(x0)
 
