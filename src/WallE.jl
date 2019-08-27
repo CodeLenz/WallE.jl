@@ -84,7 +84,7 @@ module WallE
       # Initial estimative for α. If α_ini==0 we try to 
       # build an estimative based on the Barzilai method
       α = α_ini
-      if α==0.0
+      if α==0.0 && norm(x0.-x1)>=1E-12
          s = x0 .- x1
          y = D  .- Da
          α_try = dot(s,y)/dot(s,s)
@@ -99,6 +99,8 @@ module WallE
          else
             α = α_try #1.0 / max(0.02,min(λ,10.0))
          end
+      else
+        α = 10.0
       end
       
       # "Optimal" point and function value
