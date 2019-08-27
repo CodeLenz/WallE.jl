@@ -23,8 +23,9 @@
     ci = -Inf*ones(2)
     cs =  Inf*ones(2)
 
+
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,100)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,true,true,100)
  
     # The test
     @test isapprox(x_opt,[3.0 ; 5.0],rtol=1E-2)
