@@ -73,7 +73,7 @@ module WallE
                            d::Array{Float64},D::Array{Float64},Da::Array{Float64},
                            ci::Array{Float64},cs::Array{Float64},f::Function,
                            cut_factor::Float64,c::Float64=0.1, α_ini::Float64=10,
-                           α_min::Float64=1E-8)
+                           α_min::Float64=1E-8,eps_δ::Float64=1E-10)
 
       # Reference (initial) value
       f_ref = f0
@@ -82,13 +82,23 @@ module WallE
       d /= norm(d)
 
       # Initial estimative for α. If α_ini==0 we try to 
-      # build an estimative based on 
+      # build an estimative based on the Barzilai method
       α = α_ini
       if α==0.0
          s = x0 .- x1
          y = D  .- Da
-         λ = dot(s,y)/dot(s,s)
-         α = 1.0 / max(0.02,min(λ,10.0))
+         α_try = dot(s,y)/dot(s,s)
+         if α_try<=eps_δ || α_try>=1.0/eps_δ
+            if norm(D)>1.0
+              α = 1.0
+            elseif norm(D)<=1.0 && norm(D)>=1E-5
+              α = 1/norm(D)
+            elseif norm(D)<1E-5
+              α = 1000
+            end
+         else
+            α = α_try #1.0 / max(0.02,min(λ,10.0))
+         end
       end
       
       # "Optimal" point and function value
@@ -126,7 +136,7 @@ module WallE
         # Such that m is given by 
         m = dot(D,Δx)
 
-        # That should be negative
+        # That should be negative if Δx is in a descent direction
         if m >= 0.0 
            println("Armijo::Not a search direction $m")
            improved = false
@@ -433,7 +443,7 @@ module WallE
       println("Number of iterations   : ", counter , " of ",niter)
       println("First order conditions : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
                                                       " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
-      println("Norm(free positions)   : ", norma)
+      println("Norm(free positions)   : ", norma," Reference ",tol_norm*(1+abs(f0)))
       println("Total time             : ", canonicalize(Dates.CompoundPeriod(Dates.Second(floor(Int64,tempo)))))
       println("********************************************************")
     end
