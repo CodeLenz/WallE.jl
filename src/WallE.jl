@@ -13,12 +13,16 @@ module WallE
     # and indicates if any variable is projected into one of the
     # boundaries.
     #
+    # Variables x are modified in place
+    #
     function Wall2!(x::Array{Float64},ci::Array{Float64},cs::Array{Float64})
 
-          # List of Blocked variables
+          # List of Blocked variables. m is from bellow and M from above.
           Iblock_m = Int64[]
           Iblock_M = Int64[]
 
+          # For each variable, check and, if needed, project into the 
+          # lower or upper boundary.
           for i in LinearIndices(x)
             if x[i]<=ci[i] 
                x[i] = ci[i]
@@ -29,253 +33,11 @@ module WallE
             end
           end  
 
+          # Return the set of blocked variables.
           return Iblock_m, Iblock_M
    end
 
    
-   
-
-  function Wall_E2(f::Function, df::Function, x0::Array{Float64},
-                   ci::Array{Float64}, cs::Array{Float64},
-                   flag_Armijo_LS::Bool=true,
-                   flag_show::Bool=true,
-                   niter=2000,  tol_norm=1E-6,
-                   passo_inicial=5.0, 
-                   fator_corte = 0.5,
-                   passo_minimo = 1E-10,
-                   limites_moveis::Bool=false,
-                   limite_movel_inicial = 0.2,
-                   limite_movel_minimo = 0.001,
-                   fator_aumento_limite_movel = 1.1,
-                   fator_diminuicao_limite_movel = 0.7)
-
-    # We should not use moving limits by now
-    @assert !limites_moveis "Wall_E2::do not use moving limits by now"
-
-    # Numero de variáveis de projeto
-    nx = length(x0)
-
-    # Se o número de iterações não for informado, utilizamos um múltiplo
-    # do número de variáveis
-    if niter==0
-       niter = 2*nx
-    end
-
-    if flag_show
-       println("Wall_E2::número máximo de iterações internas:: ",niter)
-    end
-
-    # Lista com todas as variáveis. Será utilizado para gerarmos 
-    # uma lista de variáveis livres (complemento das bloqueadas)
-    lvar = 1:nx
-    Iblock_m = Int64[]
-    Iblock_M = Int64[]
-    free_x = Int64[]
-
-    # Variáveis livres da iteração anterior
-    free_x_ant = Int64[]
-
-    # Flag para indicar que esta usando Gradientes Conjugados
-    using_GC = false
-    cont_GC = 0
-    any_GC = false
-
-    # Testa para ver se as dimensões das restrições laterais estão OK
-    @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
-    @assert length(cs)==nx "Wall_E2:: size(cs)!=size(x0)"
-
-    # Assert para verificar se  ci .<= cs
-    for i=1:nx
-        @assert ci[i]<=cs[i] "Wall_E2:: ci deve ser .<= cs "
-    end
-
-    # Não podemos aceitar qualquer x0 que viole as restrições laterais
-    for i=1:nx
-        @assert x0[i]>=ci[i] "Wall_E2:: x0[$i] deve ser maior do que ci[$i] $(x0[i]) $(ci[i])"
-        @assert x0[i]<=cs[i] "Wall_E2:: x0[$i] deve ser menor do que cs[$i] $(x0[i]) $(cs[i])"
-    end
-
-    # Incializa variáveis internas
-
-    # Flag que indica se o otimizador saiu pela tolerância da norma2
-    flag_conv = false
-
-    # Norma 2 (começa no valor máximo para Float64)
-    norma = maxintfloat(Float64)
-
-    # Norma anterior - para testarmos Fletcher
-    norma_anterior = norma
-
-    # Limites móveis. Todos iniciam no valor máximo
-    limite_movel = limite_movel_inicial*ones(nx)
-
-    # Vamos manter uma cópia dos valores das variáveis
-    # de projeto nas últimas 2 iterações 
-    x1 = zeros(nx) #Array{Float64}(undef,nx)
-    x2 = zeros(nx) #Array{Float64}(undef,nx)
-  
-    # Limites móveis efetivos
-    x_min = zeros(nx)
-    x_max = zeros(nx)
-
-    # Valor de referência. f0 será utilizado durante o line-search
-    # e objetivo_inicial será utilizado para avaliarmos o quanto
-    # de melhoria tivemos durante todo o processo. f1 será o valor
-    # da estimativa no line-search
-    f0 = f(x0)
-    objetivo_inicial = f0
-
-    # Número de iterações efetivas
-    contador = 0
-
-    # Vetor gradiente e anterior
-    D = zeros(nx)
-    Da = zeros(nx)
-
-    # Direção de busca e direção anterior
-    d  = zeros(nx)
-    da = zeros(nx)
-
-    # Conjuntos utilizados para as condições de ótimo 
-    # nas paredes
-    delta_m = Float64[]
-    delta_M = Float64[]
-
-    ####################### LOOP PRINCIPAL #######################
-    tempo = @elapsed  begin
-      Prg = Progress(niter, 1, "Minimizing...")
-
-      for iter=1:niter
-
-        # Calcula a derivada de f, chamando df(x)
-        # se for steepest DESCENT, usamos -gradiente
-        # no resto da rotina. ##Do contrário, utilizamos
-        # GC, tal que d = -(D - beta*Da)##Desabilitado##
-        Da .= D
-        D  .= df(x0)
-        d  .= D
-
-        # If iter > 1, than we can consider the optimality condition
-        if iter>1
-
-          # Free positions 
-          free_x_ant = copy(free_x)
-          free_x = filter(x-> (!(x in Iblock_m) && 
-                               !(x in Iblock_M)),lvar)
-
-          # Gradient, Free positions
-          Dfree  = D[free_x] 
-          Dafree = Da[free_x]
-
-          # Norm of the free positions 
-          norma_anterior = norma
-          norma = norm(Dfree)
-
-          # Backup - search direction
-          da .= d
-
-          # Se os elementos livres se mantiverem, podemos 
-          # calcular uma direção de busca melhorada
-          #if free_x==free_x_ant && cont_GC <= nx
-            #println("POP")
-            #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
-          #  d .= D #.- da*beta
-          #  using_GC = true
-          #  any_GC = true
-          #  cont_GC += 1
-          #else
-          #  using_GC = false
-          #  cont_GC = 0
-          #end
-
-          # Blocked by below. They must be positive
-          delta_m = D[Iblock_m]
-
-          # Blocked by above. They must be negative
-          delta_M = D[Iblock_M]
-
-          # We need to fulfill all the first order conditions..
-          if norma<=tol_norm && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
-                                (all(delta_M .<= 0.0)||isempty(delta_M))
-            flag_conv = true
-            break
-          end
-
-        end # if iter > 1
-
-        # Atualiza o contador de iterações
-        contador += 1
-
-        # Calcula os limites móveis
-        #if limites_moveis
-        #    Moving_Limits!(limite_movel, x_min, x_max, x0, x1, x2, 
-        #                   nx, iter, fator_aumento_limite_movel,
-        #                   fator_diminuicao_limite_movel, limite_movel_minimo,
-        #                   limite_movel_inicial, ci, cs)
-        #else
-           # Não estamos utilizando limites móveis.
-           x_min .= ci
-           x_max .= cs
-        #end
-
-        # Armijo com próximo ponto, novo valor do objetivo e variáveis
-        # bloqueadas
-        if flag_Armijo_LS
-          x0, x1, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
-                                                                     x_min,x_max,f)
-        else
-          # Use Crude_LS ..
-          x0, f0, improved, Iblock_m, Iblock_M = Crude_LS(x0,f0,d,x_min,x_max,f,false)
-        end
-
-        if !improved
-          println("The solution cannot be improved during the line-search")
-          break
-        end
-
-        ProgressMeter.next!(Prg; showvalues = [(:Norma,norma), (:Objetivo,f0), (:GC,using_GC),
-                          (:(Grad(+)),maximum(D)), (:(Grad(-)),minimum(D)),
-                          (:Inferior,all(delta_m .>= -tol_norm)||isempty(delta_m)),
-                          (:Superior,all(delta_M .<= tol_norm)||isempty(delta_M))],
-                          valuecolor = :yellow)
-
-      end # for interno
-    end # block
-  
-    # Tivemos uma solução
-    if flag_show
-      println("\n********************************************************")
-      println("Final do loop principal de otimização")
-      if flag_Armijo_LS
-        println("Line Search      : Modified Armijo's Bactracking")
-      else
-        println("Line Search      : Crude")
-      end
-      println("Utilizou GC        : ", any_GC)
-      println("Objetivo inicial   : ", objetivo_inicial)
-      println("Objetivo final     : ", f0)
-      if objetivo_inicial!=0.0 && f0!=0.0
-         println("% de min.          : ", 100*(f0-objetivo_inicial)/objetivo_inicial )
-      end
-      println("Bloqueios          : ", length(Iblock_m)," ",length(Iblock_M))
-      println("Numero de iterações: ", contador , " de ",niter)
-      println("Converg. por norma : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
-                                                  " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
-      if limites_moveis
-        println("fator móvel mínimo : ", minimum(limite_movel))
-        println("fator móvel máximo : ", maximum(limite_movel))
-        println("Limite móvel mínimo: ", minimum(x_min))
-        println("Limite móvel máximo: ", maximum(x_max))
-      end
-      println("Norma              : ", norma)
-      println("Tempo total        : ", canonicalize(Dates.CompoundPeriod(Dates.Second(floor(Int64,tempo)))))
-      println("********************************************************")
-    end
-
-    # Returns the solution, convergence flag and last norm
-    return x0, flag_conv, norma
-
-  end
 
   # Armijo's Bactracking LS over f(x)
   # 
@@ -284,33 +46,31 @@ module WallE
   #
   function Modified_Armijo(x0::Array{Float64},x1::Array{Float64},f0::Float64,
                            d::Array{Float64},D::Array{Float64},Da::Array{Float64},
-                           ci::Array{Float64},cs::Array{Float64},f::Function)
+                           ci::Array{Float64},cs::Array{Float64},f::Function,
+                           cut_factor::Float64,c::Float64=0.1, α_ini::Float64=10,
+                           α_min::Float64=1E-8)
 
-      # Fixed parameters
-      c = 0.1
-      τ = 0.5
-
-      # Reference value
+      # Reference (initial) value
       f_ref = f0
 
       # Normalize d if its not yet normalized
       d /= norm(d)
 
-      # First value of α
-      # α = 1.0
-      s = x0 .- x1
-      y = D  .- Da
-      λ = dot(s,y)/dot(s,s)
-      α = 1.0 / max(0.02,min(λ,10.0))
-
-      α = 10.0
-
+      # Initial estimative for α. If α_ini==0 we try to 
+      # build an estimative based on 
+      α = α_ini
+      if α==0.0
+         s = x0 .- x1
+         y = D  .- Da
+         λ = dot(s,y)/dot(s,s)
+         α = 1.0 / max(0.02,min(λ,10.0))
+      end
+      
       # "Optimal" point and function value
       xn = copy(x0) 
       fn = f0
-      # fn = copy(f0)
-
-      # Blocked variables
+      
+      # Set of blocked (projected) variables
       Iblock_m = Int64[] 
       Iblock_M = Int64[] 
 
@@ -324,15 +84,14 @@ module WallE
       # in this version. So we will skip the loop when
       # the search condition is true
       while true
-        # println("-------- $α ----- $λ --------")
- 
+        
+        # Increment the iteration counter
         iter += 1
 
         # Evaluate the canditate point
-        xn .= x0 .- α*d
+        xn .= x0 .+ α*d
 
-        # Projects the point into the boundary δS, modifying
-        # xn 
+        # Projects the point into the boundary δS, modifying xn 
         Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
 
         # The effective step is then 
@@ -349,39 +108,281 @@ module WallE
            break
         end
 
-        # And the condition is 
+        # Objective at this candidate point
         fn = f(xn)
-
-        # @show iter, α, fn
-        # @show fn, f0, fn-f0, (c/α)*norm(Δx)^2, α
+ 
+        # Bertseka's condition       
         if   fn - f0  <=  (c/α)*norm(Δx)^2 && fn < f0
+
+          # We can accept this step length
           break
+
         else
-          α *= τ
+
+          # Decrease the step length 
+          α *= cut_factor
+
         end
 
         # Check for a lower bound for α
-        # TODO
-        if α < 1E-8
+        if α < α_min
           break
         end
 
       end # while
 
-      # Asserts that f improved
+      # Asserts that f improved. If it not improved, than 
+      # we return the initial point and a flag indicating
+      # the situation.
       if fn >= f_ref
         improved = false
         xn .= x0
         fn  = f_ref
       end
 
-      # Atualiza x1 
-      x1 .= x0
-
+      
       # We should have a better point by now
-      return xn, x1, fn, improved, Iblock_m, Iblock_M
+      return xn, fn, improved, Iblock_m, Iblock_M
 
   end
+
+
+   
+  #
+  # Main Function.
+  #
+  function Wall_E2(f::Function, df::Function, x0::Array{Float64},
+                   ci::Array{Float64}, cs::Array{Float64},
+                   niter=2000,  
+                   tol_norm=1E-6,
+                   flag_show::Bool=true,
+                   α_ini = 10.0, 
+                   cut_factor = 0.5,
+                   α_min = 1E-8)
+
+    
+    # Number of design variables
+    nx = length(x0)
+
+    ################################### ASSERTIONS ###########################################
+    #
+    # Test to verify if the length of the side contraints are 
+    # compatible with the dimension of the problem
+    @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
+    @assert length(cs)==nx "Wall_E2:: size(cs)!=size(x0)"
+
+    # Verify if  ci .<= cs
+    for i=1:nx
+        @assert ci[i]<=cs[i] "Wall_E2:: ci should be .<= cs. Problem in position $i "
+    end
+
+    # Verify if x0 is inside the box defined by the side constraints
+    for i=1:nx
+        @assert x0[i]>=ci[i] "Wall_E2:: x0[$i] should be larger than ci[$i] $(x0[i]) $(ci[i])"
+        @assert x0[i]<=cs[i] "Wall_E2:: x0[$i] should be smaller than cs[$i] $(x0[i]) $(cs[i])"
+    end
+
+  ################################### END: ASSERTIONS ##########################################
+    
+    # If the number of iterations is zero, we set it to twice the number
+    # of design variables.
+    if niter<=0
+       niter = 2*nx
+    end
+
+    if flag_show
+       println("Wall_E2::Maximum number of interal iterations:: ",niter)
+    end
+
+    # List of blocked variables. m is from below and M is from above 
+    Iblock_m = Int64[]
+    Iblock_M = Int64[]
+
+    # lvar is used to find the complement (free variables)
+    lvar = 1:nx
+
+    # List of free variables of this iteration and from the previous iteration
+    free_x = Int64[]
+    free_x_ant = Int64[]
+
+    # Flags used to indicate the use of Conjugate Gradients (GC)
+    using_GC = false
+    any_GC = false
+
+    # Counter to monitor the number of iterations using GC
+    cont_GC = 0
+   
+    # Flag to indicate that the optimizer reached the tolerance (norm)
+    flag_conv = false
+
+    # Initialize the norm of this iteration and the one from previous iteration
+    norma = maxintfloat(Float64)
+    previous_norm = norma
+
+    # Keep track of the design variables from the two previous iterations
+    x1 = zeros(nx) 
+    x2 = zeros(nx) 
+  
+    # Reference value. It is used to monitor the % of improvement in this invocation
+    # of the optimizer.
+    f0 = f(x0);    
+    initial_objective = f0;
+
+    # Number of effective iterations
+    counter = 0
+
+    # Gradient vector of this iteration and from the previous iteration
+    D = zeros(nx)
+    Da = zeros(nx)
+
+    # Search direction of this itearation and from the previous iteration
+    d  = zeros(nx)
+    da = zeros(nx)
+
+    # These sets are used to monitor the optimality conditions for the 
+    # blocked variables. m is from below and M from above.
+    delta_m = Float64[]
+    delta_M = Float64[]
+
+    ################################## MAIN LOOP #################################
+    tempo = @elapsed  begin
+      Prg = Progress(niter, 1, "Minimizing...")
+
+      for iter=1:niter
+
+        # Make a copy of the actual value of the gradient vector (D)
+        Da .= D
+
+        # Evaluate the current gradient vector
+        D  .= df(x0)
+
+        # Make a copy of the actual value of the search direction
+        da .= d
+
+        # The default search (minimizing) direction is the Steepest Descent
+        d  .= -D
+
+        # If iter > 1, than we can consider the optimality condition
+        if iter>1
+
+          # Make a copy of the current free design variables
+          free_x_ant = copy(free_x) 
+
+          # Find the free design variables, i.e, the ones not blocked in 
+          # the previous line search. Iblock_m and Iblock_M are
+          # defined in Wall!, used in the LS.
+          free_x = filter(x-> (!(x in Iblock_m) && 
+                               !(x in Iblock_M)),lvar)
+
+          # Extract only the free positions of the gradient for the current
+          # and previous iteration
+          Dfree  = D[free_x] 
+          Dafree = Da[free_x]
+
+          # Evaluate the norm of the gradient considering just the free variables
+          previous_norm = norma
+          norma = norm(Dfree)
+
+          
+          # Se os elementos livres se mantiverem, podemos 
+          # calcular uma direção de busca melhorada
+          #if free_x==free_x_ant && cont_GC <= nx
+            #println("POP")
+            #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
+          #  d .= D #.- da*beta
+          #  using_GC = true
+          #  any_GC = true
+          #  cont_GC += 1
+          #else
+          #  using_GC = false
+          #  cont_GC = 0
+          #end
+
+          # Extract the derivatives at the blocked positions. This is used
+          # as a complementary optimality condition 
+
+          # Blocked by below. They must be positive
+          delta_m = D[Iblock_m]
+
+          # Blocked by above. They must be negative
+          delta_M = D[Iblock_M]
+
+          # We need to fulfill all the first order conditions..
+          if norma<=tol_norm && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+                                (all(delta_M .<= 0.0)||isempty(delta_M))
+
+            # Convergence assessed by first order condition. Set the flag and
+            # skip the main loop
+            flag_conv = true
+            break
+          end
+
+        end # if iter > 1
+
+        # Increment the iteration counter
+        counter += 1
+
+        # Make a copy of the design variables
+        x2 .= x1
+        x1 .= x0
+
+
+        # Line Search. Here, we are using the modified Armijo Backtracking
+        # proposed by Bertsekas.
+        # x0 contains the solution of the LS, 
+        # f0 is f(x0)
+        # improve is a flag to indicate that the LS improved the solution
+        # Iblock_m and I_block_M are the set of blocked (projected) variables
+        x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
+                                                               ci,cs,f,cut_factor,
+                                                               0.1,α_ini,α_min)
+        if !improved
+          println("WallE2::The solution cannot be improved during the line-search. Bailing out.")
+          break
+        end
+
+        # Fancy report for the mob :)
+        ProgressMeter.next!(Prg; showvalues = [(:Norma,norma), (:Objetivo,f0), (:GC,using_GC),
+                          (:(Grad(Max)),maximum(D)), (:(Grad(Min)),minimum(D)),
+                          (:Inferior,all(delta_m .>= -tol_norm)||isempty(delta_m)),
+                          (:Superior,all(delta_M .<= tol_norm)||isempty(delta_M))],
+                          valuecolor = :yellow)
+
+      end # for iter
+    end # block (begin)
+  
+    # Final report
+    if flag_show
+      println("\n********************************************************")
+      println("End of the main optimization Loop")
+      println("Line Search            : Modified Armijo's Bactracking")
+      println("Used GC?               : ", any_GC)
+      println("Initial objective      : ", initial_objective)
+      println("Final objective        : ", f0)
+      if initial_objective!=0.0 && f0!=0.0
+         println("% of minimization.  : ", 100*(f0-objetivo_inicial)/objetivo_inicial )
+      end
+      println("Blocked variables      : ", length(Iblock_m)," ",length(Iblock_M))
+      println("Number of iterations   : ", counter , " of ",niter)
+      println("First order conditions : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
+                                                      " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
+      println("Norm(free positions)   : ", norma)
+      println("Total time             : ", canonicalize(Dates.CompoundPeriod(Dates.Second(floor(Int64,tempo)))))
+      println("********************************************************")
+    end
+
+    # Returns the solution, convergence flag and last norm
+    return x0, flag_conv, norma
+
+  end
+
+  
+
+  ######################################################################
+  ######################## NOT USING, BUT WORKING ######################
+  ######################################################################
+  
+     
 
   # Crude LS over f(x)
   #
@@ -538,12 +539,6 @@ module WallE
   end
 
 
-
-  ######################################################################
-  ######################## NOT USING, BUT WORKING ######################
-  ######################################################################
-  
-     
   
   ######################################################################
   ############################ NEEDS TESTING ###########################
