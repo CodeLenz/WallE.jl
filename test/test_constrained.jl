@@ -31,14 +31,20 @@
 
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
 
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
 
     # The test
     @test isapprox(x_opt,[-2.0 ; 3.0],atol=1E-6)
 
     println("\n","# Results #")
     show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [-2.0 ; 3.0]])
+
+    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000;ENABLE_GC=true)
+
+    # The test
+    @test isapprox(x_opt,[-2.0 ; 3.0],atol=1E-6)
+    @test isapprox(x_opt_GC,[-2.0 ; 3.0],atol=1E-6)
 
 
     # Second test
@@ -71,10 +77,13 @@
 
     # Chama o otimizador
     x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8)
+    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8;ENABLE_GC=true)
 
 
     # The test
     @test isapprox(x_opt,[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-4)
+    @test isapprox(x_opt_GC,[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-4)
+
 
     println("\n","# Results #")
     show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [10*ones(10) ; 11:49 ; 50*ones(51)]])
@@ -118,10 +127,12 @@
 
     # Chama o otimizador
     x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000;ENABLE_GC=true)
 
     # The test
     resp = 10*ones(100); [resp[i]=i for i in 12:2:100]
-    @test isapprox(x_opt,resp,rtol=1E-4)
+    @test isapprox(x_opt,resp,rtol=1E-4) 
+    @test isapprox(x_opt_GC,resp,rtol=1E-4)
 
     println("\n","# Results #")
     show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt resp])
