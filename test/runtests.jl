@@ -6,10 +6,10 @@ using Test
 # Run tests
  
 
-println("##########\n  Test 1\n##########")
+println("#"^40, "\n  Test 1\n","#"^40)
 
 @time include("test_unconstrained.jl")
 
-println("\n\n##########\n  Test 2\n##########")
+println("#"^40, "\n  Test 2\n","#"^40)
 
 @time include("test_constrained.jl")
