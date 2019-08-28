@@ -142,14 +142,14 @@ module WallE
         Δx = xn .- x0
         
         # The descent condition (Eq. 27 of our text) is
-        #m = dot(D,xn) - dot(D,x0)
+        m = dot(D,xn) - dot(D,x0)
 
         # That should be negative 
-        #if m >= 0.0 
-        #   println("Armijo::Not a search direction $m")
-        #   improved = false
-        #   break
-        #end
+        if m >= 0.0 
+           println("Armijo::Not a search direction $m")
+           improved = false
+           break
+        end
 
         # Objective at this candidate point
         fn = f(xn)
