@@ -141,10 +141,10 @@ module WallE
         # (remember that we already projected xn into the box)
         Δx = xn .- x0
         
-        # Such that m is given by 
-        m = dot(D,Δx)
+        # The descent condition (Eq. 27 of our text) is
+        m = dot(D,xn) - dot(D,x0)
 
-        # That should be negative if Δx is in a descent direction
+        # That should be negative 
         if m >= 0.0 
            println("Armijo::Not a search direction $m")
            improved = false
