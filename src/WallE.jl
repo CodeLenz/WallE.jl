@@ -83,6 +83,7 @@ module WallE
 
       # Initial estimative for α. If α_ini==0 we try to 
       # build an estimative based on the Barzilai method
+      #=
       α = α_ini
       if α==0.0 && norm(x0.-x1)>=1E-16
          s = x0 .- x1
@@ -103,7 +104,8 @@ module WallE
         # On the first iteration there is no way to use Barzilai
         α = 10.0
       end
-      
+      =#
+      α = 10.0
       # "Optimal" point and function value
       xn = copy(x0) 
       fn = f0
