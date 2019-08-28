@@ -186,7 +186,7 @@ module WallE
 
       # Evaluate the effective serch direction used in this 
       # L.S, but just if it improved.
-      da .= -D
+      da = -copy(D)
       if improved
          da = Δx/norm(Δx)
       end
