@@ -115,6 +115,9 @@ module WallE
       # Counter
       iter = 0
 
+      # Effective Δx
+      Δx = zeros(size(x0,1))
+
       # Check if the solutions has improved
       improved = true
 
