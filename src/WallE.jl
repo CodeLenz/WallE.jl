@@ -162,7 +162,7 @@ module WallE
 
         else
 
-          # Decrease the step length 
+          # Decrease the step length and try again
           α *= cut_factor
 
         end
@@ -185,8 +185,11 @@ module WallE
 
 
       # Evaluate the effective serch direction used in this 
-      # L.S
-      da = Δx/norm(Δx)
+      # L.S, but just if it improved.
+      da .= -D
+      if improved
+         da = Δx/norm(Δx)
+      end
       
       # We should have a better point by now
       return xn, fn, da, improved, Iblock_m, Iblock_M
