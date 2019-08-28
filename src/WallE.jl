@@ -178,9 +178,13 @@ module WallE
         fn  = f_ref
       end
 
+
+      # Evaluate the effective serch direction used in this 
+      # L.S
+      da = Δx/norm(Δx)
       
       # We should have a better point by now
-      return xn, fn, improved, Iblock_m, Iblock_M
+      return xn, fn, da, improved, Iblock_m, Iblock_M
 
   end
 
@@ -235,10 +239,10 @@ module WallE
     
   
     # Until a better approach, we are desabling the use of GC 
-    if ENABLE_GC
-       println("Until further notice, no GC is allowed in this code")
-       ENABLE_GC = false
-    end
+    #if ENABLE_GC
+    #   println("Until further notice, no GC is allowed in this code")
+    #   ENABLE_GC = false
+    #end
 
     # Number of design variables
     nx = length(x0)
@@ -336,7 +340,7 @@ module WallE
         D  .= df(x0)
 
         # Make a copy of the actual value of the search direction
-        da .= d
+        #da .= d
 
         # The default search (minimizing) direction is the Steepest Descent
         d  .= -D
@@ -366,10 +370,11 @@ module WallE
           # If the set of free variables is the same in two consecutive iterations,
           # we can try to use Conjugate Gradients
         if ENABLE_GC
-          if free_x==free_x_ant && cont_GC <= nx
+          #if free_x==free_x_ant && 
+          if cont_GC <= nx
              #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
              #beta = (norma/previous_norm)^2
-             beta = -dot(D[free_x],D[free_x])/dot(da[free_x],da[free_x])
+             beta = -dot(D,D)/dot(D,da)
              d .= -D .+ da*beta
              using_GC = true
              any_GC = true
@@ -402,7 +407,7 @@ module WallE
         end # if iter > 1
 
         # Normalize the search direction
-        d .= d/norm(d)
+        #d .= d/norm(d)
 
         # Increment the iteration counter
         counter += 1
@@ -418,9 +423,9 @@ module WallE
         # f0 is f(x0)
         # improve is a flag to indicate that the LS improved the solution
         # Iblock_m and I_block_M are the set of blocked (projected) variables
-        x0, f0, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
-                                                               ci,cs,f,cut_factor,
-                                                               0.1,α_ini,α_min)
+        x0, f0, da, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
+                                                                   ci,cs,f,cut_factor,
+                                                                   0.1,α_ini,α_min)
         if !improved
           println("WallE2::The solution cannot be improved during the line-search. Bailing out.")
           break
