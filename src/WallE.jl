@@ -362,7 +362,8 @@ module WallE
         if ENABLE_GC
           if free_x==free_x_ant && cont_GC <= nx
              #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
-             beta = (norma/previous_norm)^2
+             #beta = (norma/previous_norm)^2
+             beta = -dot(D,D)/dot(da,da)
              d .= -D .+ da*beta
              using_GC = true
              any_GC = true
