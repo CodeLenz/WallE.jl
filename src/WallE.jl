@@ -234,6 +234,12 @@ module WallE
 
     
   
+    # Until a better approach, we are desabling the use of GC 
+    if ENABLE_GC
+       println("Until further notice, no GC is allowed in this code")
+       ENABLE_GC = false
+    end
+
     # Number of design variables
     nx = length(x0)
 
