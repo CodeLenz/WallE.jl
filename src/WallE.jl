@@ -382,7 +382,7 @@ module WallE
              #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
              #beta = (norma/previous_norm)^2
              beta_r = 0.0
-             @show dot(D[blocked_x],da[blocked_x])
+             #@show dot(D[blocked_x],da[blocked_x])
              if length(blocked_x)>0 && dot(D[blocked_x],da[blocked_x])^2>0.0
                 beta_r = -dot(D[blocked_x],D[blocked_x])/dot(D[blocked_x],da[blocked_x])
              end
