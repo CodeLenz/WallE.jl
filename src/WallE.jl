@@ -184,11 +184,7 @@ module WallE
       end
       
       # Evaluate the effective search direction used in this 
-      # L.S, but just if it improved.
-      da = -D
-      if improved
-         da = Δx/α
-      end
+      da = Δx/α
         
 
       # We should have a better point by now
