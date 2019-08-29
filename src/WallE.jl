@@ -365,6 +365,8 @@ module WallE
           # defined in Wall!, used in the LS.
           blocked_x = sort(vcat(Iblock_m,Iblock_M))
 
+          @show blocked_x
+
           # Find the free design variables, i.e, the ones not blocked in 
           # the previous line search. 
           free_x = filter(x-> !(x in blocked_x),lvar)
