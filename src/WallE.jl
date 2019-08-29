@@ -389,7 +389,8 @@ module WallE
              if length(free_x)>0
                 beta_f = -dot(D[free_x],D[free_x])/dot(D[free_x],da[free_x])
              end
-             d .= -D .+ beta_f*da[free_x] .+ beta_r*da[blocked_x]
+             d[free_x] .= -D .+ beta_f*da[free_x] 
+             d[blocked_x] .= -D .+ beta_r*da[blocked_x]
              using_GC = true
              any_GC = true
              cont_GC += 1
