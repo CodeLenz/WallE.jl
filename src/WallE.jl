@@ -155,7 +155,7 @@ module WallE
         fn = f(xn)
  
         # Bertseka's condition       
-        if   fn - f0  <=  (c/α)*norm(Δx)^2 #&& fn < f0
+        if   fn - f0  <=  (c/α)*norm(Δx)^2 && fn < f0
 
           # We can accept this step length
           break
@@ -177,19 +177,17 @@ module WallE
       # Asserts that f improved. If it not improved, than 
       # we return the initial point and a flag indicating
       # the situation.
-      #=
       if fn >= f_ref
         improved = false
         xn .= x0
         fn  = f_ref
       end
-      =#
-
+      
       # Evaluate the effective search direction used in this 
       # L.S, but just if it improved.
       da = -D
       if improved
-         da = Δx/(norm(Δx)*α)
+         da = Δx/(norm(Δx)) #*α)
       end
         
 
