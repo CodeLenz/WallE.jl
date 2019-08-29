@@ -386,7 +386,7 @@ module WallE
                 beta_f = -dot(D[free_x],D[free_x])/dot(D[free_x],da[free_x])
              end
              #@show beta_f, beta_r
-             d[free_x] .= -D[free_x] .+ mx(beta_f,0.0)*da[free_x] 
+             d[free_x] .= -D[free_x] .+ max(beta_f,0.0)*da[free_x] 
              d[blocked_x] .= -D[blocked_x] #.+ beta_r*da[blocked_x]
              using_GC = true
              any_GC = true
