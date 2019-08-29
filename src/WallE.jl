@@ -190,8 +190,7 @@ module WallE
       if improved
          da = Δx/norm(Δx)
       end
-      
-      da .= d  
+        
 
       # We should have a better point by now
       return xn, fn, da, improved, Iblock_m, Iblock_M
@@ -391,9 +390,9 @@ module WallE
              if length(free_x)>0 && (dot(D[free_x],da[free_x]))^2 > 0.0
                 beta_f = -dot(D[free_x],D[free_x])/dot(D[free_x],da[free_x])
              end
-             @show beta_f, beta_r
+             #@show beta_f, beta_r
              d[free_x] .= -D[free_x] .+ beta_f*da[free_x] 
-             d[blocked_x] .= -D[blocked_x] .+ beta_r*da[blocked_x]
+             d[blocked_x] .= -D[blocked_x] #.+ beta_r*da[blocked_x]
              using_GC = true
              any_GC = true
              cont_GC += 1
