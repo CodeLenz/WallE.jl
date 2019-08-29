@@ -177,12 +177,13 @@ module WallE
       # Asserts that f improved. If it not improved, than 
       # we return the initial point and a flag indicating
       # the situation.
+      #=
       if fn >= f_ref
         improved = false
         xn .= x0
         fn  = f_ref
       end
-
+      =#
 
       # Evaluate the effective search direction used in this 
       # L.S, but just if it improved.
