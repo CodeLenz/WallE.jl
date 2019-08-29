@@ -145,19 +145,17 @@ module WallE
         m = dot(D,xn) - dot(D,x0)
 
         # That should be negative 
-        #=
         if m >= 0.0 
            println("Armijo::Not a search direction $m")
            improved = false
            break
         end
-        =#
 
         # Objective at this candidate point
         fn = f(xn)
  
         # Bertseka's condition       
-        if   fn - f0  <=  (c/α)*norm(Δx)^2 && fn < f0
+        if   fn - f0  <=  (c/α)*norm(Δx)^2 #&& fn < f0
 
           # We can accept this step length
           break
@@ -188,7 +186,7 @@ module WallE
 
       # Evaluate the effective search direction used in this 
       # L.S, but just if it improved.
-      da = -D/(norm(D)*α)
+      da = -D
       if improved
          da = Δx/(norm(Δx)*α)
       end
