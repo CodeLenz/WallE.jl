@@ -187,7 +187,7 @@ module WallE
       # L.S, but just if it improved.
       da = -D
       if improved
-         da = Δx/(norm(Δx)) #*α)
+         da = Δx/α
       end
         
 
