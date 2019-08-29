@@ -365,12 +365,9 @@ module WallE
           # defined in Wall!, used in the LS.
           blocked_x = sort(vcat(Iblock_m,Iblock_M))
 
-          @show blocked_x
-
           # Find the free design variables, i.e, the ones not blocked in 
           # the previous line search. 
           free_x = filter(x-> !(x in blocked_x),lvar)
-
          
           # Evaluate the norm of the gradient considering just the free variables
           previous_norm = norma
@@ -384,6 +381,7 @@ module WallE
              #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
              #beta = (norma/previous_norm)^2
              beta_r = 0.0
+             @show dot(D[blocked_x],da[blocked_x])
              if length(blocked_x)>0 && dot(D[blocked_x],da[blocked_x])^2>0.0
                 beta_r = -dot(D[blocked_x],D[blocked_x])/dot(D[blocked_x],da[blocked_x])
              end
