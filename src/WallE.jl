@@ -296,6 +296,10 @@ module WallE
     free_x = Int64[]
     free_x_ant = Int64[]
 
+    # List of constrained variables of this iteration and from the previos it.
+    blocked_x = Int64[]
+    blocked_x_ant = Int64[]
+
     # Flags used to indicate the use of Conjugate Gradients (GC)
     using_GC = false
     any_GC = false
@@ -347,9 +351,6 @@ module WallE
         # Evaluate the current gradient vector
         D  .= df(x0)
 
-        # Make a copy of the actual value of the search direction
-        #da .= d
-
         # The default search (minimizing) direction is the Steepest Descent
         d  .= -D
 
@@ -358,32 +359,37 @@ module WallE
 
           # Make a copy of the current free design variables
           free_x_ant = copy(free_x) 
+          blocked_x_ant = copy(blocked_x)
+
+          # List of fixed variables. Iblock_m and Iblock_M are
+          # defined in Wall!, used in the LS.
+          blocked_x = sort(vcat(Iblock_m,Iblock_M))
 
           # Find the free design variables, i.e, the ones not blocked in 
-          # the previous line search. Iblock_m and Iblock_M are
-          # defined in Wall!, used in the LS.
-          free_x = filter(x-> (!(x in Iblock_m) && 
-                               !(x in Iblock_M)),lvar)
+          # the previous line search. 
+          free_x = filter(x-> !(x in blocked_x),lvar)
 
-          # Extract only the free positions of the gradient for the current
-          # and previous iteration
-          Dfree  = D[free_x] 
-          Dafree = Da[free_x]
-
+         
           # Evaluate the norm of the gradient considering just the free variables
           previous_norm = norma
-          norma = norm(Dfree)
+          norma = norm(D[free_x])
 
           
           # If the set of free variables is the same in two consecutive iterations,
           # we can try to use Conjugate Gradients
         if ENABLE_GC
-          #if free_x==free_x_ant && 
-          if cont_GC <= nx
+          if free_x==free_x_ant && cont_GC <= nx
              #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
              #beta = (norma/previous_norm)^2
-             beta = -dot(D,D)/dot(D,da)
-             d .= -D .+ da*beta
+             beta_r = 0.0
+             if length(blocked_x)>0
+                beta_r = -dot(D[blocked_x],D[blocked_x])/dot(D[blocked_x],da[blocked_x])
+             end
+             beta_f = 0.0
+             if length(free_x)>0
+                beta_f = -dot(D[free_x],D[free_x])/dot(D[free_x],da[free_x])
+             end
+             d .= -D .+ beta_f*da[free_x] .+ beta_r*da[blocked_x]
              using_GC = true
              any_GC = true
              cont_GC += 1
