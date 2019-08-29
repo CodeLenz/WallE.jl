@@ -191,6 +191,8 @@ module WallE
          da = Δx/norm(Δx)
       end
       
+      da .= d  
+
       # We should have a better point by now
       return xn, fn, da, improved, Iblock_m, Iblock_M
 
