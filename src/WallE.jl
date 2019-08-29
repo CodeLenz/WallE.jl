@@ -105,7 +105,7 @@ module WallE
         α = 10.0
       end
       =#
-      α = 10.0
+      α = 50.0
       # "Optimal" point and function value
       xn = copy(x0) 
       fn = f0
@@ -184,11 +184,11 @@ module WallE
       end
 
 
-      # Evaluate the effective serch direction used in this 
+      # Evaluate the effective search direction used in this 
       # L.S, but just if it improved.
-      da = -copy(D)
+      da = -D/(norm(D)*α)
       if improved
-         da = Δx/norm(Δx)
+         da = Δx/(norm(Δx)*α)
       end
         
 
