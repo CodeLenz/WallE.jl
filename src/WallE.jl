@@ -105,7 +105,7 @@ module WallE
         α = 10.0
       end
       =#
-      α = 50.0
+      α = 10.0
       # "Optimal" point and function value
       xn = copy(x0) 
       fn = f0
