@@ -382,13 +382,14 @@ module WallE
              #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
              #beta = (norma/previous_norm)^2
              beta_r = 0.0
-             if length(blocked_x)>0
+             if length(blocked_x)>0 && dot(D[blocked_x],da[blocked_x])^2>0.0
                 beta_r = -dot(D[blocked_x],D[blocked_x])/dot(D[blocked_x],da[blocked_x])
              end
              beta_f = 0.0
-             if length(free_x)>0
+             if length(free_x)>0 && (dot(D[free_x],da[free_x]))^2 > 0.0
                 beta_f = -dot(D[free_x],D[free_x])/dot(D[free_x],da[free_x])
              end
+             @show beta_f, beta_r
              d[free_x] .= -D[free_x] .+ beta_f*da[free_x] 
              d[blocked_x] .= -D[blocked_x] .+ beta_r*da[blocked_x]
              using_GC = true
