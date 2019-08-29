@@ -145,11 +145,13 @@ module WallE
         m = dot(D,xn) - dot(D,x0)
 
         # That should be negative 
+        #=
         if m >= 0.0 
            println("Armijo::Not a search direction $m")
            improved = false
            break
         end
+        =#
 
         # Objective at this candidate point
         fn = f(xn)
