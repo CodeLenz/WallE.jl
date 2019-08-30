@@ -277,9 +277,9 @@ module WallE
        niter = 2*nx
     end
 
-    if flag_show
-       println("Wall_E2::Maximum number of internal iterations:: ",niter)
-    end
+    #if flag_show
+    #   println("Wall_E2::Maximum number of internal iterations:: ",niter)
+    #end
 
     # List of blocked variables. m is from below and M is from above 
     Iblock_m = Int64[]
@@ -373,8 +373,7 @@ module WallE
           # Evaluate the norm of the gradient considering just the free variables
           previous_norm = norma
           norma = norm(D[free_x])
-
-          
+      
           # If the set of free variables is the same in two consecutive iterations,
           # we can try to use Conjugate Gradients. Since we do not have a proper 
           # value for Da[free_x]
@@ -397,7 +396,7 @@ module WallE
              # we can effectivelly used the GC
              #
              beta_f = 0.0
-             if length(free_x)>0 && (dot(D[free_x],da[free_x]))^2 > 0.0
+             if length(free_x)>0 #&& (dot(D[free_x],da[free_x]))^2 > 0.0
                 beta_f = -dot(D[free_x],D[free_x])/dot(D[free_x],da[free_x])
              end
              
