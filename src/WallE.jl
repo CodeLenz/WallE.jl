@@ -388,10 +388,10 @@ module WallE
              #@show beta_f, beta_r
             
              # Testando nossa versão do Liu-Storey nas posições livres
-             beta_f_teste = dot(D[free_x]-Da[free_x],D[free_x]) / dot(D[free_x]-Da[free_x],da[free_x])
-             @show beta_f_teste
+             #beta_f_teste = dot(D[free_x]-Da[free_x],D[free_x]) / dot(D[free_x]-Da[free_x],da[free_x])
+             #@show beta_f_teste
 
-             beta_efetivo = max(beta_f_teste,0.0)
+             beta_efetivo = max(beta_f,0.0)
              if isnan(beta_efetivo)
                 beta_efetivo = 0.0
              end
