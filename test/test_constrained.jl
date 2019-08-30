@@ -85,8 +85,8 @@
     @test isapprox(x_opt_GC,[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-4)
 
 
-    println("\n","# Results #")
-    show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [10*ones(10) ; 11:49 ; 50*ones(51)]])
+    #println("\n","# Results #")
+    #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [10*ones(10) ; 11:49 ; 50*ones(51)]])
 
 
     # Third test
@@ -134,8 +134,8 @@
     @test isapprox(x_opt,resp,rtol=1E-4) 
     @test isapprox(x_opt_GC,resp,rtol=1E-4)
 
-    println("\n","# Results #")
-    show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt resp])
+    #println("\n","# Results #")
+    #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt resp])
     println("\n")
 
 

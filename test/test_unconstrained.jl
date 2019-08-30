@@ -33,8 +33,8 @@
     @test isapprox(x_opt,[3.0 ; 5.0],rtol=1E-2)
     @test isapprox(x_opt_GC,[3.0 ; 5.0],rtol=1E-2)
 
-    println("\n","# Resultado #")
-    show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
+    #println("\n","# Resultado #")
+    #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
     println("\n")
 
 
