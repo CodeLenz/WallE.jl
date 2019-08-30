@@ -505,7 +505,7 @@ module WallE
       println("% of minimization.     : ", 100*(f0-initial_objective)/initial_objective)
       end
       println("Free variables         : ", length(free_x))
-      println("Blocked variables      : ", length(blocked_x),": ",  length(Iblock_m)," for lower bound ",length(Iblock_m)," for upper bound")
+      println("Blocked variables      : ", length(blocked_x),": ",  length(Iblock_m)," for lower bound ",length(Iblock_M)," for upper bound")
       println("Number of iterations   : ", counter , " of ",niter)
       println("First order conditions : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
                                                       " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
