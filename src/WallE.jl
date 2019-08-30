@@ -366,7 +366,7 @@ module WallE
         # the previous line search. 
         free_x = filter(x-> !(x in blocked_x),lvar)
          
-        @disp free_x, blocked_x
+        @show free_x, blocked_x
 
         # Evaluate the norm of the gradient considering just the free variables
         previous_norm = norma
