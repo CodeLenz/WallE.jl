@@ -344,7 +344,7 @@ module WallE
 
       for iter=1:niter
 
-        # Make a copy of the actual value of the gradient vector (D)
+        # Make a copy of the current value of the gradient vector (D)
         Da .= D
 
         # Evaluate the current gradient vector
@@ -354,9 +354,11 @@ module WallE
         d  .= -D
 
         # If iter > 1, than we can consider the optimality condition
+        # and the use of Conjugate Gradient
         if iter>1
 
-          # Make a copy of the current free design variables
+          # Make a copy of both the current free design variables and 
+          # the current blocked variables
           free_x_ant = copy(free_x) 
           blocked_x_ant = copy(blocked_x)
 
@@ -374,45 +376,65 @@ module WallE
 
           
           # If the set of free variables is the same in two consecutive iterations,
-          # we can try to use Conjugate Gradients
-        if ENABLE_GC
+          # we can try to use Conjugate Gradients. Since we do not have a proper 
+          # value for Da[free_x]
+          if ENABLE_GC
           if free_x==free_x_ant && cont_GC <= nx
-             #beta = max(0.0, dot(Dfree,Dfree.-Dafree)/dot(Dafree,Dafree))
-             #beta = (norma/previous_norm)^2
+             
+             #
+             # Part associated to the projected (blocked) variables
+             # due to the theory, this beta is not needed, since
+             # it multiplies a zero vector (due to orthogonality)
+             #
              beta_r = 0.0
              #@show dot(D[blocked_x],da[blocked_x])
-             if length(blocked_x)>0 && dot(D[blocked_x],da[blocked_x])^2>0.0
-                beta_r = -dot(D[blocked_x],D[blocked_x])/dot(D[blocked_x],da[blocked_x])
-             end
+             #if length(blocked_x)>0 && dot(D[blocked_x],da[blocked_x])^2>0.0
+             #  beta_r = -dot(D[blocked_x],D[blocked_x])/dot(D[blocked_x],da[blocked_x])
+             #end
+
+             #
+             # Part associated to the free variables (not blocked), where
+             # we can effectivelly used the GC
+             #
              beta_f = 0.0
              if length(free_x)>0 && (dot(D[free_x],da[free_x]))^2 > 0.0
                 beta_f = -dot(D[free_x],D[free_x])/dot(D[free_x],da[free_x])
              end
-             #@show beta_f, beta_r
-            
+             
              # Testando nossa versão do Liu-Storey nas posições livres
              #beta_f_teste = dot(D[free_x]-Da[free_x],D[free_x]) / dot(D[free_x]-Da[free_x],da[free_x])
              #@show beta_f_teste
 
-             beta_efetivo = max(beta_f,0.0)
-             if isnan(beta_efetivo)
-                beta_efetivo = 0.0
+             #
+             # Effective β must be positive. We also avoid NaN that can happens
+             # if D and da are orthogonal.
+             #
+             effective_beta = max(beta_f,0.0)
+             if isnan(effective_beta)
+                effective_beta = 0.0
              end
-             d[free_x] .= -D[free_x] .+ beta_efetivo*da[free_x] 
-             d[blocked_x] .= -D[blocked_x] #.+ beta_r*da[blocked_x]
 
+             # GC for the free variables
+             d[free_x] .= -D[free_x] .+ effective_beta*da[free_x] 
 
+             # And steepest for the blocked variables
+             d[blocked_x] .= -D[blocked_x] 
+
+             # If effective_beta is > 0.0 (we are using GC)
+             # se set a flag to indicate the use and we 
+             # also store the number of uses and the list
+             # containing the iterations where GC are used.
              if beta_efetivo > 0.0
                 using_GC = true
                 any_GC = true
                 cont_GC += 1
                 push!(iter_GC,iter)
              end
-          else
+          else # We are not using GC
             using_GC = false
             cont_GC = 0
           end
-        end
+          end # if ENABLE_GC
 
           # Extract the derivatives at the blocked positions. This is used
           # as a complementary optimality condition 
@@ -425,7 +447,7 @@ module WallE
 
           # We need to fulfill all the first order conditions..
           if norma<=tol_norm*(1+abs(f0)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
-                                (all(delta_M .<= 0.0)||isempty(delta_M))
+                    (all(delta_M .<= 0.0)||isempty(delta_M))
 
             # Convergence assessed by first order condition. Set the flag and
             # skip the main loop
@@ -434,9 +456,6 @@ module WallE
           end
 
         end # if iter > 1
-
-        # Normalize the search direction
-        #d .= d/norm(d)
 
         # Increment the iteration counter
         counter += 1
@@ -454,7 +473,7 @@ module WallE
         # Iblock_m and I_block_M are the set of blocked (projected) variables
         x0, f0, da, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
                                                                    ci,cs,f,cut_factor,
-                                                                   0.1,α_ini,α_min)
+                                                                   0.4,α_ini,α_min)
         if !improved
           println("WallE2::The solution cannot be improved during the line-search. Bailing out.")
           break
