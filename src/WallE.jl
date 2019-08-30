@@ -401,6 +401,8 @@ module WallE
                 beta_f = -dot(D[free_x],D[free_x])/dot(D[free_x],da[free_x])
              end
              
+             @show beta_f
+
              # Testando nossa versão do Liu-Storey nas posições livres
              #beta_f_teste = dot(D[free_x]-Da[free_x],D[free_x]) / dot(D[free_x]-Da[free_x],da[free_x])
              #@show beta_f_teste
