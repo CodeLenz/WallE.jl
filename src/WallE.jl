@@ -388,7 +388,7 @@ module WallE
              #
              beta_f = 0.0
              if length(free_x)>0 
-                beta_f = dot(D[free_x]-Da[free_x],D[free_x]) / dot(D[free_x]-Da[free_x],da[free_x])
+                beta_f = -dot(D[free_x],D[free_x]) / dot(D[free_x],da[free_x])
              end
              
              @show beta_f
