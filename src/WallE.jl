@@ -335,6 +335,9 @@ module WallE
     delta_m = Float64[]
     delta_M = Float64[]
 
+    # Used to monitor the iterations with GC enabled
+    iter_GC = Int64[]
+
     ################################## MAIN LOOP #################################
     tempo = @elapsed  begin
       Prg = Progress(niter, 1, "Minimizing...")
@@ -403,6 +406,7 @@ module WallE
                 using_GC = true
                 any_GC = true
                 cont_GC += 1
+                push!(iter_GC,iter)
              end
           else
             using_GC = false
@@ -472,6 +476,7 @@ module WallE
       println("End of the main optimization Loop")
       println("Line Search            : Modified Armijo's Bactracking")
       println("Used GC?               : ", any_GC)
+      println("Iters with GC          : ", iter_GC)
       println("Initial objective      : ", initial_objective)
       println("Final objective        : ", f0)
       if initial_objective!=0.0 && f0!=0.0
