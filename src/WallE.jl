@@ -366,22 +366,20 @@ module WallE
         # the previous line search. 
         free_x = filter(x-> !(x in blocked_x),lvar)
          
-        @show free_x, blocked_x
-
         # Evaluate the norm of the gradient considering just the free variables
         previous_norm = norma
         norma = norm(D[free_x])
 
         # If iter > 1, than we can consider the optimality condition
         # and the use of Conjugate Gradient
-        if iter>1
+        #if iter>1
 
         
           # If the set of free variables is the same in two consecutive iterations,
           # we can try to use Conjugate Gradients. Since we do not have a proper 
           # value for Da[free_x]
           if ENABLE_GC
-          if free_x==free_x_ant && cont_GC <= nx
+          if iter > 1 && free_x==free_x_ant && cont_GC <= nx
              
              #
              # Part associated to the projected (blocked) variables
@@ -457,7 +455,7 @@ module WallE
             break
           end
 
-        end # if iter > 1
+        #end # if iter > 1
 
         # Increment the iteration counter
         counter += 1
