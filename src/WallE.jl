@@ -500,7 +500,7 @@ module WallE
       if initial_objective!=0.0 && f0!=0.0
       println("% of minimization.     : ", 100*(f0-initial_objective)/initial_objective)
       end
-      println("Blocked variables      : ", length(Iblock_m)," ",length(Iblock_M))
+      println("Blocked variables      : ", length(free_x)," ",length(blocked_x))
       println("Number of iterations   : ", counter , " of ",niter)
       println("First order conditions : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
                                                       " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
