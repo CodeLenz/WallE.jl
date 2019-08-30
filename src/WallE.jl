@@ -353,27 +353,29 @@ module WallE
         # The default search (minimizing) direction is the Steepest Descent
         d  .= -D
 
+
+        # Make a copy of both the current free design variables and 
+        # the current blocked variables
+        free_x_ant = copy(free_x) 
+        blocked_x_ant = copy(blocked_x)
+
+        # List of fixed variables. Iblock_m and Iblock_M are
+        # defined in Wall!, used in the LS.
+        blocked_x = sort(vcat(Iblock_m,Iblock_M))
+
+        # Find the free design variables, i.e, the ones not blocked in 
+        # the previous line search. 
+        free_x = filter(x-> !(x in blocked_x),lvar)
+         
+        # Evaluate the norm of the gradient considering just the free variables
+        previous_norm = norma
+        norma = norm(D[free_x])
+
         # If iter > 1, than we can consider the optimality condition
         # and the use of Conjugate Gradient
         if iter>1
 
-          # Make a copy of both the current free design variables and 
-          # the current blocked variables
-          free_x_ant = copy(free_x) 
-          blocked_x_ant = copy(blocked_x)
-
-          # List of fixed variables. Iblock_m and Iblock_M are
-          # defined in Wall!, used in the LS.
-          blocked_x = sort(vcat(Iblock_m,Iblock_M))
-
-          # Find the free design variables, i.e, the ones not blocked in 
-          # the previous line search. 
-          free_x = filter(x-> !(x in blocked_x),lvar)
-         
-          # Evaluate the norm of the gradient considering just the free variables
-          previous_norm = norma
-          norma = norm(D[free_x])
-      
+        
           # If the set of free variables is the same in two consecutive iterations,
           # we can try to use Conjugate Gradients. Since we do not have a proper 
           # value for Da[free_x]
