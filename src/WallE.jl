@@ -492,6 +492,7 @@ module WallE
     if flag_show
       println("\n********************************************************")
       println("End of the main optimization Loop")
+      println("Number of variables    : $(nx)")
       println("Line Search            : Modified Armijo's Bactracking")
       println("Used GC?               : ", any_GC)
       println("Iters with GC          : ", iter_GC)
@@ -500,7 +501,8 @@ module WallE
       if initial_objective!=0.0 && f0!=0.0
       println("% of minimization.     : ", 100*(f0-initial_objective)/initial_objective)
       end
-      println("Blocked variables      : ", length(free_x)," ",length(blocked_x))
+      println("Free variables         : ", length(free_x))
+      println("Blocked variables      : ", length(Iblock_m)," for lower bound ",length(Iblock_m)," for upper bound")
       println("Number of iterations   : ", counter , " of ",niter)
       println("First order conditions : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
                                                       " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
