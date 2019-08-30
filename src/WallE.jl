@@ -381,32 +381,19 @@ module WallE
           if ENABLE_GC
           if iter > 1 && free_x==free_x_ant && cont_GC <= nx
              
-             #
-             # Part associated to the projected (blocked) variables
-             # due to the theory, this beta is not needed, since
-             # it multiplies a zero vector (due to orthogonality)
-             #
-             beta_r = 0.0
-             #@show dot(D[blocked_x],da[blocked_x])
-             #if length(blocked_x)>0 && dot(D[blocked_x],da[blocked_x])^2>0.0
-             #  beta_r = -dot(D[blocked_x],D[blocked_x])/dot(D[blocked_x],da[blocked_x])
-             #end
-
+             
              #
              # Part associated to the free variables (not blocked), where
              # we can effectivelly used the GC
              #
              beta_f = 0.0
-             if length(free_x)>0 #&& (dot(D[free_x],da[free_x]))^2 > 0.0
-                beta_f = dot(D[free_x],D[free_x])/dot(Da[free_x],Da[free_x])
+             if length(free_x)>0 
+                beta_f = dot(D[free_x]-Da[free_x],D[free_x]) / dot(D[free_x]-Da[free_x],da[free_x])
              end
              
              @show beta_f
 
-             # Testando nossa versão do Liu-Storey nas posições livres
-             #beta_f_teste = dot(D[free_x]-Da[free_x],D[free_x]) / dot(D[free_x]-Da[free_x],da[free_x])
-             #@show beta_f_teste
-
+            
              #
              # Effective β must be positive. We also avoid NaN that can happens
              # if D and da are orthogonal.
