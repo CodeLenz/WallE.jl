@@ -389,6 +389,11 @@ module WallE
              beta_efetivo = max(beta_f,0.0)
              d[free_x] .= -D[free_x] .+ beta_efetivo*da[free_x] 
              d[blocked_x] .= -D[blocked_x] #.+ beta_r*da[blocked_x]
+
+             # Testando nossa versão do Liu-Storey nas posições livres
+             beta_f_teste = dot(D[free_x]-Da[free_x],D[free_x]) / dot(D[free_x]-Da[free_x],da[free_x])
+             @show beta_f_teste
+
              if beta_efetivo > 0.0
                 using_GC = true
                 any_GC = true
