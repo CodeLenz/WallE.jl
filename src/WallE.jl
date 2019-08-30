@@ -281,9 +281,9 @@ module WallE
     #   println("Wall_E2::Maximum number of internal iterations:: ",niter)
     #end
 
-    # List of blocked variables. m is from below and M is from above 
-    Iblock_m = Int64[]
-    Iblock_M = Int64[]
+    # List of blocked variables. m is from below and M is from above. We can
+    # used Wall2! to build those sets
+    Iblock_m, Iblock_M = Wall2!(x0,ci,cs)
 
     # lvar is used to find the complement (free variables)
     lvar = 1:nx
@@ -353,7 +353,6 @@ module WallE
         # The default search (minimizing) direction is the Steepest Descent
         d  .= -D
 
-
         # Make a copy of both the current free design variables and 
         # the current blocked variables
         free_x_ant = copy(free_x) 
@@ -367,6 +366,8 @@ module WallE
         # the previous line search. 
         free_x = filter(x-> !(x in blocked_x),lvar)
          
+        @disp free_x, blocked_x
+
         # Evaluate the norm of the gradient considering just the free variables
         previous_norm = norma
         norma = norm(D[free_x])
@@ -504,7 +505,7 @@ module WallE
       println("% of minimization.     : ", 100*(f0-initial_objective)/initial_objective)
       end
       println("Free variables         : ", length(free_x))
-      println("Blocked variables      : ", length(Iblock_m)," for lower bound ",length(Iblock_m)," for upper bound")
+      println("Blocked variables      : ", length(blocked_x),": ",  length(Iblock_m)," for lower bound ",length(Iblock_m)," for upper bound")
       println("Number of iterations   : ", counter , " of ",niter)
       println("First order conditions : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
                                                       " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
