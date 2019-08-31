@@ -380,33 +380,37 @@ module WallE
           # we can try to use Conjugate Gradients. Since we do not have a proper 
           # value for Da[free_x]
           if ENABLE_GC
-          if iter > 1 && free_x==free_x_ant && cont_GC <= nx
+          if iter > 1 && free_x==free_x_ant && cont_GC <= nx && length(free_x)==nx
              
              
              #
              # Part associated to the free variables (not blocked), where
              # we can effectivelly used the GC
              #
-             beta_f = 0.0
-             if length(free_x)>0 
-                beta_f = -dot(D[free_x],D[free_x]) / dot(D[free_x],da[free_x])
-             end
-             
+             #beta_f = 0.0
+             #if length(free_x)>0 
+             #   beta_f = -dot(D[free_x],D[free_x]) / dot(D[free_x],da[free_x])
+             #end
+             effective_beta = dot(D,D)/dot(Da,Da)
            
+             if effective_beta > 0.0
+                d = -D + effective_beta*da
+             end
+
              #
              # Effective β must be positive. We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
-             effective_beta = max(beta_f,0.0)
-             if isnan(effective_beta)
-                effective_beta = 0.0
-             end
+             #effective_beta = max(beta_f,0.0)
+             #if isnan(effective_beta)
+             #   effective_beta = 0.0
+             #end
 
              # GC for the free variables
-             d[free_x] .= -D[free_x] .+ effective_beta*da[free_x] 
+             #d[free_x] .= -D[free_x] .+ effective_beta*da[free_x] 
 
              # And steepest for the blocked variables
-             d[blocked_x] .= -D[blocked_x] 
+             #d[blocked_x] .= -D[blocked_x] 
 
              # If effective_beta is > 0.0 (we are using GC)
              # se set a flag to indicate the use and we 
