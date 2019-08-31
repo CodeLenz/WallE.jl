@@ -184,7 +184,8 @@ module WallE
       end
       
       # Evaluate the effective search direction used in this 
-      da = Δx/α
+      #da = Δx/α
+      da = d
         
 
       # We should have a better point by now
