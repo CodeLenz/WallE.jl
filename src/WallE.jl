@@ -106,6 +106,10 @@ module WallE
       end
       =#
       α = 10.0
+
+      # Make a copy of the design variables of the previous iteration
+      x1 .= x0
+
       # "Optimal" point and function value
       xn = copy(x0) 
       fn = f0
@@ -189,7 +193,7 @@ module WallE
         
 
       # We should have a better point by now
-      return xn, fn, da, improved, Iblock_m, Iblock_M
+      return xn, x1, fn, da, improved, Iblock_m, Iblock_M
 
   end
 
@@ -209,21 +213,20 @@ module WallE
 
   The inputs for this function are:
 
-      f::Function        -> Objective function -> f(x)->Float64
-      df::Function       -> Gradient of f(x)   -> df(x)->Array{Float64,1}
-      x0::Array{Float64} -> Initial point
-      ci::Array{Float64} -> Lower side constraints
-      cs::Array{Float64} -> Upper side constraints
+      f::Function         -> Objective function     -> f(x)->Float64
+      df::Function        -> Gradient of f(x)       -> df(x)->Array{Float64,1}
+      x0::Array{Float64}  -> Initial point
+      ci::Array{Float64}  -> Lower side constraints
+      cs::Array{Float64}  -> Upper side constraints
 
   Optional (with defaul values) inputs
 
-
-      niter::Int64       -> Maximum number of iterations
-      tol_norm::Float64  -> Tolerance for the norm
-      flag_show::Bool    -> Enable/Disable printing
-      cut_factor::Float64-> Factor to decrease the step length
-      α_ini::Float64     -> Initial step length
-      α_min::Float64     -> Minimum value for the step lengt.
+      niter::Int64        -> Maximum number of iterations
+      tol_norm::Float64   -> Tolerance for the norm
+      flag_show::Bool     -> Enable/Disable printing
+      cut_factor::Float64 -> Factor to decrease the step length
+      α_ini::Float64      -> Initial step length
+      α_min::Float64      -> Minimum value for the step lengt.
 
   Outputs: 
 
@@ -448,18 +451,13 @@ module WallE
         # Increment the iteration counter
         counter += 1
 
-        # Make a copy of the design variables of the 
-        # previous iterations
-        x2 .= x1
-        x1 .= x0
-
         # Line Search. Here, we are using the modified Armijo Backtracking
         # proposed by Bertsekas.
         # x0 contains the solution of the LS, 
         # f0 is f(x0)
         # improve is a flag to indicate that the LS improved the solution
         # Iblock_m and I_block_M are the set of blocked (projected) variables
-        x0, f0, da, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
+        x0, x1, f0, da, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
                                                                    ci,cs,f,cut_factor,
                                                                    0.4,α_ini,α_min)
         if !improved
