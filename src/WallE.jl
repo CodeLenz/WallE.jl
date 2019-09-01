@@ -150,16 +150,6 @@ module WallE
         # Join the sets
         blocked_x = sort(vcat(Iblock_m,Iblock_M))
 
-        # Check if the set of blocked variables changed during
-        # the L.S. If it is the case, than we have (BY NOW)
-        # to revert to Steepest (until I implement the corrections
-        # needed to make the GC work in this situation.)
-        if blocked_x != blocked_x
-           changed_block = true
-           return x0, x1, fref, da, improved, changed_block, Iblock_m, Iblock_M           
-        end
-
-
         # The effective step is then 
         # (remember that we already projected xn into the box)
         Δx = xn .- x0
@@ -167,7 +157,17 @@ module WallE
         # The descent condition (Eq. 27 of our text) is
         m = dot(D,xn) - dot(D,x0)
 
-        # That should be negative 
+        # Check if the set of blocked variables changed during
+        # the L.S. If it is the case, than we have (BY NOW)
+        # to revert to Steepest (until I implement the corrections
+        # needed to make the GC work in this situation.)
+        if blocked_x != blocked_x || m>=0.0
+           changed_block = true
+           return x0, x1, fref, da, improved, changed_block, Iblock_m, Iblock_M           
+        end
+
+
+        # m should be negative 
         if m >= 0.0 
            println("Armijo::Not a search direction $m")
            improved = false
