@@ -423,7 +423,7 @@ module WallE
              # Effective β must be positive. We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
-             #effective_beta = max(beta_f,0.0)
+             effective_beta = beta_f #max(beta_f,0.0)
              if isnan(effective_beta)
                 effective_beta = 0.0
              end
