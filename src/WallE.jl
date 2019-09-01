@@ -161,7 +161,7 @@ module WallE
         # the L.S. If it is the case, than we have (BY NOW)
         # to revert to Steepest (until I implement the corrections
         # needed to make the GC work in this situation.)
-        if (blocked_x != blocked_x || m>=0.0)
+        if (blocked_x != blocked_xa || m>=0.0)
            changed_block = true
            return x0, x1, f_ref, d, improved, changed_block, Iblock_m, Iblock_M           
         end
@@ -497,7 +497,7 @@ module WallE
 
            # Call LS again, with the previous set ob blocked variables
            x0, x1, f0, da, improved, blocked_changed, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
-                                                                   ci,cs,f,blocked_xa,
+                                                                   ci,cs,f,blocked_x_ant,
                                                                    cut_factor,
                                                                    0.4,α_ini,α_min)
      
