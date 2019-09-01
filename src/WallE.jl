@@ -415,12 +415,13 @@ module WallE
              #
              beta_f = 0.0
              if length(free_x)>0 
-                beta_f = -dot(D[free_x],D[free_x]) / dot(D[free_x],da[free_x])
+                beta_f = dot(D[free_x],D[free_x]) / dot(Da[free_x],Da[free_x])
              end
              
              
              #
-             # Effective β must be positive. We also avoid NaN that can happens
+             # Effective β must be positive (depending on the method).
+             # We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
              effective_beta = beta_f #max(beta_f,0.0)
