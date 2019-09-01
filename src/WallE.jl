@@ -406,7 +406,7 @@ module WallE
           # we can try to use Conjugate Gradients. Since we do not have a proper 
           # value for Da[free_x]
           if ENABLE_GC
-          if iter > 1 && free_x==free_x_ant && cont_GC <= nx 
+          if iter > 1 && free_x==free_x_ant && cont_GC <= 2*nx 
              
              
              #
@@ -423,7 +423,7 @@ module WallE
              # Effective β must be positive. We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
-             effective_beta = max(beta_f,0.0)
+             #effective_beta = max(beta_f,0.0)
              if isnan(effective_beta)
                 effective_beta = 0.0
              end
