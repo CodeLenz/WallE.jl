@@ -161,10 +161,10 @@ module WallE
         # the L.S. If it is the case, than we have (BY NOW)
         # to revert to Steepest (until I implement the corrections
         # needed to make the GC work in this situation.)
-        if (blocked_x != blocked_xa || m>=0.0)
-           changed_block = true
-           return x0, x1, f_ref, d, improved, changed_block, Iblock_m, Iblock_M           
-        end
+        #if (blocked_x != blocked_xa || m>=0.0)
+        #   changed_block = true
+        #   return x0, x1, f_ref, d, improved, changed_block, Iblock_m, Iblock_M           
+        #end
 
 
         # m should be negative 
@@ -481,6 +481,7 @@ module WallE
      
         # If blocked_changed is true (by now) we must revert to steepest
         # and do the L.S again
+        #=
         if blocked_changed
 
            println("Wall_E2::Reverting to Steepest in iteration $iter")
@@ -495,6 +496,7 @@ module WallE
                                                                    0.4,α_ini,α_min)
      
         end #blocked_changed
+        =#
 
         if !improved
           println("WallE2::The solution cannot be improved during the line-search. Bailing out.")
