@@ -40,7 +40,7 @@ module WallE
    
   #
   #
-  # Armijo's Bactracking LS over f(x), respecting
+  # Armijo's Backtracking LS over f(x), respecting
   # the side constraints.
   # 
   # Here we are using the Bertseka's proposal
@@ -78,11 +78,11 @@ module WallE
       # Reference (initial) value
       f_ref = f0
 
-      # Normalize d if its not yet normalized
+      # Normalize d if it's not yet normalized
       d /= norm(d)
 
       # Initial estimative for α. If α_ini==0 we try to 
-      # build an estimative based on the Barzilai method
+      # Build an estimative based on the Barzilai method
       #=
       α = α_ini
       if α==0.0 && norm(x0.-x1)>=1E-16
@@ -106,6 +106,10 @@ module WallE
       end
       =#
       α = 10.0
+
+      # Make a copy of the design variables of the previous iteration
+      x1 .= x0
+
       # "Optimal" point and function value
       xn = copy(x0) 
       fn = f0
@@ -131,7 +135,7 @@ module WallE
         # Increment the iteration counter
         iter += 1
 
-        # Evaluate the canditate point
+        # Evaluate the candidate point
         xn .= x0 .+ α*d
 
         # Projects the point into the boundary δS, modifying xn 
@@ -189,7 +193,7 @@ module WallE
         
 
       # We should have a better point by now
-      return xn, fn, da, improved, Iblock_m, Iblock_M
+      return xn, x1, fn, da, improved, Iblock_m, Iblock_M
 
   end
 
@@ -209,21 +213,20 @@ module WallE
 
   The inputs for this function are:
 
-      f::Function        -> Objective function -> f(x)->Float64
-      df::Function       -> Gradient of f(x)   -> df(x)->Array{Float64,1}
-      x0::Array{Float64} -> Initial point
-      ci::Array{Float64} -> Lower side constraints
-      cs::Array{Float64} -> Upper side constraints
+      f::Function         -> Objective function     -> f(x)->Float64
+      df::Function        -> Gradient of f(x)       -> df(x)->Array{Float64,1}
+      x0::Array{Float64}  -> Initial point
+      ci::Array{Float64}  -> Lower side constraints
+      cs::Array{Float64}  -> Upper side constraints
 
-  Optional (with defaul values) inputs
+  Optional (with default values) inputs
 
-
-      niter::Int64       -> Maximum number of iterations
-      tol_norm::Float64  -> Tolerance for the norm
-      flag_show::Bool    -> Enable/Disable printing
-      cut_factor::Float64-> Factor to decrease the step length
-      α_ini::Float64     -> Initial step length
-      α_min::Float64     -> Minimum value for the step lengt.
+      niter::Int64        -> Maximum number of iterations
+      tol_norm::Float64   -> Tolerance for the norm
+      flag_show::Bool     -> Enable/Disable printing
+      cut_factor::Float64 -> Factor to decrease the step length
+      α_ini::Float64      -> Initial step length
+      α_min::Float64      -> Minimum value for the step length
 
   Outputs: 
 
@@ -243,7 +246,7 @@ module WallE
 
     
   
-    # Until a better approach, we are desabling the use of GC 
+    # Until a better approach, we are disabling the use of GC 
     #if ENABLE_GC
     #   println("Until further notice, no GC is allowed in this code")
     #   ENABLE_GC = false
@@ -254,7 +257,7 @@ module WallE
 
     ################################### ASSERTIONS ###########################################
     #
-    # Test to verify if the length of the side contraints are 
+    # Test to verify if the length of the side constraints are 
     # compatible with the dimension of the problem
     @assert length(ci)==nx "Wall_E2:: size(ci)!=size(x0)"
     @assert length(cs)==nx "Wall_E2:: size(cs)!=size(x0)"
@@ -293,7 +296,7 @@ module WallE
     free_x = Int64[]
     free_x_ant = Int64[]
 
-    # List of constrained variables of this iteration and from the previos it.
+    # List of constrained variables of this iteration and from the previous iter.
     blocked_x = Int64[]
     blocked_x_ant = Int64[]
 
@@ -327,7 +330,7 @@ module WallE
     D = zeros(nx)
     Da = zeros(nx)
 
-    # Search direction of this itearation and from the previous iteration
+    # Search direction of this iteration and from the previous iteration
     d  = zeros(nx)
     da = zeros(nx)
 
@@ -363,7 +366,7 @@ module WallE
         # defined in Wall!, used in the LS.
         blocked_x = sort(vcat(Iblock_m,Iblock_M))
 
-        # Find the free design variables, i.e, the ones not blocked in 
+        # Find the free design variables, i.e., the ones not blocked in 
         # the previous line search. 
         free_x = filter(x-> !(x in blocked_x),lvar)
          
@@ -385,7 +388,7 @@ module WallE
              
              #
              # Part associated to the free variables (not blocked), where
-             # we can effectivelly used the GC
+             # we can effectively used the GC
              #
              beta_f = 0.0
              if length(free_x)>0 
@@ -433,7 +436,7 @@ module WallE
           # Blocked by above. They must be negative
           delta_M = D[Iblock_M]
 
-          # We need to fulfill all the first order conditions..
+          # We need to fulfil all the first order conditions..
           if norma<=tol_norm*(1+abs(f0)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                     (all(delta_M .<= 0.0)||isempty(delta_M))
 
@@ -448,18 +451,13 @@ module WallE
         # Increment the iteration counter
         counter += 1
 
-        # Make a copy of the design variables of the 
-        # previous iterations
-        x2 .= x1
-        x1 .= x0
-
         # Line Search. Here, we are using the modified Armijo Backtracking
         # proposed by Bertsekas.
         # x0 contains the solution of the LS, 
         # f0 is f(x0)
         # improve is a flag to indicate that the LS improved the solution
         # Iblock_m and I_block_M are the set of blocked (projected) variables
-        x0, f0, da, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
+        x0, x1, f0, da, improved, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
                                                                    ci,cs,f,cut_factor,
                                                                    0.4,α_ini,α_min)
         if !improved
@@ -482,7 +480,7 @@ module WallE
       println("\n********************************************************")
       println("End of the main optimization Loop")
       println("Number of variables    : $(nx)")
-      println("Line Search            : Modified Armijo's Bactracking")
+      println("Line Search            : Modified Armijo's Backtracking")
       println("Used GC?               : ", any_GC)
       println("Iters with GC          : ", iter_GC)
       println("Initial objective      : ", initial_objective)
@@ -537,7 +535,7 @@ module WallE
                      τ::Float64=0.5)
 
 
-      # Normalize D if its not yet normalized
+      # Normalize D if it's not yet normalized
       D = D./norm(D)
 
       # "Optimal" point and function value
@@ -551,7 +549,7 @@ module WallE
       # Counter
       iter = 0
 
-      # Lets keep track of the minimization
+      # Let's keep track of the minimization
       last_f = fn
       last_x = copy(xn)
 
@@ -594,7 +592,7 @@ module WallE
         # @show iter, α, fn, first_improvement
 
         # At some point we must improve the function. When it 
-        # happens, we can try do do better. So first, we must
+        # happens, we can try to do better. So first, we must
         # try to perform better than the initial point
         if fn < f0 && !first_improvement
 
@@ -636,7 +634,7 @@ module WallE
              break
           end
         else
-          # we dont want to improve it anymore, 
+          # We don't want to improve it anymore, 
           # so we can leave the main loop. We just have 
           # to assure that at least one good point was found
           if first_improvement
