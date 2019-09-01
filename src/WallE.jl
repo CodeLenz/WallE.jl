@@ -377,8 +377,8 @@ module WallE
         d  .= -D
 
         # Make a copy of the current blocked lower and upper variables
-        IBlock_ma = copy(IBlock_m)
-        IBlock_Ma = copy(IBlock_M)
+        Iblock_ma = copy(Iblock_m)
+        Iblock_Ma = copy(Iblock_M)
 
         # Make a copy of both the current free design variables and 
         # the current blocked variables
