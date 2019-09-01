@@ -163,7 +163,7 @@ module WallE
         # needed to make the GC work in this situation.)
         if (blocked_x != blocked_x || m>=0.0)
            changed_block = true
-           return x0, x1, fref, d, improved, changed_block, Iblock_m, Iblock_M           
+           return x0, x1, f_ref, d, improved, changed_block, Iblock_m, Iblock_M           
         end
 
 
