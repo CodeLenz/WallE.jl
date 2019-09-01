@@ -397,14 +397,10 @@ module WallE
         previous_norm = norma
         norma = norm(D[free_x])
 
-        # If iter > 1, than we can consider the optimality condition
-        # and the use of Conjugate Gradient
-        #if iter>1
-
         
           # If the set of free variables is the same in two consecutive iterations,
           # we can try to use Conjugate Gradients. Since we do not have a proper 
-          # value for Da[free_x]
+          # value for Da[free_x], we can just used it if iter>1
           if ENABLE_GC
           if iter > 1 && free_x==free_x_ant && cont_GC <= 2*nx 
              
@@ -413,6 +409,7 @@ module WallE
              # Part associated to the free variables (not blocked), where
              # we can effectively used the GC
              #
+             # Using Liu-Storey on free variables
              beta_f = 0.0
              if length(free_x)>0 
                 beta_f = -dot(D[free_x],D[free_x]) / dot(D[free_x],da[free_x])
@@ -429,17 +426,15 @@ module WallE
                 effective_beta = 0.0
              end
 
-             # GC for the free variables
+             # GC for the free variables. Previous projected
+             # variables use Steepest
              d[free_x] .= -D[free_x] .+ effective_beta*da[free_x] 
-
-             # And steepest for the blocked variables
-             #d[blocked_x] .= -D[blocked_x] 
 
              # If effective_beta is > 0.0 (we are using GC)
              # se set a flag to indicate the use and we 
              # also store the number of uses and the list
              # containing the iterations where GC are used.
-             if effective_beta > 0.0
+             if effective_beta != 0.0
                 using_GC = true
                 any_GC = true
                 cont_GC += 1
@@ -468,9 +463,7 @@ module WallE
             # skip the main loop
             flag_conv = true
             break
-          end
-
-        #end # if iter > 1
+          end # first order conditions
 
         # Increment the iteration counter
         counter += 1
