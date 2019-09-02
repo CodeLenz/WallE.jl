@@ -124,8 +124,6 @@ module WallE
       # We must return α and αI = max(0.0, α - α_lim)
       αI = 0.0
 
-      @show α_lim
-
       # Make a copy of the design variables of the previous iteration
       x1 .= x0
 
@@ -229,9 +227,7 @@ module WallE
         
       # Evaluate αI
       αI = max(0.0, α - α_lim)
-      @show αI 
-
-
+      
       # We should have a better point by now
       return xn, x1, α, αI, fn, da, improved, changed_block, Iblock_m, Iblock_M
 
