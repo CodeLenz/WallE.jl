@@ -109,6 +109,23 @@ module WallE
       =#
       α = 10.0
 
+      # Limit value for alpha in order to touch one of the 
+      # side constraints.
+      α_lim = 255E255
+      nx = length(x0)
+      for i=1:nx
+          if d[i] < 0.0 
+             α_lim = min(α_lim, (ci[i]-x0[i])/d[i])
+          elseif d[i] > 0.0
+             α_lim = min(α_lim, (cs[i]-x0[i])/d[i])
+          end   
+      end
+
+      # We must return α and αI = max(0.0, α - α_lim)
+      αI = 0.0
+
+      @show α_lim
+
       # Make a copy of the design variables of the previous iteration
       x1 .= x0
 
@@ -210,9 +227,13 @@ module WallE
       #da = Δx/α
       da = d
         
+      # Evaluate αI
+      αI = max(0.0, α - α_lim)
+      @show αI 
+
 
       # We should have a better point by now
-      return xn, x1, fn, da, improved, changed_block, Iblock_m, Iblock_M
+      return xn, x1, α, αI, fn, da, improved, changed_block, Iblock_m, Iblock_M
 
   end
 
@@ -474,7 +495,7 @@ module WallE
         # f0 is f(x0)
         # improve is a flag to indicate that the LS improved the solution
         # Iblock_m and I_block_M are the set of blocked (projected) variables
-        x0, x1, f0, da, improved, blocked_changed, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
+        x0, x1, α, αI, f0, da, improved, blocked_changed, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
                                                                    ci,cs,f,blocked_x,
                                                                    cut_factor,
                                                                    0.4,α_ini,α_min)
