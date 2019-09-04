@@ -610,6 +610,8 @@ module WallE
              # For each blocked variable...lets try
              for bl in blocked_x
 
+                 @show bl 
+
                  # Unitary vector
                  er = zeros(nx); er[bl] = 1.0
 
