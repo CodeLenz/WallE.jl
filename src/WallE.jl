@@ -223,7 +223,7 @@ module WallE
       
       # Evaluate the effective search direction used in this 
       #da = Δx/α
-      da .= d
+      da = d
         
       # Evaluate αI
       αI = max(0.0, α - α_lim)
@@ -386,7 +386,7 @@ module WallE
       
       # Evaluate the effective search direction used in this 
       #da = Δx/α
-      da .= d
+      da = d
         
       # Evaluate αI
       αI = max(0.0, α - α_lim)
