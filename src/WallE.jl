@@ -107,7 +107,11 @@ module WallE
         α = 10.0
       end
       =#
+      # Let's use the users hint 
       α = 10.0
+      if α_ini > 0.0
+         α = α_ini
+      end
 
       # Limit value for alpha in order to touch one of the 
       # side constraints.
@@ -171,15 +175,6 @@ module WallE
         
         # The descent condition (Eq. 27 of our text) is
         m = dot(D,xn) - dot(D,x0)
-
-        # Check if the set of blocked variables changed during
-        # the L.S. If it is the case, than we have (BY NOW)
-        # to revert to Steepest (until I implement the corrections
-        # needed to make the GC work in this situation.)
-        #if (blocked_x != blocked_xa || m>=0.0)
-        #   changed_block = true
-        #   return x0, x1, f_ref, d, improved, changed_block, Iblock_m, Iblock_M           
-        #end
 
 
         # m should be negative 
@@ -560,6 +555,18 @@ module WallE
 
         # The default search (minimizing) direction is the Steepest Descent
         d  .= -D
+
+        # Lets block the search directions if the variable is at the boundary
+        # and if there is a tendency to violate the side constraint. This is not
+        # necessary to the success of the alorithm since we are using a very
+        # direct approach to project to the wall, but may be usefull when 
+        # using α_I and α in the future (otherwise we can got stuck in a situation
+        # where we cannot improve.)
+        for i=1:nx
+          if (x0[i]==ci[i] && d[i]<0.0) || (x0[i]==cs[i] && d[i]>0.0)
+             d[i] = 0.0
+          end
+        end
 
         # Make a copy of the current blocked lower and upper variables
         Iblock_ma = copy(Iblock_m)
