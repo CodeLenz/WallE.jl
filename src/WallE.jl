@@ -598,15 +598,32 @@ module WallE
              
              
              #
-             # Part associated to the free variables (not blocked), where
-             # we can effectively used the GC
-             #
-             # Using Liu-Storey on free variables
-             beta_f = 0.0
-             if length(free_x)>0 
-                beta_f = -dot(D[free_x],D[free_x]) / dot(D[free_x],da[free_x])
-             end
-             
+             # Lets build an estimative to beta in constrained GC
+             #  
+
+             # Common term
+             T1 =   (1/α)*dot(D .- Da)
+
+             # For each blocked variable...lets try
+             for bl in blocked_x
+
+                 # Unitary vector
+                 er = zeros(nx); er[bl] = 1.0
+
+                 # Scalar 
+                 sca = dot(da,er)
+
+                 # Derivative at the boundary (whatever it means)
+                 Der = df(er)
+
+                 # add
+                 T1 .= T1 .+ (α_I/α)*sca*(Der .- D)
+                  
+             end #bl
+
+             # Evaluate beta, according to our theory
+             beta_f = dot(T1,D)/dot(T1,da) 
+
              
              #
              # Effective β must be positive (depending on the method).
