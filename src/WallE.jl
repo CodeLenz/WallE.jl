@@ -605,7 +605,7 @@ module WallE
              #  
 
              # Common term
-             T1 =   (1/α)*dot(D .- Da)
+             T1 =   (1/α)*(D .- Da)
 
              # For each blocked variable...lets try
              for bl in blocked_x
