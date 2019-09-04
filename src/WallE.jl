@@ -216,15 +216,12 @@ module WallE
         fn  = f_ref
       end
       
-      # Evaluate the effective search direction used in this 
-      #da = Δx/α
-      da = d
         
       # Evaluate αI
       αI = max(0.0, α - α_lim)
       
       # We should have a better point by now
-      return xn, x1, α, αI, fn, da, improved, changed_block, Iblock_m, Iblock_M
+      return xn, x1, α, αI, fn, improved, changed_block, Iblock_m, Iblock_M
 
   end
 
@@ -383,15 +380,12 @@ module WallE
         fn  = f_ref
       end
       
-      # Evaluate the effective search direction used in this 
-      #da = Δx/α
-      da = d
-        
+       
       # Evaluate αI
       αI = max(0.0, α - α_lim)
       
       # We should have a better point by now
-      return xn, x1, α, αI, fn, da, improved, changed_block, Iblock_m, Iblock_M
+      return xn, x1, α, αI, fn, improved, changed_block, Iblock_m, Iblock_M
 
   end
 
@@ -556,6 +550,9 @@ module WallE
         # Evaluate the current gradient vector
         D  .= df(x0)
 
+        # Backup of the previous search direction
+        da .= d
+
         # The default search (minimizing) direction is the Steepest Descent
         d  .= -D
 
@@ -598,16 +595,16 @@ module WallE
           # value for Da[free_x], we can just used it if iter>1
           if ENABLE_GC
           if iter > 1 && free_x==free_x_ant && cont_GC <= nx 
-             
-             
+                  
              #
              # Lets build an estimative to beta in constrained GC
              #  
 
              # Common term
-             T1 =   (1/α)*(D .- Da)
+             T1 = (1/α)*(D .- Da)
 
-             # For each blocked variable...lets try
+             # For each blocked variable...lets try to test for the 
+             # projection
              for bl in blocked_x
 
                  @show bl 
@@ -640,8 +637,7 @@ module WallE
                 effective_beta = 0.0
              end
 
-             # GC for the free variables. Previous projected
-             # variables use Steepest
+             # Correct the steepest for GC
              d +=  effective_beta*da
 
              # If effective_beta is > 0.0 (we are using GC)
@@ -688,7 +684,7 @@ module WallE
         # f0 is f(x0)
         # improve is a flag to indicate that the LS improved the solution
         # Iblock_m and I_block_M are the set of blocked (projected) variables
-        x0, x1, α, αI, f0, da, improved, blocked_changed, Iblock_m, Iblock_M = Armijo_Projected(x0,x1,f0,d,D,Da,
+        x0, x1, α, αI, f0,  improved, blocked_changed, Iblock_m, Iblock_M = Armijo_Projected(x0,x1,f0,d,D,Da,
                                                                                ci,cs,f,blocked_x,
                                                                                cut_factor,
                                                                                0.4,α_ini,α_min)
