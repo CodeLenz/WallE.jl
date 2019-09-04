@@ -70,7 +70,7 @@ module WallE
       α_ini::Float64     -> initial step length
       α_min::Float64     -> minimum value for the step lengt.
   """
-  function Modified_Armijo(x0::Array{Float64},x1::Array{Float64},f0::Float64,
+  function Armijo_Bertsekas(x0::Array{Float64},x1::Array{Float64},f0::Float64,
                            d::Array{Float64},D::Array{Float64},Da::Array{Float64},
                            ci::Array{Float64},cs::Array{Float64},f::Function,
                            blocked_xa::Array{Int64},
@@ -491,29 +491,12 @@ module WallE
         # f0 is f(x0)
         # improve is a flag to indicate that the LS improved the solution
         # Iblock_m and I_block_M are the set of blocked (projected) variables
-        x0, x1, α, αI, f0, da, improved, blocked_changed, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
-                                                                   ci,cs,f,blocked_x,
-                                                                   cut_factor,
-                                                                   0.4,α_ini,α_min)
+        x0, x1, α, αI, f0, da, improved, blocked_changed, Iblock_m, Iblock_M = Armijo_Bertsekas(x0,x1,f0,d,D,Da,
+                                                                              ci,cs,f,blocked_x,
+                                                                              cut_factor,
+                                                                              0.4,α_ini,α_min)
      
-        # If blocked_changed is true (by now) we must revert to steepest
-        # and do the L.S again
-        #=
-        if blocked_changed
-
-           println("Wall_E2::Reverting to Steepest in iteration $iter")
-
-           # Revert to full steepest 
-           d .= -D
-
-           # Call LS again, with the previous set ob blocked variables
-           x0, x1, f0, da, improved, blocked_changed, Iblock_m, Iblock_M = Modified_Armijo(x0,x1,f0,d,D,Da,
-                                                                   ci,cs,f,blocked_x_ant,
-                                                                   cut_factor,
-                                                                   0.4,α_ini,α_min)
-     
-        end #blocked_changed
-        =#
+       
 
         if !improved
           println("WallE2::The solution cannot be improved during the line-search. Bailing out.")
