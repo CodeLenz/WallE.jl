@@ -640,7 +640,7 @@ module WallE
 
              # GC for the free variables. Previous projected
              # variables use Steepest
-             d[free_x] .= -D[free_x] .+ effective_beta*da[free_x] 
+             d +=  effective_beta*da
 
              # If effective_beta is > 0.0 (we are using GC)
              # se set a flag to indicate the use and we 
