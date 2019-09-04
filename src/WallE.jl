@@ -554,7 +554,7 @@ module WallE
         da .= d
 
         # The default search (minimizing) direction is the Steepest Descent
-        d  .= -D
+        d  .= -D/norm(D)
 
         # Lets block the search directions if the variable is at the boundary
         # and if there is a tendency to violate the side constraint. This is not
@@ -586,6 +586,7 @@ module WallE
         free_x = filter(x-> !(x in blocked_x),lvar)
          
         # Evaluate the norm of the gradient considering just the free variables
+        # Its is used to  assess the convergence
         previous_norm = norma
         norma = norm(D[free_x])
 
