@@ -602,7 +602,7 @@ module WallE
              #  
 
              # Common term
-             T1 = (1/α)*(D .- Da)
+             T1 = (1/α)*(D/norm(D) .- Da/norm(Da))
 
              # For each blocked variable...lets try to test for the 
              # projection
@@ -619,12 +619,12 @@ module WallE
                  Der = df(er)
 
                  # add
-                 T1 .= T1 .+ (α_I/α)*sca*(Der .- D)
+                 T1 .= T1 .+ (α_I/α)*sca*(Der/norm(Der) .- D/norm(D))
                   
              end #bl
 
              # Evaluate beta, according to our theory
-             beta_f = dot(T1,D)/dot(T1,da) 
+             beta_f = dot(T1,D/norm(D))/dot(T1,da/norm(da)) 
     
              #
              # Effective β must be positive (depending on the method).
