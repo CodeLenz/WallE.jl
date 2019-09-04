@@ -47,7 +47,7 @@ module WallE
   #
   # 
   """
-  Modified_Armijo 
+  Armijo_Bertsekas
 
   Line search using a modified version of the Armijo's Backtracking
   method. The modifications are made in order to constraint the 
@@ -184,7 +184,7 @@ module WallE
 
         # m should be negative 
         if m >= 0.0 
-           println("Armijo::Not a search direction $m")
+           println("Armijo_Bertsekas::Not a search direction $m")
            improved = false
            break
         end
@@ -223,7 +223,7 @@ module WallE
       
       # Evaluate the effective search direction used in this 
       #da = Δx/α
-      da = d
+      da .= d
         
       # Evaluate αI
       αI = max(0.0, α - α_lim)
@@ -232,6 +232,170 @@ module WallE
       return xn, x1, α, αI, fn, da, improved, changed_block, Iblock_m, Iblock_M
 
   end
+
+
+#
+  #
+  # Armijo's Backtracking LS over f(x), respecting
+  # the side constraints.
+  # 
+  # Here we are using the form proposed in our text
+  #
+  # 
+  """
+  Armijo_Projected
+
+  Line search using a modified version of the Armijo's Backtracking
+  method. The modifications are made in order to constraint the 
+  candidate point into the set of feasible values defined by both
+  side constraints (ci and cs).
+
+  The inputs for this function are:
+      x0::Array{Float64} -> current point
+      x1::Array{Float64} -> previous point
+      f0::Float64        -> current value of the objective function 
+      d::Array{Float64}  -> search direction (minimization)
+      D::Array{Float64}  -> current gradient vector
+      Da::Array{Float64} -> previous gradient vector
+      ci::Array{Float64} -> lower side constraints
+      cs::Array{Float64} -> upper side constraints
+      f::Function        -> function of x to be minimized
+      blocked_xa::Array{Int64} -> Set of blocked variables 
+      cut_factor::Float64-> factor to decrease the step length
+      c::Float64         -> adjustment to the initial slope 
+      α_ini::Float64     -> initial step length
+      α_min::Float64     -> minimum value for the step lengt.
+  """
+  function Armijo_Projected(x0::Array{Float64},x1::Array{Float64},f0::Float64,
+                            d::Array{Float64},D::Array{Float64},Da::Array{Float64},
+                            ci::Array{Float64},cs::Array{Float64},f::Function,
+                            blocked_xa::Array{Int64},
+                            cut_factor::Float64,c::Float64=0.1, α_ini::Float64=10,
+                            α_min::Float64=1E-8,eps_δ::Float64=1E-10)
+
+      # Reference (initial) value
+      f_ref = f0
+
+      # Normalize d if it's not yet normalized
+      d /= norm(d)
+
+      # Let's use the users hint 
+      α = α_ini
+
+      # Limit value for alpha in order to touch one of the 
+      # side constraints.
+      α_lim = 255E255
+      nx = length(x0)
+      for i=1:nx
+          if d[i] < 0.0 
+             α_lim = min(α_lim, (ci[i]-x0[i])/d[i])
+          elseif d[i] > 0.0
+             α_lim = min(α_lim, (cs[i]-x0[i])/d[i])
+          end   
+      end
+
+      # We must return α and αI = max(0.0, α - α_lim)
+      αI = 0.0
+
+      # Make a copy of the design variables of the previous iteration
+      x1 .= x0
+
+      # "Optimal" point and function value
+      xn = copy(x0) 
+      fn = f0
+      
+      # Set of blocked (projected) variables during this L.S
+      Iblock_m = Int64[] 
+      Iblock_M = Int64[] 
+
+      # Counter
+      iter = 0
+
+      # Effective Δx
+      Δx = zeros(size(x0,1))
+
+      # Check if the solutions has improved
+      improved = true
+
+      # Check if the set of Blocked variables changes 
+      # during the L.S
+      changed_block = false
+
+      # The right hand side of the inequality is variable 
+      # in this version. So we will skip the loop when
+      # the search condition is true
+      while true
+        
+        # Increment the iteration counter
+        iter += 1
+
+        # Evaluate the candidate point
+        xn .= x0 .+ α*d
+
+        # Projects the point into the boundary δS, modifying xn 
+        Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
+
+        # Join the sets
+        blocked_x = sort(vcat(Iblock_m,Iblock_M))
+
+        # The effective step is then 
+        # (remember that we already projected xn into the box)
+        Δx = xn .- x0
+        
+        # The descent condition (Eq. 27 of our text) is
+        m = dot(D,Δx) 
+
+        # m should be negative 
+        if m >= 0.0 
+           println("Armijo_Projected::Not a search direction $m")
+           improved = false
+           break
+        end
+
+        # Objective at this candidate point
+        fn = f(xn)
+ 
+        # Our condition       
+        if   fn   <=  f0 + c*dot(D,Δx)
+
+          # We can accept this step length
+          break
+
+        else
+
+          # Decrease the step length and try again
+          α *= cut_factor
+
+        end
+
+        # Check for a lower bound for α
+        if α < α_min
+          break
+        end
+
+      end # while
+
+      # Asserts that f improved. If it not improved, than 
+      # we return the initial point and a flag indicating
+      # the situation.
+      if fn >= f_ref
+        improved = false
+        xn .= x0
+        fn  = f_ref
+      end
+      
+      # Evaluate the effective search direction used in this 
+      #da = Δx/α
+      da .= d
+        
+      # Evaluate αI
+      αI = max(0.0, α - α_lim)
+      
+      # We should have a better point by now
+      return xn, x1, α, αI, fn, da, improved, changed_block, Iblock_m, Iblock_M
+
+  end
+
 
 
    
@@ -491,10 +655,10 @@ module WallE
         # f0 is f(x0)
         # improve is a flag to indicate that the LS improved the solution
         # Iblock_m and I_block_M are the set of blocked (projected) variables
-        x0, x1, α, αI, f0, da, improved, blocked_changed, Iblock_m, Iblock_M = Armijo_Bertsekas(x0,x1,f0,d,D,Da,
-                                                                              ci,cs,f,blocked_x,
-                                                                              cut_factor,
-                                                                              0.4,α_ini,α_min)
+        x0, x1, α, αI, f0, da, improved, blocked_changed, Iblock_m, Iblock_M = Armijo_Projected(x0,x1,f0,d,D,Da,
+                                                                               ci,cs,f,blocked_x,
+                                                                               cut_factor,
+                                                                               0.4,α_ini,α_min)
      
        
 
