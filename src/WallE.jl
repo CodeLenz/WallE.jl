@@ -618,6 +618,8 @@ module WallE
                  # Derivative at the boundary (whatever it means)
                  Der = df(er)
 
+                 @show Der
+
                  # add
                  T1 .= T1 .+ (α_I/α)*sca*(Der .- D)
                   
