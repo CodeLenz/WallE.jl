@@ -280,7 +280,11 @@ module WallE
       d /= norm(d)
 
       # Let's use the users hint 
-      α = α_ini
+      α = 10.0
+      if α_ini > 0.0
+         α = α_ini
+      end
+
 
       # Limit value for alpha in order to touch one of the 
       # side constraints.
