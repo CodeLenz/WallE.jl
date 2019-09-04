@@ -541,6 +541,9 @@ module WallE
     # Used to monitor the iterations with GC enabled
     iter_GC = Int64[]
 
+    # Used to store previous α and α_I
+    α = α_I = 0.0
+
     ################################## MAIN LOOP #################################
     tempo = @elapsed  begin
       Prg = Progress(niter, 1, "Minimizing...")
