@@ -628,14 +628,13 @@ module WallE
 
              # Evaluate beta, according to our theory
              beta_f = dot(T1,D)/dot(T1,da) 
-
-             
+    
              #
              # Effective β must be positive (depending on the method).
              # We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
-             effective_beta = beta_f #max(beta_f,0.0)
+             effective_beta = max(beta_f,0.0)
              if isnan(effective_beta)
                 effective_beta = 0.0
              end
