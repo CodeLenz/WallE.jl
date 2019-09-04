@@ -608,8 +608,7 @@ module WallE
              # projection
              for bl in blocked_x
 
-                 @show bl 
-
+              
                  # Unitary vector
                  er = zeros(nx); er[bl] = 1.0
 
@@ -618,8 +617,6 @@ module WallE
 
                  # Derivative at the boundary (whatever it means)
                  Der = df(er)
-
-                 @show Der
 
                  # add
                  T1 .= T1 .+ (α_I/α)*sca*(Der .- D)
