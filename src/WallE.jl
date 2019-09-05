@@ -267,7 +267,7 @@ module WallE
                             blocked_xa::Array{Int64},
                             cut_factor::Float64,
                             ext_iter::Int64,c::Float64=0.1, α_ini::Float64=10,
-                            α_min::Float64=1E-8,eps_δ::Float64=1E-10)
+                            α_min::Float64=1E-8,eps_δ::Float64=1E-8)
 
       # Reference (initial) value
       f_ref = f0
@@ -278,17 +278,27 @@ module WallE
       # Initial estimative for α. If α_ini==0 we try to  
       # Build an estimative based on the Barzilai method
       # 
+      # OUR EXPERIENCES SHOW THAT THIS ESTIMATIVE IS NOT
+      # GOOD FOR CONSTRAINED PROBLEMS
+      #
+
+      # Pequena sacanagem
+      DD = copy(D)
+      DDa = copy(Da)
+      DD[blocked_xa] .= 0.0
+      DDa[blocked_xa] .= 0.0
+
       α = α_ini
       if α==0.0 && ext_iter>1
          s = x0 .- x1
-         y = D  .- Da
+         y = DD  .- DDa
          α_try = dot(s,y)/dot(s,s)
          if α_try<=eps_δ || α_try>=1.0/eps_δ
-            if norm(D)>1.0
+            if norm(DD)>1.0
               α = 1.0
-            elseif norm(D)<=1.0 && norm(D)>=1E-5
-              α = 1/norm(D)
-            elseif norm(D)<1E-5
+            elseif norm(DD)<=1.0 && norm(DD)>=1E-5
+              α = 1/norm(DD)
+            elseif norm(DD)<1E-5
               α = 1000
             end
          else
