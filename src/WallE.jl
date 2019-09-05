@@ -635,7 +635,9 @@ module WallE
             
              # Adaptative beta
              η = -1.0 / (norm(da)*min(0.01,norm(Da)))
-             beta_N =  dot(D,y)/dot(da,y) - 0.5*(dot(y,y)*dot(D,da))/(dot(da,y)^2) 
+             beta_N =  (1/dot(da,y))*dot(y-2*da*dot(y,y)/dot(da,y),D)
+
+             #dot(D,y)/dot(da,y) - 0.5*(dot(y,y)*dot(D,da))/(dot(da,y)^2) 
              effective_beta = max( η, beta_N)
 
              #
