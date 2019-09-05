@@ -629,15 +629,18 @@ module WallE
              # Evaluate beta using Hager and Zhang (2005)
              # 
              y = D .- Da
-             beta_f = dot( y - 2*da*dot(y,y)/dot(da,y) , D/dot(da,y)) 
-             @show beta_f
+             beta_N = dot( y - 2*da*dot(y,y)/dot(da,y) , D/dot(da,y)) 
+             beta_DY = dot(D,D)/dot(da,y)
+             beta_HS = dot(D,y)/dot(da,y)
+             
+             
     
              #
              # Effective β must be positive (depending on the method).
              # We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
-             effective_beta = beta_f #max(beta_f,0.0)
+             effective_beta = max( 0.0, min(beta_DY, beta_HS))
              if isnan(effective_beta)
                 effective_beta = 0.0
              end
