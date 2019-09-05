@@ -689,8 +689,8 @@ module WallE
         # improve is a flag to indicate that the LS improved the solution
         # Iblock_m and I_block_M are the set of blocked (projected) variables
         x0, x1, α, αI, f0,  improved, blocked_changed, Iblock_m, Iblock_M = Armijo_Projected(x0,x1,f0,d,D,Da,
-                                                                               ci,cs,f,blocked_x,iter,
-                                                                               cut_factor,
+                                                                               ci,cs,f,blocked_x,
+                                                                               cut_factor,iter,
                                                                                0.1,α_ini,α_min)
      
        
