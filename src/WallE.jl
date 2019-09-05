@@ -271,12 +271,14 @@ module WallE
       # Normalize d if it's not yet normalized
       #d /= norm(d)
 
-      # Let's use the users hint 
+      # Lets normalize D 
+      Dn = D/norm(D)
+
+      # Let's use the  hint 
       α = 10.0
       if α_ini > 0.0
          α = α_ini
       end
-
 
       # Limit value for alpha in order to touch one of the 
       # side constraints.
@@ -308,7 +310,7 @@ module WallE
       iter = 0
 
       # Effective Δx
-      Δx = zeros(size(x0,1))
+      Δx = zeros(nx)
 
       # Check if the solutions has improved
       improved = true
@@ -339,7 +341,7 @@ module WallE
         Δx = xn .- x0
         
         # The descent condition (Eq. 27 of our text) is
-        m = dot(D,Δx) 
+        m = dot(Dn,Δx) 
 
         # m should be negative 
         if m >= 0.0 
@@ -352,7 +354,7 @@ module WallE
         fn = f(xn)
  
         # Our condition       
-        if   fn   <=  f0 + c*dot(D,Δx)
+        if   fn   <=  f0 + c*m
 
           # We can accept this step length
           break
@@ -554,7 +556,7 @@ module WallE
         da .= d
 
         # The default search (minimizing) direction is the Steepest Descent
-        d  .= -D/norm(D)
+        d  .= -D
 
         # Lets block the search directions if the variable is at the boundary
         # and if there is a tendency to violate the side constraint. This is not
@@ -602,7 +604,7 @@ module WallE
              #  
 
              # Common term
-             T1 = (1/α)*(D/norm(D) .- Da/norm(Da))
+             T1 = (1/α)*(D .- Da)
 
              # For each blocked variable...lets try to test for the 
              # projection
@@ -619,12 +621,12 @@ module WallE
                  Der = df(er)
 
                  # add
-                 T1 .= T1 .+ (α_I/α)*sca*(Der/norm(Der) .- D/norm(D))
+                 T1 .= T1 .+ (α_I/α)*sca*(Der .- D)
                   
              end #bl
 
              # Evaluate beta, according to our theory
-             beta_f = dot(T1,D/norm(D))/dot(T1,da/norm(da)) 
+             beta_f = dot(T1,D)/dot(T1,da) 
     
              #
              # Effective β must be positive (depending on the method).
@@ -689,7 +691,6 @@ module WallE
                                                                                0.4,α_ini,α_min)
      
        
-
         if !improved
           println("WallE2::The solution cannot be improved during the line-search. Bailing out.")
           break
