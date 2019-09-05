@@ -271,9 +271,6 @@ module WallE
       # Normalize d if it's not yet normalized
       d /= norm(d)
 
-      # Lets normalize D 
-      Dn = D/norm(D)
-
       # Let's use the  hint 
       α = 10.0
       if α_ini > 0.0
@@ -282,7 +279,7 @@ module WallE
 
       # Limit value for alpha in order to touch one of the 
       # side constraints.
-      α_lim = 255E255
+      α_lim = maxintfloat(Float64)
       nx = length(x0)
       for i=1:nx
           if d[i] < 0.0 
@@ -341,7 +338,7 @@ module WallE
         Δx = xn .- x0
         
         # The descent condition (Eq. 27 of our text) is
-        m = dot(Dn,Δx)/norm(Δx) 
+        m = dot(D,Δx) 
 
         # m should be negative 
         if m >= 0.0 
@@ -609,8 +606,7 @@ module WallE
              # For each blocked variable...lets try to test for the 
              # projection
              for bl in blocked_x
-
-              
+     
                  # Unitary vector
                  er = zeros(nx); er[bl] = 1.0
 
@@ -628,7 +624,8 @@ module WallE
              # Evaluate beta, according to our theory
              beta_f = dot(T1,D)/dot(T1,da) 
 
-             beta_f = dot(D,D)/dot(Da,Da)
+             # Fletcher and Reeves  
+             #beta_f = dot(D,D)/dot(Da,Da)
 
     
              #
@@ -691,7 +688,7 @@ module WallE
         x0, x1, α, αI, f0,  improved, blocked_changed, Iblock_m, Iblock_M = Armijo_Projected(x0,x1,f0,d,D,Da,
                                                                                ci,cs,f,blocked_x,
                                                                                cut_factor,
-                                                                               0.4,α_ini,α_min)
+                                                                               0.1,α_ini,α_min)
      
        
         if !improved
