@@ -272,7 +272,7 @@ module WallE
       d /= norm(d)
 
       # Let's use the  hint 
-      α = 10.0
+      α = 100.0
       if α_ini > 0.0
          α = α_ini
       end
@@ -335,7 +335,7 @@ module WallE
 
         # The effective step is then 
         # (remember that we already projected xn into the box)
-        Δx = xn .- x0
+        Δx .= xn .- x0
         
         # The descent condition (Eq. 27 of our text) is
         m = dot(D,Δx) 
