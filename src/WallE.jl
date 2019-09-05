@@ -338,7 +338,7 @@ module WallE
         Δx = xn .- x0
         
         # The descent condition (Eq. 27 of our text) is
-        m = dot(D,Δx) 
+        m = dot(D,Δx/norm(Δx)) 
 
         # m should be negative 
         if m >= 0.0 
@@ -350,7 +350,7 @@ module WallE
         # Objective at this candidate point
         fn = f(xn)
  
-        # Our condition       
+        # Our condition (first Wolfe condition)      
         if   fn   <=  f0 + c*m
 
           # We can accept this step length
@@ -439,10 +439,10 @@ module WallE
     
   
     # Until a better approach, we are disabling the use of GC 
-    if ENABLE_GC
-       println("Until further notice, no GC is allowed in this code")
-       ENABLE_GC = false
-    end
+    #if ENABLE_GC
+    #   println("Until further notice, no GC is allowed in this code")
+    #   ENABLE_GC = false
+    #end
 
     # Number of design variables
     nx = length(x0)
@@ -624,8 +624,9 @@ module WallE
              # Evaluate beta, according to our theory
              #beta_f = dot(T1,D)/dot(T1,da) 
              =# 
-             # Fletcher and Reeves  
-             beta_f = dot(D,D)/dot(Da,Da)
+
+             y = D .- Da
+             beta_f = dot(D,y)/dot(da,y)
 
     
              #
