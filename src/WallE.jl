@@ -634,13 +634,12 @@ module WallE
              beta_HS = dot(D,y)/dot(da,y)
              
              
-    
              #
              # Effective β must be positive (depending on the method).
              # We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
-             effective_beta = max( 0.0, min(beta_DY, beta_HS))
+             effective_beta = max( 0.0, beta_N)#min(beta_DY, beta_HS))
              if isnan(effective_beta)
                 effective_beta = 0.0
              end
