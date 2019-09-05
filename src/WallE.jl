@@ -626,7 +626,7 @@ module WallE
              =# 
 
              y = D .- Da
-             beta_f = dot(D,y)/dot(da,y)
+             beta_f = dot( y - 2*da*dot(y,y)/dot(da,y) , D/dot(da,y)) 
 
     
              #
