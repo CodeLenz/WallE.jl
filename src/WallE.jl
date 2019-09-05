@@ -442,10 +442,10 @@ module WallE
     
   
     # Until a better approach, we are disabling the use of GC 
-    if ENABLE_GC
-       println("Until further notice, no GC is allowed in this code")
-       ENABLE_GC = false
-    end
+    #if ENABLE_GC
+    #   println("Until further notice, no GC is allowed in this code")
+    #   ENABLE_GC = false
+    #end
 
     # Number of design variables
     nx = length(x0)
@@ -627,6 +627,9 @@ module WallE
 
              # Evaluate beta, according to our theory
              beta_f = dot(T1,D)/dot(T1,da) 
+
+             beta_f = dot(D,D)/dot(Da,Da)
+
     
              #
              # Effective β must be positive (depending on the method).
