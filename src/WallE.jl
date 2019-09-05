@@ -625,9 +625,12 @@ module WallE
              #beta_f = dot(T1,D)/dot(T1,da) 
              =# 
 
+             #
+             # Evaluate beta using Hager and Zhang (2005)
+             # 
              y = D .- Da
              beta_f = dot( y - 2*da*dot(y,y)/dot(da,y) , D/dot(da,y)) 
-
+             @show beta_f
     
              #
              # Effective β must be positive (depending on the method).
