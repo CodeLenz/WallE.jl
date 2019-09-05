@@ -622,10 +622,10 @@ module WallE
              end #bl
 
              # Evaluate beta, according to our theory
-             beta_f = dot(T1,D)/dot(T1,da) 
+             #beta_f = dot(T1,D)/dot(T1,da) 
 
              # Fletcher and Reeves  
-             #beta_f = dot(D,D)/dot(Da,Da)
+             beta_f = dot(D,D)/dot(Da,Da)
 
     
              #
