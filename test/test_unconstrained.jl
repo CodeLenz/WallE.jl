@@ -94,7 +94,7 @@
     end
 
     # Ponto inicial
-    x0 = [3.0 ; 0.5]
+    x0 = [1.0 ; 1.0]
 
     # Restrições laterais
     ci = -Inf*ones(2)
@@ -135,7 +135,7 @@
     end
 
     # Ponto inicial
-    x0 = [-2;3]
+    x0 = [-2;2]
 
     # Restrições laterais
     ci = -Inf*ones(2)
