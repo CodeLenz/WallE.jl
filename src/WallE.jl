@@ -280,9 +280,7 @@ module WallE
       # 
       # OUR EXPERIENCES SHOW THAT THIS ESTIMATIVE IS NOT
       # GOOD FOR CONSTRAINED PROBLEMS
-      #
-
-      
+      #   
       α = α_ini
       if α==0.0 && ext_iter>1
          s = x0 .- x1
@@ -305,6 +303,8 @@ module WallE
         α = 10.0
       end
       
+
+      α = 100.0 
 
       # Limit value for alpha in order to touch one of the 
       # side constraints.
