@@ -632,6 +632,9 @@ module WallE
              beta_N = dot( y - 2*da*dot(y,y)/dot(da,y) , D/dot(da,y)) 
              beta_DY = dot(D,D)/dot(da,y)
              beta_HS = dot(D,y)/dot(da,y)
+
+             # Adaptative beta
+             η = -1.0 / (norm(da)*min(0.01,norm(Da)))
              
              
              #
@@ -639,7 +642,7 @@ module WallE
              # We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
-             effective_beta = max( 0.0, beta_N)#min(beta_DY, beta_HS))
+             effective_beta = max( η, beta_N)#min(beta_DY, beta_HS))
              if isnan(effective_beta)
                 effective_beta = 0.0
              end
