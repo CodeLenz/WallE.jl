@@ -255,8 +255,8 @@ module WallE
       cs::Array{Float64} -> upper side constraints
       f::Function        -> function of x to be minimized
       blocked_xa::Array{Int64} -> Set of blocked variables 
-      ext_iter::Int64    -> external iteration
       cut_factor::Float64-> factor to decrease the step length
+      ext_iter::Int64    -> external iteration
       c::Float64         -> adjustment to the initial slope 
       α_ini::Float64     -> initial step length
       α_min::Float64     -> minimum value for the step lengt.
