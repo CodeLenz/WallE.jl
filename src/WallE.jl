@@ -304,7 +304,7 @@ module WallE
       end
       
 
-      α = 100.0 
+      #α = 100.0 
 
       # Limit value for alpha in order to touch one of the 
       # side constraints.
