@@ -599,7 +599,7 @@ module WallE
              #
              # Lets build an estimative to beta in constrained GC
              #  
-
+             #=
              # Common term
              T1 = (1/α)*(D .- Da)
 
@@ -623,7 +623,7 @@ module WallE
 
              # Evaluate beta, according to our theory
              #beta_f = dot(T1,D)/dot(T1,da) 
-
+             =# 
              # Fletcher and Reeves  
              beta_f = dot(D,D)/dot(Da,Da)
 
