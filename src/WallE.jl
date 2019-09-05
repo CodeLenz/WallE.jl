@@ -66,6 +66,7 @@ module WallE
       f::Function        -> function of x to be minimized
       blocked_xa::Array{Int64} -> Set of blocked variables 
       cut_factor::Float64-> factor to decrease the step length
+      ext_iter::Int64    -> external iteration
       c::Float64         -> adjustment to the initial slope 
       α_ini::Float64     -> initial step length
       α_min::Float64     -> minimum value for the step lengt.
@@ -74,7 +75,8 @@ module WallE
                            d::Array{Float64},D::Array{Float64},Da::Array{Float64},
                            ci::Array{Float64},cs::Array{Float64},f::Function,
                            blocked_xa::Array{Int64},
-                           cut_factor::Float64,c::Float64=0.1, α_ini::Float64=10,
+                           cut_factor::Float64,ext_iter::Int64,
+                           c::Float64=0.1, α_ini::Float64=10,
                            α_min::Float64=1E-8,eps_δ::Float64=1E-10)
 
       # Reference (initial) value
@@ -253,6 +255,7 @@ module WallE
       cs::Array{Float64} -> upper side constraints
       f::Function        -> function of x to be minimized
       blocked_xa::Array{Int64} -> Set of blocked variables 
+      ext_iter::Int64    -> external iteration
       cut_factor::Float64-> factor to decrease the step length
       c::Float64         -> adjustment to the initial slope 
       α_ini::Float64     -> initial step length
@@ -262,7 +265,8 @@ module WallE
                             d::Array{Float64},D::Array{Float64},Da::Array{Float64},
                             ci::Array{Float64},cs::Array{Float64},f::Function,
                             blocked_xa::Array{Int64},
-                            cut_factor::Float64,c::Float64=0.1, α_ini::Float64=10,
+                            cut_factor::Float64,
+                            ext_iter::Int64,c::Float64=0.1, α_ini::Float64=10,
                             α_min::Float64=1E-8,eps_δ::Float64=1E-10)
 
       # Reference (initial) value
@@ -271,11 +275,31 @@ module WallE
       # Normalize d if it's not yet normalized
       d /= norm(d)
 
-      # Let's use the  hint 
-      α = 100.0
-      if α_ini > 0.0
-         α = α_ini
+      # Initial estimative for α. If α_ini==0 we try to  
+      # Build an estimative based on the Barzilai method
+      # 
+      α = α_ini
+      if α==0.0 && ext_iter>1
+         s = x0 .- x1
+         y = D  .- Da
+         α_try = dot(s,y)/dot(s,s)
+         if α_try<=eps_δ || α_try>=1.0/eps_δ
+            if norm(D)>1.0
+              α = 1.0
+            elseif norm(D)<=1.0 && norm(D)>=1E-5
+              α = 1/norm(D)
+            elseif norm(D)<1E-5
+              α = 1000
+            end
+         else
+            α = α_try #1.0 / max(0.02,min(λ,10.0))
+         end
+      else
+        # On the first iteration there is no way to use Barzilai
+        # so we must 
+        α = 10.0
       end
+      
 
       # Limit value for alpha in order to touch one of the 
       # side constraints.
@@ -595,54 +619,24 @@ module WallE
           # value for Da[free_x], we can just used it if iter>1
           if ENABLE_GC
           if iter > 1 && free_x==free_x_ant #&& cont_GC <= nx 
-                  
-             #
-             # Lets build an estimative to beta in constrained GC
-             #  
-             #=
-             # Common term
-             T1 = (1/α)*(D .- Da)
+            
 
-             # For each blocked variable...lets try to test for the 
-             # projection
-             for bl in blocked_x
-     
-                 # Unitary vector
-                 er = zeros(nx); er[bl] = 1.0
-
-                 # Scalar 
-                 sca = dot(da,er)
-
-                 # Derivative at the boundary (whatever it means)
-                 Der = df(er)
-
-                 # add
-                 T1 .= T1 .+ (α_I/α)*sca*(Der .- D)
-                  
-             end #bl
-
-             # Evaluate beta, according to our theory
-             #beta_f = dot(T1,D)/dot(T1,da) 
-             =# 
+            
 
              #
              # Evaluate beta using Hager and Zhang (2005)
              # 
              y = D .- Da
-             beta_N = dot( y - 2*da*dot(y,y)/dot(da,y) , D/dot(da,y)) 
-             beta_DY = dot(D,D)/dot(da,y)
-             beta_HS = dot(D,y)/dot(da,y)
-
+            
              # Adaptative beta
              η = -1.0 / (norm(da)*min(0.01,norm(Da)))
-             
-             
+             beta_N =  dot(D,y)/dot(da,y) - 0.5*(dot(y,y)*dot(D,da))/(dot(da,y)^2) 
+             effective_beta = max( η, beta_N)
+
              #
-             # Effective β must be positive (depending on the method).
              # We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
-             effective_beta = max( η, beta_N)#min(beta_DY, beta_HS))
              if isnan(effective_beta)
                 effective_beta = 0.0
              end
