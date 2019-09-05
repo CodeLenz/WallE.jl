@@ -269,7 +269,7 @@ module WallE
       f_ref = f0
 
       # Normalize d if it's not yet normalized
-      #d /= norm(d)
+      d /= norm(d)
 
       # Lets normalize D 
       Dn = D/norm(D)
