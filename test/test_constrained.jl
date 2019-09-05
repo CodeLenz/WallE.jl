@@ -139,4 +139,42 @@
     println("\n")
 
 
+   println("\n\n############\n  Test 2.4\n############")
+   # Função de Booth com restr
+   # x1 <= 0.5 ; x2 <= 2.0
+   # Dica de ponto inicial = (-5,-5)
+   # minimo (0.5 , 2.0)
+
+    function f(x) 
+       (x[1]+2*x[2]-7)^2 + (2*x[1]+x[2]-5)^2 
+    end
+
+    function df(x)
+        df1 = 2*(2*x[2]+x[1]-7)+4*(x[2]+2*x[1]-5)
+        df2 = 4*(2*x[2]+x[1]-7)+2*(x[2]+2*x[1]-5)
+        return [df1 ; df2]
+    end
+
+    # Ponto inicial
+    x0 = -5*rand(2)
+
+    # Restrições laterais
+    ci =  -Inf*ones(2)
+    cs =  [0.5 ; 2.0]
+
+    # Chama o otimizador
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
+ 
+
+    # The test
+    @test isapprox(x_opt,[0.5 ; 2.0],rtol=1E-2)
+    @test isapprox(x_opt_GC,[0.5 ; 2.0 ],rtol=1E-2)
+
+    #println("\n","# Resultado #")
+    #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
+    println("\n")
+
+
+
 end
