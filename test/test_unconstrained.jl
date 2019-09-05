@@ -135,7 +135,7 @@
     end
 
     # Ponto inicial
-    x0 = [-2;2]
+    x0 = [-2.0 ; 2.0]
 
     # Restrições laterais
     ci = -Inf*ones(2)
