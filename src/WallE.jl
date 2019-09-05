@@ -341,7 +341,7 @@ module WallE
         Δx = xn .- x0
         
         # The descent condition (Eq. 27 of our text) is
-        m = dot(Dn,Δx) 
+        m = dot(Dn,Δx)/norm(Δx) 
 
         # m should be negative 
         if m >= 0.0 
