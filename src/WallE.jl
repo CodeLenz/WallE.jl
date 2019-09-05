@@ -594,7 +594,7 @@ module WallE
           # we can try to use Conjugate Gradients. Since we do not have a proper 
           # value for Da[free_x], we can just used it if iter>1
           if ENABLE_GC
-          if iter > 1 && free_x==free_x_ant && cont_GC <= nx 
+          if iter > 1 && free_x==free_x_ant #&& cont_GC <= nx 
                   
              #
              # Lets build an estimative to beta in constrained GC
