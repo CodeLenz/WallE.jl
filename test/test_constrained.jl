@@ -198,7 +198,7 @@
 
     # Restrições laterais
     ci = [-Inf ; 0.5]
-    cs = [1.0 ; Inf] 
+    cs = [0.8 ; Inf] 
 
     # Chama o otimizador
     x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,10_000)
