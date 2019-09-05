@@ -180,7 +180,7 @@
     cs =  Inf*ones(2)
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,10_000)
     x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
  
 
