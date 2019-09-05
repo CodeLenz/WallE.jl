@@ -380,7 +380,7 @@ module WallE
         fn = f(xn)
  
         # Our condition (first Wolfe condition)      
-        if   fn   <=  f0 + c*m
+        if   fn   <=  f0 + c*m 
 
           # We can accept this step length
           break
