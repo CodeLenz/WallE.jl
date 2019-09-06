@@ -177,9 +177,11 @@
 
 
 
+  
+
    println("\n\n############\n  Test 2.5\n############")
    # Rosenbrook
-   # partida [0,3]
+   # partida [0,3] solução sem bloqueio é (1,1)
    # x1 <= 0.8 e x2 >= 0.5
 
     function f(x) 
@@ -202,17 +204,16 @@
 
     # Chama o otimizador
     x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,10_000)
-    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
+    #x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
  
 
     # The test
     @test isapprox(x_opt,[1.0 ; 1.0],rtol=1E-2)
-    @test isapprox(x_opt_GC,[1.0 ; 1.0],rtol=1E-2)
+    #@test isapprox(x_opt_GC,[1.0 ; 1.0],rtol=1E-2)
 
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
     println("\n")
 
-
-
+ 
 end
