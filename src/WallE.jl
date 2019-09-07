@@ -655,8 +655,8 @@ module WallE
              y = D .- Da
             
              # Adaptative beta
-             η = -1.0 / (norm(da)*min(0.01,norm(Da)))
-             beta_N =  (1/dot(da,y))*dot(y-2*da*dot(y,y)/dot(da,y),D)
+             η = -1.0 / (norm(da[free_x])*min(0.01,norm(Da[free_x])))
+             beta_N =  (1/dot(da[free_x],y[free_x]))*dot(y[free_x]-2*da[free_x]*dot(y[free_x],y[free_x])/dot(da[free_x],y[free_x]),D[free_x])
 
              #dot(D,y)/dot(da,y) - 0.5*(dot(y,y)*dot(D,da))/(dot(da,y)^2) 
              effective_beta = max( η, beta_N)
@@ -670,7 +670,7 @@ module WallE
              end
 
              # Correct the steepest for GC
-             d +=  effective_beta*da
+             d[free_x] +=  effective_beta*da[free_x]
 
              # If effective_beta is > 0.0 (we are using GC)
              # se set a flag to indicate the use and we 
