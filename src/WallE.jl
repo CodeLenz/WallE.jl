@@ -371,9 +371,27 @@ module WallE
 
         # m should be negative 
         if m >= 0.0 
-           println("Armijo_Projected::Not a search direction $m")
-           improved = false
-           break
+
+           println("Armijo_Projected::Not a search direction $m:: Reverting to steepest")
+
+           # Evaluate the candidate point again, using steepest
+           xn .= x0 .+ α*(-D/norm(D))
+
+           # Projects the point into the boundary δS, modifying xn 
+           Iblock_m, Iblock_M = Wall2!(xn,ci,cs)
+
+           # Join the sets
+           blocked_x = sort(vcat(Iblock_m,Iblock_M))
+
+           # The effective step is then 
+           # (remember that we already projected xn into the box)
+           Δx .= xn .- x0
+
+           # Evaluate the slope once again
+           m = dot(D,Δx) 
+
+           #improved = false
+           #break
         end
 
         # Objective at this candidate point
