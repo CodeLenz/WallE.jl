@@ -370,6 +370,7 @@ module WallE
         m = dot(D,Δx) 
 
         # m should be negative 
+        #=
         if m >= 0.0 
 
            println("Armijo_Projected::Not a search direction $m:: Reverting to steepest")
@@ -393,6 +394,8 @@ module WallE
            #improved = false
            #break
         end
+
+        =#
 
         # Objective at this candidate point
         fn = f(xn)
