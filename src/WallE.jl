@@ -668,7 +668,7 @@ module WallE
              end
 
              # Correct the steepest for GC
-             d[free_x] +=  effective_beta*da[free_x]
+             d +=  effective_beta*da
 
              # If effective_beta is > 0.0 (we are using GC)
              # se set a flag to indicate the use and we 
