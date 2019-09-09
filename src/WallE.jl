@@ -737,7 +737,7 @@ module WallE
              # se set a flag to indicate the use and we 
              # also store the number of uses and the list
              # containing the iterations where GC are used.
-             if effective_beta != 0.0
+             if beta != 0.0
                 using_GC = true
                 any_GC = true
                 cont_GC += 1
