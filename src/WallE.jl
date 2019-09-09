@@ -117,16 +117,37 @@ module WallE
 
       # Limit value for alpha in order to touch one of the 
       # side constraints.
+      vector_α_lim = Float64[]
       α_lim = 255E255
       nx = length(x0)
       for i=1:nx
           if d[i] < 0.0 
-             α_lim = min(α_lim, (ci[i]-x0[i])/d[i])
+             temp = (ci[i]-x0[i])/d[i]
+             if temp < 10_000
+                push!(vector_α_lim, temp)
+             end
           elseif d[i] > 0.0
-             α_lim = min(α_lim, (cs[i]-x0[i])/d[i])
+             temp = (cs[i]-x0[i])/d[i])
+             if temp < 10_000
+                push!(vector_α_lim, temp)
+             end
           end   
       end
 
+      # Test for effective (first) limit step
+      flag_limit_α = false
+      if length(vector_α_lim)>0
+        flag_limit_α = true
+        α_lim = minimum(vector_α_lim)
+      end  
+
+      # If there is a limit to our alpha, we must avoid testing
+      # Wolf´s condition exactly at this point.
+      if flag_limit_α && α in vector_α_lim
+         println("Warning::Armijo_Bertsekas::Initial step is discontinuous")
+         α = 1.1*maximum(vector_α_lim) 
+      end
+      
       # We must return α and αI = max(0.0, α - α_lim)
       αI = 0.0
 
@@ -199,6 +220,14 @@ module WallE
 
           # Decrease the step length and try again
           α *= cut_factor
+
+          # But test if it is leading to a discontinuous point. If it is 
+          # the case, apply a small perturbation to the current point
+          if flag_limit_α && α in vector_α_lim
+             println("Warning::Armijo_Bertsekas::Initial step is discontinuous")
+             α = 1.01*maximum(α) 
+          end
+      
 
         end
 
@@ -308,14 +337,35 @@ module WallE
 
       # Limit value for alpha in order to touch one of the 
       # side constraints.
-      α_lim = maxintfloat(Float64)
+      vector_α_lim = Float64[]
+      α_lim = 255E255
       nx = length(x0)
       for i=1:nx
           if d[i] < 0.0 
-             α_lim = min(α_lim, (ci[i]-x0[i])/d[i])
+             temp = (ci[i]-x0[i])/d[i]
+             if temp < 10_000
+                push!(vector_α_lim, temp)
+             end
           elseif d[i] > 0.0
-             α_lim = min(α_lim, (cs[i]-x0[i])/d[i])
+             temp = (cs[i]-x0[i])/d[i])
+             if temp < 10_000
+                push!(vector_α_lim, temp)
+             end
           end   
+      end
+
+      # Test for effective (first) limit step
+      flag_limit_α = false
+      if length(vector_α_lim)>0
+        flag_limit_α = true
+        α_lim = minimum(vector_α_lim)
+      end  
+
+      # If there is a limit to our alpha, we must avoid testing
+      # Wolf´s condition exactly at this point.
+      if flag_limit_α && α in vector_α_lim
+         println("Warning::Armijo_Projected::Initial step is discontinuous")
+         α = 1.1*maximum(vector_α_lim) 
       end
 
       # We must return α and αI = max(0.0, α - α_lim)
@@ -410,7 +460,13 @@ module WallE
 
           # Decrease the step length and try again
           α *= cut_factor
-
+          
+          # But test if it is leading to a discontinuous point. If it is 
+          # the case, apply a small perturbation to the current point
+          if flag_limit_α && α in vector_α_lim
+             println("Warning::Armijo_Projected::Initial step is discontinuous")
+             α = 1.01*maximum(α) 
+          end
         end
 
         # Check for a lower bound for α
@@ -429,7 +485,6 @@ module WallE
         fn  = f_ref
       end
       
-       
       # Evaluate αI
       αI = max(0.0, α - α_lim)
       
@@ -587,6 +642,10 @@ module WallE
     # Used to store previous α and α_I
     α = α_I = 0.0
 
+    # Used in the modified FR
+    beta = 0.0
+    previous_beta = beta
+
     ################################## MAIN LOOP #################################
     tempo = @elapsed  begin
       Prg = Progress(niter, 1, "Minimizing...")
@@ -636,6 +695,7 @@ module WallE
          
         # Evaluate the norm of the gradient considering just the free variables
         # Its is used to  assess the convergence
+        previous_beta = beta
         previous_norm = norma
         norma = norm(D[free_x])
 
@@ -653,22 +713,25 @@ module WallE
              y = D .- Da
             
              # Adaptative beta
-             η = -1.0 / (norm(da)*min(0.01,norm(Da)))
-             beta_N =  (1/dot(da,y))*dot(y-2*da*dot(y,y)/dot(da,y),D)
+             #η = -1.0 / (norm(da)*min(0.01,norm(Da)))
+             #beta_N =  (1/dot(da,y))*dot(y-2*da*dot(y,y)/dot(da,y),D)
 
              #dot(D,y)/dot(da,y) - 0.5*(dot(y,y)*dot(D,da))/(dot(da,y)^2) 
-             effective_beta = max( η, beta_N)
+             #effective_beta = max( η, beta_N)
+
+             beta = (norma/previous_norm)^2
+
 
              #
              # We also avoid NaN that can happens
              # if D and da are orthogonal.
              #
-             if isnan(effective_beta)
-                effective_beta = 0.0
-             end
+             #if isnan(effective_beta)
+             #   effective_beta = 0.0
+             #end
 
              # Correct the steepest for GC
-             d +=  effective_beta*da
+             d +=  -beta*dot(da,y)/norma^2 +  previous_beta*da
 
              # If effective_beta is > 0.0 (we are using GC)
              # se set a flag to indicate the use and we 
@@ -683,6 +746,7 @@ module WallE
           else # We are not using GC
             using_GC = false
             cont_GC = 0
+            beta = 0.0
           end
           end # if ENABLE_GC
 
