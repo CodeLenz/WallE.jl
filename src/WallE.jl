@@ -369,6 +369,7 @@ module WallE
       end
 
       # We must return α and αI = max(0.0, α - α_lim)
+      # FIXME ---> TEM QUE SER UM VETOR AGORA
       αI = 0.0
 
       # Make a copy of the design variables of the previous iteration
@@ -610,6 +611,7 @@ module WallE
     # Initialize the norm of this iteration and the one from previous iteration
     norma = maxintfloat(Float64)
     previous_norm = norma
+    actual_norm = norma
 
     # Keep track of the design variables from the two previous iterations
     x1 = zeros(nx) 
@@ -696,7 +698,8 @@ module WallE
         # Evaluate the norm of the gradient considering just the free variables
         # Its is used to  assess the convergence
         previous_beta = beta
-        previous_norm = norma
+        previous_norm = actual_norm
+        actual_norm = norm(D)
         norma = norm(D[free_x])
 
         
@@ -719,8 +722,7 @@ module WallE
              #dot(D,y)/dot(da,y) - 0.5*(dot(y,y)*dot(D,da))/(dot(da,y)^2) 
              #effective_beta = max( η, beta_N)
 
-             beta = (norma/previous_norm)^2
-
+             beta = (actual_norm/previous_norm)^2
 
              #
              # We also avoid NaN that can happens
@@ -761,7 +763,7 @@ module WallE
 
           # We need to fulfil all the first order conditions..
           if norma<=tol_norm*(1+abs(f0)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
-                    (all(delta_M .<= 0.0)||isempty(delta_M))
+                                            (all(delta_M .<= 0.0)||isempty(delta_M))
 
             # Convergence assessed by first order condition. Set the flag and
             # skip the main loop
