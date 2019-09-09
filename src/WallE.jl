@@ -733,7 +733,7 @@ module WallE
              #end
 
              # Correct the steepest for GC
-             d +=  -(beta*dot(da,y)/norma^2)*D +  previous_beta*da
+             d +=  -(beta*dot(da,y)/norma^2)*D +  beta*da
 
              # If effective_beta is > 0.0 (we are using GC)
              # se set a flag to indicate the use and we 
