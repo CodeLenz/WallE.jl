@@ -127,7 +127,7 @@ module WallE
                 push!(vector_α_lim, temp)
              end
           elseif d[i] > 0.0
-             temp = (cs[i]-x0[i])/d[i])
+             temp = (cs[i]-x0[i])/d[i]
              if temp < 10_000
                 push!(vector_α_lim, temp)
              end
@@ -347,7 +347,7 @@ module WallE
                 push!(vector_α_lim, temp)
              end
           elseif d[i] > 0.0
-             temp = (cs[i]-x0[i])/d[i])
+             temp = (cs[i]-x0[i])/d[i]
              if temp < 10_000
                 push!(vector_α_lim, temp)
              end
