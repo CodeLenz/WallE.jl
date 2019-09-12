@@ -25,8 +25,8 @@
 
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,100)
-    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,100,ENABLE_GC=true)
+    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,100)
+    x_opt_GC, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,ENABLE_GC=true)
  
 
     # The test
@@ -63,8 +63,8 @@
     cs =  Inf*ones(2)
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
-    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
+    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt_GC, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
  
 
     # The test
@@ -101,8 +101,8 @@
     cs =  Inf*ones(2)
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
-    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
+    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt_GC, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
  
 
     # The test
@@ -142,8 +142,8 @@
     cs =  Inf*ones(2)
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000)
-    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
+    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt_GC, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
  
 
     # The test
@@ -180,8 +180,8 @@
     cs =  Inf*ones(2)
 
     # Chama o otimizador
-    x_opt, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,10_000)
-    x_opt_GC, flag, norma = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
+    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,10_000)
+    x_opt_GC, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
  
 
     # The test
