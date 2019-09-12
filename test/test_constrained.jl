@@ -156,7 +156,7 @@
     end
 
     # Ponto inicial
-    x0 = -5*rand(2)
+    x0 = [-5.0 ; -5.0]
 
     # Restrições laterais
     ci =  -Inf*ones(2)
