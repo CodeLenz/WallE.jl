@@ -153,7 +153,9 @@ function Wall_E2(f::Function,df::Function,
         norms[iter] = norm_d
   
         # Scale
-        d .= d./norm_d
+        if length(blocked_x)!=n
+           d .= d./norm_d
+        end
 
         # Find limit alphas and constrained elements
         alpha_limit, list_r = Find_limit_alphas(x0,d,ci,cs)
@@ -164,14 +166,12 @@ function Wall_E2(f::Function,df::Function,
                                                   d,alpha_limit,
                                                   list_r)
 
-        @show iter, α, xn
-        
         # Store the step
         steps[iter] = α
 
         # Rollover Bethoven
         x0 .= xn
-        last_free_x   = copy(free_x)
+        last_free_x      = copy(free_x)
         last_d          .= d
         last_D          .= D
         last_α           = α
