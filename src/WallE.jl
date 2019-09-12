@@ -162,7 +162,7 @@ function Wall_E2(f::Function,df::Function,
         α, xn, fn, flag_sucess = Armijo_Projected(f,x0,
                                                 fn,D,
                                                 d,alpha_limit,
-                                              list_r)
+                                                list_r)
         # Store the step
         steps[iter] = α
 
@@ -300,8 +300,8 @@ end
 # effective blocks
 #
 function Project!(α::Float64,x0::Array{Float64},xn::Array{Float64},
-                d::Array{Float64},
-              alpha_limit::Array{Float64}, list_r::Array{Int64})
+                  d::Array{Float64},
+                  alpha_limit::Array{Float64}, list_r::Array{Int64})
 
 
     # Length 
@@ -346,7 +346,7 @@ function Project_d!(x0::Array{Float64},d::Array{Float64},
          # Tolerance for the bound
          # TODO
          # This should be linked to minimum step in LS.
-         tol = 1E-6
+         tol = 0.0 #1E-6
          if cs[i]!=Inf && ci[i]!=-Inf
             tol = (cs[i]-ci[i])/1E6 
          end
