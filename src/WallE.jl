@@ -160,9 +160,12 @@ function Wall_E2(f::Function,df::Function,
 
         # Line search
         α, xn, fn, flag_sucess = Armijo_Projected(f,x0,
-                                                fn,D,
-                                                d,alpha_limit,
-                                                list_r)
+                                                  fn,D,
+                                                  d,alpha_limit,
+                                                  list_r)
+
+        @show iter, α, xn
+        
         # Store the step
         steps[iter] = α
 
@@ -241,7 +244,7 @@ end
 # Find the maximum feasible step for each variable.
 #
 function Find_limit_alphas(x0::Array{Float64},d::Array{Float64},
-                         ci::Array{Float64},cs::Array{Float64})
+                           ci::Array{Float64},cs::Array{Float64})
 
     #
     # Empty lists with limit steps and variables that can be 
@@ -346,7 +349,7 @@ function Project_d!(x0::Array{Float64},d::Array{Float64},
          # Tolerance for the bound
          # TODO
          # This should be linked to minimum step in LS.
-         tol = 0.0 #1E-6
+         tol = 1E-6
          if cs[i]!=Inf && ci[i]!=-Inf
             tol = (cs[i]-ci[i])/1E6 
          end
@@ -373,12 +376,12 @@ function Armijo_Projected(f::Function,x0::Array{Float64},
                         f0::Float64,
                         D::Array{Float64},
                         d::Array{Float64},
-                      alpha_limit::Array{Float64},
-                      list_r::Array{Int64},
-                      c::Float64=0.1,
-                      τ::Float64=0.5,
-                      α_ini::Float64=10.0,
-                      α_min::Float64=1E-12)
+                        alpha_limit::Array{Float64},
+                        list_r::Array{Int64},
+                        c::Float64=0.1,
+                        τ::Float64=0.5,
+                        α_ini::Float64=10.0,
+                        α_min::Float64=1E-12)
 
 
     # "optimal" value

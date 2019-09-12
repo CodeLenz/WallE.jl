@@ -3,6 +3,8 @@
 #
 @testset "Many side constraints" begin
 
+#=
+
     # First test
     #  min f(x,y) = (x*(y-3))^2 + 4*x
     #
@@ -138,7 +140,7 @@
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt resp])
     println("\n")
 
-
+=#
    println("\n\n############\n  Test 2.4\n############")
    # Função de Booth com restr
    # x1 <= 0.5 ; x2 <= 2.0
@@ -177,7 +179,7 @@
 
 
 
-  
+  #=
 
    println("\n\n############\n  Test 2.5\n############")
    # Rosenbrook
@@ -215,5 +217,5 @@
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
     println("\n")
 
- 
+ =#
 end
