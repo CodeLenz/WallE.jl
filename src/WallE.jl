@@ -52,10 +52,10 @@ function Wall_E2(f::Function,df::Function,
                cs::Array{Float64},
                nmax_iter::Int64=100,
                tol_norm::Float64=1E-6,
-                 flag_show::Bool=true,
-                 cut_factor::Float64=0.5,
-                 α_ini::Float64=10.0,
-                 α_min::Float64=1E-12; ENABLE_GC::Bool=false)
+               flag_show::Bool=true,
+               cut_factor::Float64=0.5,
+               α_ini::Float64=10.0,
+               α_min::Float64=1E-12; ENABLE_GC::Bool=false)
 
     
     # Size of the problem
@@ -187,9 +187,9 @@ function Wall_E2(f::Function,df::Function,
 
             # Convergence assessed by first order condition. Set the flag and
             # skip the main loop
-            println("Convergenge:: ",norm_D," ",tol_norm*(1+abs(fn))," ",
-                    (all(delta_m .>= 0.0)||isempty(delta_m))," ",
-                    (all(delta_M .<= 0.0)||isempty(delta_M)) )
+            #println("Convergence:: ",norm_D," ",tol_norm*(1+abs(fn))," ",
+            #        (all(delta_m .>= 0.0)||isempty(delta_m))," ",
+            #        (all(delta_M .<= 0.0)||isempty(delta_M)) )
             flag_conv = true
             break
         end # first order conditions
