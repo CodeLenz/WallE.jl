@@ -69,7 +69,7 @@ function Wall_E2(f::Function,df::Function,
     # List with all variables
     lvar = 1:n
 
-    # First thing..Evaluate initial function value
+    # First thing. Evaluate initial function value
     f0 = f(x0)
     fn = f0
 
@@ -82,7 +82,7 @@ function Wall_E2(f::Function,df::Function,
     norms     = zeros(nmax_iter)
     steps     = zeros(nmax_iter)
 
-    # Some arrays we whant to show after the main loop
+    # Some arrays we want to show after the main loop
     free_x = Int64[]
     blocked_x = Int64[]
     I_blk_m = Int64[]
@@ -129,7 +129,7 @@ function Wall_E2(f::Function,df::Function,
 
         # If some variable is at the boundary and 
         # there is a tendency to violate, we can 
-        # supress the variable from the search direction
+        # suppress the variable from the search direction
         I_blk_m, I_blk_M = Project_d!(x0,d,ci,cs)
 
         # Join the list of blocked variables
@@ -166,7 +166,7 @@ function Wall_E2(f::Function,df::Function,
         alpha_limit, list_r = Find_limit_alphas(x0,d,ci,cs)
 
         # Line search
-        α, xn, fn, flag_sucess = Armijo_Projected(f,x0,
+        α, xn, fn, flag_success = Armijo_Projected(f,x0,
                                                   fn,D,
                                                   d,ci,cs,alpha_limit,
                                                   list_r)
@@ -189,19 +189,25 @@ function Wall_E2(f::Function,df::Function,
         # Blocked by above. They must be negative
         delta_M = D[I_blk_M]
 
-        # We need to fulfil all the first order conditions..
+        # We need to fulfil all the first order conditions
         if norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                            (all(delta_M .<= 0.0)||isempty(delta_M))
 
-            # Convergence assessed by first order condition. Set the flag and
-            # skip the main loop
+            # Convergence assessed by first order condition.
+            # Set the flag and skip the main loop
             #println("Convergence:: ",norm_D," ",tol_norm*(1+abs(fn))," ",
             #        (all(delta_m .>= 0.0)||isempty(delta_m))," ",
             #        (all(delta_M .<= 0.0)||isempty(delta_M)) )
             flag_conv = true
             break
         end # first order conditions
-    
+
+        # Stop if solution can't be improved
+        if !flag_success
+          println("WallE2::The solution cannot be improved during the line-search. Bailing out.")
+          break
+        end
+
         # Fancy report for the mob :)
         ProgressMeter.next!(Prg; showvalues = [
                           (:Iteration,counter), 
@@ -369,7 +375,7 @@ function Project!(α::Float64,x0::Array{Float64},xn::Array{Float64},
 
     else
       #
-      # This is the mathematical form of appying the 
+      # This is the mathematical form of applying the 
       # projections, as explained in the companion text.
       # 
       #
@@ -458,8 +464,8 @@ function Armijo_Projected(f::Function,x0::Array{Float64},
     # Initial step
     α = α_ini
 
-    # Flag (sucess)
-    flag_sucess = false
+    # Flag (success)
+    flag_success = false
 
     # Main Loop
     while true
@@ -473,12 +479,12 @@ function Armijo_Projected(f::Function,x0::Array{Float64},
         # Left side
         fn = f(xn)
 
-        # Rigth side
-        rigth = f0 + c*dot(D,Δx)
+        # Right side
+        right = f0 + c*dot(D,Δx)
 
         # Armijo condition
-        if fn <= rigth 
-            flag_sucess= true
+        if fn <= right 
+            flag_success= true
             break
         else
           α = α*τ
@@ -491,7 +497,7 @@ function Armijo_Projected(f::Function,x0::Array{Float64},
 
     # return effective step, next point, function value at this
     # point and the flag
-    return α, xn, fn, flag_sucess
+    return α, xn, fn, flag_success
 
 
 end #Armijo_Projected
@@ -501,7 +507,7 @@ end #Armijo_Projected
 # Evaluate the deflection for GC
 #
 # This is not working, and it is under heavy 
-# development. You have been warned !
+# development. You have been warned!
 #
 #
 function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64},
