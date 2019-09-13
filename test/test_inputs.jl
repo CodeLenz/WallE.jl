@@ -48,4 +48,15 @@
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,0)
    
 
+    #
+    # Fourth test - Check if tol_norm is in (0,1)
+    #
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,0.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,10.2)
+    
+      
+
+
 end
