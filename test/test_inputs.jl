@@ -57,6 +57,22 @@
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,10.2)
     
       
+    #
+    # Fifth test - Check if cut_factor (τ) is in (0,1)
+    #
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,-1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,2.0)
+
+    
+    
+
+
+
+
+      
 
 
 end
