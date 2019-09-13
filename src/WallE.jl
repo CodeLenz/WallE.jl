@@ -268,7 +268,7 @@ function Check_inputs(f::Function,df::Function,
     @assert length(x0)==length(ci)==length(cs) "WallE2::Check_inputs:: length of ci, cs and x0 must be the same"
 
     # Check if x0 is inside the bounds
-    @assert  sum(ci .<= x0 .<= cs)<length(x0) "WallE2::Check_inputs:: x0 must be inside the bounds ci and cs" 
+    @assert  sum(ci .<= x0 .<= cs)==length(x0) "WallE2::Check_inputs:: x0 must be inside the bounds ci and cs" 
 
     # Check if nmax_iter is positive
     @assert  nmax_iter > 0 "WallE2::Check_inputs:: nmax_iter must be larger than zero "    
