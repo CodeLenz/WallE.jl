@@ -58,8 +58,6 @@ function Wall_E2(f::Function,df::Function,
                α_min::Float64=1E-12; ENABLE_GC::Bool=false)
 
     
-
-
     # Check the consistence of the inputs
     Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,
                  cut_factor,α_ini,α_min,ENABLE_GC)
@@ -68,9 +66,9 @@ function Wall_E2(f::Function,df::Function,
     #                     A little message to our customers        #
     #                     (in case of constrained problems)        #
     #                                                              #
-    if ENABLE_GC && ( length(ci.==-Inf)!=length(xini) && length(cs.==Inf)!=length(xini)) 
-       println("The actual implementation can make a huge improvement for 
-        unconstrained problems, but is still in development for constrained problems. Use with care")
+    if ENABLE_GC && ( length(ci.==-Inf)!=length(xini) || length(cs.==Inf)!=length(xini) ) 
+       println("The actual implementation can lead to a huge improvement in computational time for 
+        unconstrained problems, but is still in development for constrained problems. Use with care!")
     end
 
 
