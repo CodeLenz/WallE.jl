@@ -75,10 +75,16 @@
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,0.0)
     
 
+    #
+    # Seventh test - Check if α_min is << 1.0 and > 0. At least smaller than α_ini
+    #
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,-1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,0.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,10.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,100.0)
 
 
-
-      
 
 
 end
