@@ -66,7 +66,7 @@ function Wall_E2(f::Function,df::Function,
     #                     A little message to our customers        #
     #                     (in case of constrained problems)        #
     #                                                              #
-    if ENABLE_GC && ( length(ci.==-Inf)!=length(xini) || length(cs.==Inf)!=length(xini) ) 
+    if ENABLE_GC && ( sum(ci.==-Inf)!=length(xini) || sum(cs.==Inf)!=length(xini) ) 
        println("The actual implementation can lead to a huge improvement in computational time for 
         unconstrained problems, but is still in development for constrained problems. Use with care!")
     end
