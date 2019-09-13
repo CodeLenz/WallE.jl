@@ -163,7 +163,7 @@ function Wall_E2(f::Function,df::Function,
         # Line search
         α, xn, fn, flag_sucess = Armijo_Projected(f,x0,
                                                   fn,D,
-                                                  d,alpha_limit,
+                                                  d,ci,cs,alpha_limit,
                                                   list_r)
 
         # Store the step
@@ -307,8 +307,9 @@ end
 # effective blocks
 #
 function Project!(α::Float64,x0::Array{Float64},xn::Array{Float64},
-                  d::Array{Float64},
-                  alpha_limit::Array{Float64}, list_r::Array{Int64})
+                  d::Array{Float64},ci::Array{Float64},cs::Array{Float64}
+                  alpha_limit::Array{Float64}, 
+                  list_r::Array{Int64},dirty::Bool=true)
 
 
     # Length 
@@ -320,32 +321,33 @@ function Project!(α::Float64,x0::Array{Float64},xn::Array{Float64},
 
     # Fast and dirty projection. The result is the same 
     # as the mathematical form, commented bellow
-    xn .= max.(ci,min.(cs,xn))
+    if dirty
+       xn .= max.(ci,min.(cs,xn))
 
-    #
-    # This is the mathematical form of appying the 
-    # projections, as explained in the companion text.
-    # 
-    #
-    # for each candidate constraint and for α > alpha_limit_r
-    # apply the projection
-    #=
-    for r in LinearIndices(list_r)
+    else
+      #
+      # This is the mathematical form of appying the 
+      # projections, as explained in the companion text.
+      # 
+      #
+      # for each candidate constraint and for α > alpha_limit_r
+      # apply the projection
+      for r in LinearIndices(list_r)
 
-        # Effective step
-        α_eff = max(0.0, α - alpha_limit[r])
+          # Effective step
+          α_eff = max(0.0, α - alpha_limit[r])
 
-        if α_eff > 0.0
+          if α_eff > 0.0
 
-            # This is the mathematical projection to the boundary
-            xn .= xn .- (α_eff  .* Extract_and_vector(d,list_r[r]))
- 
+              # This is the mathematical projection to the boundary
+              xn .= xn .- (α_eff  .* Extract_and_vector(d,list_r[r]))
+   
 
-        end 
+          end 
 
-    end
-    =#
-
+      end
+    end #dirty
+    
 end # Project
 
 
@@ -393,6 +395,8 @@ function Armijo_Projected(f::Function,x0::Array{Float64},
                         f0::Float64,
                         D::Array{Float64},
                         d::Array{Float64},
+                        ci::Array{Float64},
+                        cs::Array{Float64},
                         alpha_limit::Array{Float64},
                         list_r::Array{Int64},
                         c::Float64=0.1,
@@ -418,7 +422,7 @@ function Armijo_Projected(f::Function,x0::Array{Float64},
     while true
 
         # Candidate point (xn)
-        Project!(α,x0,xn,d,alpha_limit,list_r)
+        Project!(α,x0,xn,d,ci,cs,alpha_limit,list_r)
  
         # Effective delta x
         Δx .= xn .- x0 
