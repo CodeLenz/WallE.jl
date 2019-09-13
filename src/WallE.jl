@@ -162,7 +162,7 @@ function Wall_E2(f::Function,df::Function,
         if ENABLE_GC && iter>1 && last_list_r == list_r && cont_gc <= n
 
             # Modify d 
-            GC_projected!(d,D,last_D,last_α, last_list_r, last_α_limit,last_d,free_x,x,last_x)
+            GC_projected!(d,D,last_D,last_α, last_list_r, last_α_limit,last_d,free_x,x0,last_x)
             cont_gc += 1
 
         else
