@@ -558,7 +558,7 @@ function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64
                  pos = last_list_r[r]
 
                  # Correction
-                 L .= L .+ (effective_α.*Extract_as_vector(last_d,pos)
+                 L .= L .+ effective_α.*Extract_as_vector(last_d,pos)
 
              end # effective_α
 
