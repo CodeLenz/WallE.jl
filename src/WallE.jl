@@ -541,8 +541,8 @@ function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64
          # It starts with the difference in gradient
          y = D .- last_D
 
-         # Approximation for A*e_r
-         # Aer = (y/  (norm(x-last_x)^2+1E-6)) 
+         # (length of) Difference in position
+         ds = norm(x .- last_x)^2
 
          L = copy(y)
 
@@ -561,10 +561,8 @@ function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64
                  # Correction Assuming A = I, such that (d⋅e_r)(A*e_r) = d_r e_r
                  #L .= L .+ effective_α.*Extract_as_vector(last_d,pos)
 
-                 # Correction Assuming that A*e_r is (∇f(x^k) - ∇f(x^{k-1})) / Δx [pos] 
-                 @assert x[pos]-last_x[pos] != 0.0 "GC::Contact the owner :0)"
-                 
-                 L .= L .+ effective_α.*last_d[pos]* (y / (x[pos]-last_x[pos]) )  
+                 # Correction Assuming that A*e_r is (∇f(x^k) - ∇f(x^{k-1})) / ||Δx|| [pos] 
+                 L .= L .+ effective_α.*last_d[pos]*(y.*y[pos]/ds)  
 
 
              end # effective_α
