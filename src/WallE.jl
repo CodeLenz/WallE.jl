@@ -104,6 +104,7 @@ function Wall_E2(f::Function,df::Function,
 
     # We must keep track of some variables to evaluate β
     α_limit          = Float64[]
+    last_x           = zeros(n)
     list_r           = Int64[]
     last_free_x      = Int64[]
     last_d           = zeros(n)
@@ -161,7 +162,7 @@ function Wall_E2(f::Function,df::Function,
         if ENABLE_GC && iter>1 && last_list_r == list_r && cont_gc <= n
 
             # Modify d 
-            GC_projected!(d,D,last_D,last_α, last_list_r, last_α_limit,last_d,free_x)
+            GC_projected!(d,D,last_D,last_α, last_list_r, last_α_limit,last_d,free_x,x,last_x)
             cont_gc += 1
 
         else
@@ -202,6 +203,7 @@ function Wall_E2(f::Function,df::Function,
         steps[iter] = α
 
         # Rollover Bethoven
+        last_x          .= x0
         x0 .= xn
         last_free_x      = copy(free_x)
         last_d          .= d
@@ -528,7 +530,9 @@ end #Armijo_Projected
 #
 function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64},
                        last_α::Float64,last_list_r::Array{Int64},last_α_limit::Array{Float64},
-                       last_d::Array{Float64},free_x::Array{Int64})
+                       last_d::Array{Float64},free_x::Array{Int64},
+                       x::Array{Float64}
+                       last_x::Array{Float64})
 
          #
          # Lets evaluate the left term of both dot products
@@ -551,7 +555,8 @@ function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64
              if effective_α > 0.0
 
                  pos = last_list_r[r]
-                 L .= L .+ (effective_α.*Extract_and_vector(last_d,pos))
+                 Δx = x[pos] - last_x[pos]
+                 L .= L .+ (effective_α.*Extract_and_vector(last_d,pos)*y[pos]/Δx)
 
              end # effective_α
 
