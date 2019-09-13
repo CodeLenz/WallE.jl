@@ -66,7 +66,13 @@
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,1.0)
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,2.0)
 
-    
+
+    #
+    # Sixth test - Check if α_ini is > 0.0
+    #
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,-1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,0.0)
     
 
 
