@@ -541,12 +541,11 @@ function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64
          # It starts with the difference in gradient
          y = D .- last_D
 
-         # (length of) Difference in position
-         ds = norm(x .- last_x)^2
-
-         L = copy(y)
+         # Denominator of the Rank-1 update
+         ys = dot(y, x.-last_x) + 1E-8
 
          # Loop over last (effectivelly) projected variables
+         L = copy(y)
          for r in LinearIndices(last_list_r)
 
              # Effective alfa 
@@ -562,7 +561,7 @@ function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64
                  #L .= L .+ effective_α.*Extract_as_vector(last_d,pos)
 
                  # Correction Assuming that A*e_r is (∇f(x^k) - ∇f(x^{k-1})) / ||Δx|| [pos] 
-                 L .= L .+ effective_α.*last_d[pos]*(y.*y[pos]/ds)  
+                 L .= L .+ effective_α.*last_d[pos]*(y.*y[pos]/ys)  
 
 
              end # effective_α
