@@ -361,7 +361,7 @@ end
 #
 # Return a vector with just one position 
 #
-function Extract_and_vector(v::Array{Float64},pos::Int64)
+function Extract_as_vector(v::Array{Float64},pos::Int64)
   vv = zero(v)
   vv[pos] = v[pos]
   return vv
@@ -407,7 +407,7 @@ function Project!(α::Float64,x0::Array{Float64},xn::Array{Float64},
           if α_eff > 0.0
 
               # This is the mathematical projection to the boundary
-              xn .= xn .- (α_eff  .* Extract_and_vector(d,list_r[r]))
+              xn .= xn .- (α_eff  .* Extract_as_vector(d,list_r[r]))
    
 
           end 
@@ -554,9 +554,11 @@ function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64
              # If positive, it was projected in the last iteration
              if effective_α > 0.0
 
+                 # Projected variable
                  pos = last_list_r[r]
-                 Δx = x[pos] - last_x[pos]
-                 L .= L .+ (effective_α.*Extract_and_vector(last_d,pos)*y[pos]/Δx)
+
+                 # Correction
+                 L .= L .+ (effective_α.*Extract_as_vector(last_d,pos)
 
              end # effective_α
 
@@ -566,7 +568,7 @@ function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64
          # Now we can evaluate beta 
          β = dot(L,D)/dot(L,last_d)
 
-         if isnan(β) || β<0.0
+         if isnan(β) #|| β<0.0
              β = 0.0
          end
 
