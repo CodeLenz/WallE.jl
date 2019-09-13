@@ -307,7 +307,7 @@ end
 # effective blocks
 #
 function Project!(α::Float64,x0::Array{Float64},xn::Array{Float64},
-                  d::Array{Float64},ci::Array{Float64},cs::Array{Float64}
+                  d::Array{Float64},ci::Array{Float64},cs::Array{Float64},
                   alpha_limit::Array{Float64}, 
                   list_r::Array{Int64},dirty::Bool=true)
 
@@ -347,7 +347,7 @@ function Project!(α::Float64,x0::Array{Float64},xn::Array{Float64},
 
       end
     end #dirty
-    
+
 end # Project
 
 
