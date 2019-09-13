@@ -58,6 +58,11 @@ function Wall_E2(f::Function,df::Function,
                α_min::Float64=1E-12; ENABLE_GC::Bool=false)
 
     
+    # Check the consistence of the inputs
+    Check_inputs(f,df,x0,ci,cs,nmax_iter,tol_norm,flag_show,
+                 cut_factor,α_ini,α_min,ENABLE_GC)
+
+
     # Size of the problem
     n = length(x0)
 
@@ -243,6 +248,44 @@ function Wall_E2(f::Function,df::Function,
 end
 
 
+#
+# Check if the inputs are consistent
+#
+function Check_inputs(f::Function,df::Function,
+               x0::Array{Float64},
+               ci::Array{Float64},
+               cs::Array{Float64},
+               nmax_iter::Int64,
+               tol_norm::Float64,
+               flag_show::Bool,
+               cut_factor::Float64,
+               α_ini::Float64,
+               α_min::Float64, 
+               ENABLE_GC::Bool)
+
+
+    # Check if the length of x0, ci and cs are the same
+    @assert length(x0)==length(ci)==length(cs) "WallE2::Check_inputs:: length of ci, cs and x0 must be the same"
+
+    # Check if x0 is inside the bounds
+    @assert  ci .<= x0 .<= cs "WallE2::Check_inputs:: x0 must be inside the bounds ci and cs" 
+
+    # Check if nmax_iter is positive
+    @assert  nmax_iter > 0 "WallE2::Check_inputs:: nmax_iter must be larger than zero "    
+
+    # Check if tol_norm is in (0,1)
+    @assert 0.0<tol_norm<1.0 "WallE2::Check_inputs:: tol_norm must be in (0,1)"
+
+    # Check if cut_factor (τ) is in (0,1)
+    @assert 0.0<cut_factor<1.0 "WallE2::Check_inputs:: cut_factor must be in (0,1)"
+
+    # Check if α_ini is positive
+    @assert 0.0<α_ini "WallE2::Check_inputs:: α_ini must larger than zero"
+  
+    # Check if α_min is << 1.0 and > 0. At least smaller than α_ini
+    @assert  0.0<α_min<α_ini   "WallE2::Check_inputs:: α_min must be in (0,α_ini)"
+    
+end
 
 #
 # Find the maximum feasible step for each variable.
