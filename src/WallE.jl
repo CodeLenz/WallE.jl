@@ -528,7 +528,7 @@ end #Armijo_Projected
 #
 function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64},
                        last_α::Float64,last_list_r::Array{Int64},last_α_limit::Array{Float64},
-                       last_d::Array{Float64},free_x::Array{Int64},last_x::Array{Float64})
+                       last_d::Array{Float64},free_x::Array{Int64})
 
          #
          # Lets evaluate the left term of both dot products
