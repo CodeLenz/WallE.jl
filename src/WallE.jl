@@ -47,7 +47,7 @@ module WallE
  
   """
 function Wall_E2(f::Function,df::Function,
-               x0::Array{Float64},
+               xini::Array{Float64},
                ci::Array{Float64},
                cs::Array{Float64},
                nmax_iter::Int64=100,
@@ -59,9 +59,13 @@ function Wall_E2(f::Function,df::Function,
 
     
     # Check the consistence of the inputs
-    Check_inputs(f,df,x0,ci,cs,nmax_iter,tol_norm,flag_show,
+    Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,
                  cut_factor,α_ini,α_min,ENABLE_GC)
 
+
+
+    # Make a copy to unlink with the caller
+    x0 = copy(xini)
 
     # Size of the problem
     n = length(x0)
@@ -91,11 +95,13 @@ function Wall_E2(f::Function,df::Function,
     delta_M = Int64[]
 
     # We must keep track of some variables to evaluate β
+    α_limit          = Float64[]
+    list_r           = Int64[]
     last_free_x      = Int64[]
     last_d           = zeros(n)
     last_D           = zeros(n)
     last_α           = 0.0
-    last_alpha_limit = Float64[]
+    last_α_limit     = Float64[]
     last_list_r      = Int64   
 
     # Norm (Gradient, free positions)
@@ -109,6 +115,9 @@ function Wall_E2(f::Function,df::Function,
     
     # Number of iterations with GC
     cont_gc = 1
+
+    # Step in LS
+    α = 0.0
 
     # We can now enter in the main loop (Steepest)
     tempo = @elapsed  begin
@@ -138,15 +147,25 @@ function Wall_E2(f::Function,df::Function,
         # List of free variables
         free_x = filter(x-> !(x in blocked_x),lvar)
 
+        #
+        # Evaluate deflection using Conjugate Gradients.
+        #
+        if ENABLE_GC && iter>1 && last_list_r == list_r && cont_gc <= n
 
-        # Evaluate deflection for the free variables.
-        # It is not working :o(
-        if ENABLE_GC && iter>1 && last_free_x == free_x && cont_gc <= n
-          GC_projected!(d,D,last_D,last_d,free_x)
-          cont_gc += 1
+            # Modify d 
+            GC_projected!(d,D,last_D,last_α, last_list_r, last_α_limit,last_d,free_x)
+            cont_gc += 1
+
         else
+            # reset the counter
             cont_gc = 0 
+
         end
+       
+        # Make a copy here  
+        last_α           = α
+        last_α_limit     = copy(α_limit)
+        last_list_r      = copy(list_r)   
 
         # Norm (to scale search direction)
         norm_d = norm(d)
@@ -163,12 +182,12 @@ function Wall_E2(f::Function,df::Function,
         end
 
         # Find limit alphas and constrained elements
-        alpha_limit, list_r = Find_limit_alphas(x0,d,ci,cs)
+        α_limit, list_r = Find_limit_alphas(x0,d,ci,cs)
 
         # Line search
         α, xn, fn, flag_sucess = Armijo_Projected(f,x0,
                                                   fn,D,
-                                                  d,ci,cs,alpha_limit,
+                                                  d,ci,cs,α_limit,
                                                   list_r)
 
         # Store the step
@@ -179,9 +198,7 @@ function Wall_E2(f::Function,df::Function,
         last_free_x      = copy(free_x)
         last_d          .= d
         last_D          .= D
-        last_α           = α
-        last_alpha_limit = copy(alpha_limit)
-        last_list_r      = copy(list_r)   
+       
 
         # Blocked by below. They must be positive
         delta_m = D[I_blk_m]
@@ -195,9 +212,6 @@ function Wall_E2(f::Function,df::Function,
 
             # Convergence assessed by first order condition. Set the flag and
             # skip the main loop
-            #println("Convergence:: ",norm_D," ",tol_norm*(1+abs(fn))," ",
-            #        (all(delta_m .>= 0.0)||isempty(delta_m))," ",
-            #        (all(delta_M .<= 0.0)||isempty(delta_M)) )
             flag_conv = true
             break
         end # first order conditions
@@ -505,26 +519,49 @@ end #Armijo_Projected
 #
 #
 function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64},
-                     last_d::Array{Float64},free_x::Array{Int64})
+                       last_α::Float64,last_list_r::Array{Int64},last_α_limit::Array{Float64},
+                       last_d::Array{Float64},free_x::Array{Int64})
 
          #
-         # Modified F & R proposed by Zhang, Zhou and Li
-         #
-         β = dot(D[free_x],D[free_x])/dot(last_D[free_x],last_D[free_x])
-
-         # Difference in gradient
-         y = D[free_x] .- last_D[free_x] 
-        
+         # Lets evaluate the left term of both dot products
          # 
-         # Correction for the free terms
-         #
-         d[free_x] +=  -β*(dot(last_d[free_x],y)/dot(D[free_x],D[free_x]))*D[free_x]
-                       +β*last_d[free_x]
+
+         # It starts with the difference in gradient
+         L = D .- last_D
+
+         # Loop over last (effectivelly) projected variables
+         for r in LinearIndices(last_list_r)
+
+             # Effective alfa 
+             effective_α = max(0.0, last_α - last_α_limit[r])
+
+             # If positive, it was projected in the last iteration
+             if effective_α > 0.0
+
+                 L .= L .+ (effective_α.*Extract_and_vector(last_d,r))
+
+             end # effective_α
+
+         end # r
+        
+         
+         # Now we can evaluate beta 
+         β = dot(L,D)/dot(L,last_d)
+
+         if isnan(β) || β<0.0
+             β = 0.0
+         end
+
+         # New search direction
+         d .= -D .+ β*last_d
 
          # Assert that this is a descent direction
          if dot(d,D)>=0.0 
-          println("Reverting to SD...")
-          d .= -D
+            #println("Reverting to Steepest...")
+            d .= -D
+         else
+             #println("Using $β ...")
+             nothing
          end
 
 end
