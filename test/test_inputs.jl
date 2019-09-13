@@ -40,4 +40,12 @@
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs)
    
 
+    #
+    # Third test - nmax_iter > 0
+    #
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,-1)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,0)
+   
+
 end
