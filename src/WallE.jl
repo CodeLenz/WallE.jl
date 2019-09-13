@@ -528,14 +528,18 @@ end #Armijo_Projected
 #
 function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64},
                        last_α::Float64,last_list_r::Array{Int64},last_α_limit::Array{Float64},
-                       last_d::Array{Float64},free_x::Array{Int64})
+                       last_d::Array{Float64},free_x::Array{Int64},last_x::Array{Float64})
 
          #
          # Lets evaluate the left term of both dot products
          # 
 
+
+
          # It starts with the difference in gradient
-         L = D .- last_D
+         y = D .- last_D
+
+         L = copy(y)
 
          # Loop over last (effectivelly) projected variables
          for r in LinearIndices(last_list_r)
@@ -546,7 +550,8 @@ function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64
              # If positive, it was projected in the last iteration
              if effective_α > 0.0
 
-                 L .= L .+ (effective_α.*Extract_and_vector(last_d,r))
+                 pos = last_list_r[r]
+                 L .= L .+ (effective_α.*Extract_and_vector(last_d,pos))
 
              end # effective_α
 
