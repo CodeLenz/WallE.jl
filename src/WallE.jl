@@ -198,10 +198,14 @@ function Wall_E2(f::Function,df::Function,
         end # first order conditions
     
         # Fancy report for the mob :)
-        ProgressMeter.next!(Prg; showvalues = [(:Norma,norm_D), (:Objetivo,fn), 
+        ProgressMeter.next!(Prg; showvalues = [
+                          (:Iteration,counter), 
+                          (:Norm,norm_D), 
+                          (:Target,tol_norm*(1+abs(fn))),
+                          (:Objective,fn), 
                           (:(Grad(Max)),maximum(D)), (:(Grad(Min)),minimum(D)),
-                          (:Inferior,all(delta_m .>= -tol_norm)||isempty(delta_m)),
-                          (:Superior,all(delta_M .<= tol_norm)||isempty(delta_M))],
+                          (:Lower,all(delta_m .>= -tol_norm)||isempty(delta_m)),
+                          (:Upper,all(delta_M .<= tol_norm)||isempty(delta_M))],
                           valuecolor = :yellow)
 
 
@@ -313,8 +317,19 @@ function Project!(α::Float64,x0::Array{Float64},xn::Array{Float64},
     # Next point, without projections
     xn .= x0 + α*d
 
+
+    # Fast and dirty projection. The result is the same 
+    # as the mathematical form, commented bellow
+    xn .= max.(ci,min.(cs,xn))
+
+    #
+    # This is the mathematical form of appying the 
+    # projections, as explained in the companion text.
+    # 
+    #
     # for each candidate constraint and for α > alpha_limit_r
     # apply the projection
+    #=
     for r in LinearIndices(list_r)
 
         # Effective step
@@ -322,12 +337,14 @@ function Project!(α::Float64,x0::Array{Float64},xn::Array{Float64},
 
         if α_eff > 0.0
 
+            # This is the mathematical projection to the boundary
             xn .= xn .- (α_eff  .* Extract_and_vector(d,list_r[r]))
+ 
 
         end 
 
     end
-
+    =#
 
 end # Project
 
@@ -338,7 +355,7 @@ end # Project
 # and the search direction leads to the Wall.
 #
 function Project_d!(x0::Array{Float64},d::Array{Float64},
-                  ci::Array{Float64},cs::Array{Float64})
+                   ci::Array{Float64},cs::Array{Float64})
 
      # Constrained sets
      I_blk_m = Int64[]
@@ -435,6 +452,10 @@ end #Armijo_Projected
 
 #
 # Evaluate the deflection for GC
+#
+# This is not working, and it is under heavy 
+# development. You have been warned !
+#
 #
 function GC_projected!(d::Array{Float64},D::Array{Float64},last_D::Array{Float64},
                      last_d::Array{Float64},free_x::Array{Int64})
