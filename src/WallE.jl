@@ -67,8 +67,7 @@ function Wall_E2(f::Function,df::Function,
     #                     (in case of constrained problems)        #
     #                                                              #
     if ENABLE_GC && ( sum(ci.==-Inf)!=length(xini) || sum(cs.==Inf)!=length(xini) ) 
-       println("The actual implementation can lead to a huge improvement in computational time for 
-        unconstrained problems, but is still in development for constrained problems. Use with care!")
+       println("The actual implementation can lead to a huge improvement in computational time for \nunconstrained problems, but is still in development for constrained problems. Use with care!")
     end
 
 
