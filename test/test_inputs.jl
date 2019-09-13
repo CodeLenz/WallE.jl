@@ -22,4 +22,22 @@
     x0 = ones(10); ci = zeros(10);  cs = 2*ones(5)
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs)    
  
+    #
+    # Second test - Check if x0 is inside the bounds
+    #
+    x0 = -1*ones(10); ci = zeros(10);  cs = 2*ones(10)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs)
+
+    x0 = 5*ones(10); ci = zeros(10);  cs = 2*ones(10)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs)
+
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    x0[5] = 10.0
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs)
+   
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    x0[2] = -10.0
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs)
+   
+
 end
