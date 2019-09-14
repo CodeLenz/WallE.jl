@@ -327,7 +327,7 @@ function Check_inputs(f::Function,df::Function,
     @assert  0.0<α_min<α_ini   "WallE2::Check_inputs:: α_min must be in (0,α_ini)"
     
     # We cannot set both ENABLE_GC and ENABLE_QN at the same time
-    @assert (!(ENABLE_GC|ENABLE_QN)) "WallE2::Check_inputs:: You can only enable GC OR QN"
+    @assert (!(ENABLE_GC&ENABLE_QN)) "WallE2::Check_inputs:: You can only enable GC OR QN"
 
 end
 
