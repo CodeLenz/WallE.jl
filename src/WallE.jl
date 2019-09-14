@@ -57,6 +57,9 @@ function Wall_E2(f::Function,df::Function,
                α_ini::Float64=10.0,
                α_min::Float64=1E-12; ENABLE_GC::Bool=false)
 
+
+    # For testing purposes
+    ENABLE_GC = false
     
     # Check the consistence of the inputs
     Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,
@@ -88,6 +91,9 @@ function Wall_E2(f::Function,df::Function,
     # Allocate some vectors we use a lot
     D = zeros(n)
     d = zeros(n)
+
+    # Diagonal approximation of (inverse of) Hessian
+    B = I(n)
 
     # Lists with function values and norms (D)
     functions = zeros(nmax_iter)
@@ -142,8 +148,21 @@ function Wall_E2(f::Function,df::Function,
         # Gradient
         D .= df(x0)
 
+        # Update (inverse of) Hessian
+        if iter>1
+           s = x0 .- last_x
+           y = D .- last_D
+           termo1 = dot(s,y)
+           termo2 = dot(s,B*s)
+           if termo1 > termo2
+              println("Updating Hessian..")
+              E = I(n).*(s.^2)
+              B .= B .+ ((termo1-termo2)/trace(E.^2)).*E
+           end
+        end
+
         # Search direction
-        d .= -D
+        d .= -B*D
 
         # If some variable is at the boundary and 
         # there is a tendency to violate, we can 
