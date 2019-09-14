@@ -93,7 +93,7 @@ function Wall_E2(f::Function,df::Function,
     d = zeros(n)
 
     # Diagonal approximation of (inverse of) Hessian
-    B = I(n)
+    B = 1.0*.I(n)
 
     # Lists with function values and norms (D)
     functions = zeros(nmax_iter)
@@ -156,8 +156,8 @@ function Wall_E2(f::Function,df::Function,
            termo2 = dot(s,B*s)
            if termo1 > termo2
               println("Updating Hessian..")
-              E = I(n).*(s.^2)
-              B .= B .+ ((termo1-termo2)/tr(E.^2)).*E
+              E = 1.0.*I(n).*(s.^2)
+              B .= B .+ ((termo1-termo2)/tr(E.^2))*E
            end
         end
 
