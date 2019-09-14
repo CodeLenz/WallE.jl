@@ -157,7 +157,7 @@ function Wall_E2(f::Function,df::Function,
            if termo1 > termo2
               println("Updating Hessian..")
               E = I(n).*(s.^2)
-              B .= B .+ ((termo1-termo2)/trace(E.^2)).*E
+              B .= B .+ ((termo1-termo2)/tr(E.^2)).*E
            end
         end
 
