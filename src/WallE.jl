@@ -155,6 +155,9 @@ function Wall_E2(f::Function,df::Function,
               println("Updating Hessian..")
               E = 1.0.*I(n).*(s.^2)
               B .= B .+ ((termo1-termo2)/tr(E.^2))*E
+          else
+               # Reset
+              B .= 1.0*I(n)
            end
         end
 
