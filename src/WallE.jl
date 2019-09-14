@@ -93,7 +93,7 @@ function Wall_E2(f::Function,df::Function,
     d = zeros(n)
 
     # Diagonal approximation of (inverse of) Hessian
-    B = 1.0*.I(n)
+    B = 1.0.*I(n)
 
     # Lists with function values and norms (D)
     functions = zeros(nmax_iter)
