@@ -55,15 +55,12 @@ function Wall_E2(f::Function,df::Function,
                flag_show::Bool=true,
                cut_factor::Float64=0.5,
                α_ini::Float64=10.0,
-               α_min::Float64=1E-12; ENABLE_GC::Bool=false)
+               α_min::Float64=1E-12; ENABLE_GC::Bool=false, ENABLE_QN::Bool=false)
 
-
-    # For testing purposes
-    ENABLE_GC = false
     
     # Check the consistence of the inputs
     Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,
-                 cut_factor,α_ini,α_min,ENABLE_GC)
+                 cut_factor,α_ini,α_min,ENABLE_GC,ENABLE_QN)
 
     #                                                              #
     #                     A little message to our customers        #
@@ -149,7 +146,7 @@ function Wall_E2(f::Function,df::Function,
         D .= df(x0)
 
         # Update (inverse of) Hessian
-        if iter>1
+        if iter>1 && ENABLE_QN
            s = x0 .- last_x
            y = D .- last_D
            termo1 = dot(s,y)
@@ -304,7 +301,8 @@ function Check_inputs(f::Function,df::Function,
                cut_factor::Float64,
                α_ini::Float64,
                α_min::Float64, 
-               ENABLE_GC::Bool)
+               ENABLE_GC::Bool,
+               ENABLE_QN::Bool)
 
 
     # Check if the length of x0, ci and cs are the same
@@ -328,6 +326,9 @@ function Check_inputs(f::Function,df::Function,
     # Check if α_min is << 1.0 and > 0. At least smaller than α_ini
     @assert  0.0<α_min<α_ini   "WallE2::Check_inputs:: α_min must be in (0,α_ini)"
     
+    # We cannot set both ENABLE_GC and ENABLE_QN at the same time
+    @assert (!(ENABLE_GC|ENBLE_QN)) "WallE2::Check_inputs:: You can only enable GC OR QN"
+
 end
 
 #
