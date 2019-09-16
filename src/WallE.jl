@@ -189,7 +189,7 @@ function Wall_E2(f::Function,df::Function,
 
         # Rollover Bethoven
         last_x          .= x0
-        x0 .= xn
+        x0              .= xn
         last_free_x      = copy(free_x)
         last_D          .= D
        
@@ -603,14 +603,21 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
     end 
   
      
-      # Normalize
-      d_eff .= d_eff / norm(d_eff)
+        # Normalize
+        d_eff .= d_eff / norm(d_eff)
 
         # Candidate point (xn)
         Project!(α,x0,xn,d_eff,ci,cs,alpha_limit,list_r)
  
         # Effective delta x
         Δx .= xn .- x0 
+
+        # Is this a minimizer direction ?
+        m = dot(D,Δx)
+
+        if m>=0 
+           println("Not minimizing...") 
+        end
 
         # Left side
         fn = f(xn)
@@ -642,7 +649,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
     return α, xn, fn, d_eff, counter_gc, flag_sucess
 
 
-end #Armijo_Projected
+end #Armijo_Projected_GC
 
 
 
