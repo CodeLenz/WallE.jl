@@ -585,9 +585,9 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
         if α_eff > 0.0
 
           # Correct both terms
-          D_pos = Extract_as_scalar(D,list_r[r]))
+          D_pos = Extract_as_scalar(D,list_r[r])
           cima = cima - α_eff  * D_pos^2
-          baixo = baixo -  α_eff  * Extract_as_scalar(last_d,list_r[r]))*D_pos
+          baixo = baixo -  α_eff  * Extract_as_scalar(last_d,list_r[r])*D_pos
   
         end 
       end
