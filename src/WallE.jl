@@ -89,9 +89,6 @@ function Wall_E2(f::Function,df::Function,
     D = zeros(n)
     d = zeros(n)
 
-    # Diagonal approximation of (inverse of) Hessian
-    B = 1.0.*I(n)
-
     # Lists with function values and norms (D)
     functions = zeros(nmax_iter)
     norms     = zeros(nmax_iter)
@@ -145,24 +142,8 @@ function Wall_E2(f::Function,df::Function,
         # Gradient
         D .= df(x0)
 
-        # Update (inverse of) Hessian
-        if iter>1 && ENABLE_QN
-           s = x0 .- last_x
-           y = D .- last_D
-           termo1 = dot(s,y)
-           termo2 = dot(s,B*s)
-           if termo1 > termo2
-              println("Updating Hessian..")
-              E = 1.0.*I(n).*(s.^2)
-              B .= B .+ ((termo1-termo2)/tr(E.^2))*E
-          else
-               # Reset
-              B .= 1.0*I(n)
-           end
-        end
-
         # Search direction
-        d .= -B*D
+        d .= -D
 
         # If some variable is at the boundary and 
         # there is a tendency to violate, we can 
