@@ -123,7 +123,7 @@ function Wall_E2(f::Function,df::Function,
     counter = 0
     
     # Number of iterations with GC
-    cont_gc = 1
+    counter_gc = 0
 
     # Step in LS
     α = 0.0
@@ -179,10 +179,10 @@ function Wall_E2(f::Function,df::Function,
         α_limit, list_r = Find_limit_alphas(x0,d,ci,cs)
 
         # Line search
-        α, xn, fn, last_d, flag_sucess = Armijo_Projected_GC(f,x0,
+        α, xn, fn, last_d, counter_gc, flag_sucess = Armijo_Projected_GC(f,x0,
                                                              fn,D,last_D,
                                                              d,last_d,ci,cs,α_limit,
-                                                             list_r,iter,ENABLE_GC)
+                                                             list_r,iter,counter_gc,ENABLE_GC)
 
         # Store the step
         steps[iter] = α
@@ -533,6 +533,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
                              alpha_limit::Array{Float64},
                              list_r::Array{Int64},
                              iter::Int64,
+                             counter_gc::Int64,
                              ENABLE_GC::Bool=true,
                              c::Float64=0.1,
                              τ::Float64=0.5,
@@ -543,10 +544,13 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
     # "optimal" value
     fn = 0.0
 
+    # Problem size
+    n = length(x0)
+
     # Local vectors
-    xn = zero(x0)
-    Δx = zero(x0)
-    d_eff = zero(x0)
+    xn = zeros(n)
+    Δx = zeros(n)
+    d_eff = zeros(n)
 
     # Initial step
     α = α_ini
@@ -560,7 +564,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
       #
       # Evaluate deflection (limit β)
       #
-      if ENABLE_GC && iter > 1 
+      if ENABLE_GC && iter > 1 && counter_gc <= n
 
 
           cima = α*dot(D,D)
@@ -579,7 +583,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
                   D_pos  = Extract_as_scalar(D,list_r[r])
                   lD_pos = Extract_as_scalar(last_D,list_r[r])
                   cima = cima - α_eff  * D_pos^2
-                  baixo = baixo -  α_eff  * lD_pos
+                  baixo = baixo -  α_eff  * lD_pos^2
           
                 end 
               end
@@ -588,11 +592,10 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
       # Deflection
       β = max(0.0,cima/baixo)
 
-      @show β
-
       # GC
       d_eff .= -D .+ β*last_d
 
+    
     else # GC and iter > 1
 
       d_eff .= -D
@@ -628,9 +631,15 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
 
     end #while true
 
+    if ENABLE_GC && counter_gc<n
+      counter_gc += 1
+    elseif ENABLE_GC && counter_gc>=n
+      counter_gc = 0
+    end
+
     # return effective step, next point, function value at this
     # point and the flag
-    return α, xn, fn, d_eff, flag_sucess
+    return α, xn, fn, d_eff, counter_gc, flag_sucess
 
 
 end #Armijo_Projected
