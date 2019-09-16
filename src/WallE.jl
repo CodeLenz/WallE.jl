@@ -566,13 +566,13 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
       #
       # Evaluate deflection (limit β)
       #
-      if ENABLE_GC && iter > 1 && counter_gc <= n
+      if ENABLE_GC && iter > 1 && counter_gc <= n && list_r==last_list_r
 
 
           cima = α*dot(D,D)
           baixo = α*dot(last_D,last_D)
 
-          if  length(list_r)>0 && list_r==last_list_r
+          if  length(list_r)>0 
 
               for r in LinearIndices(list_r)
 
