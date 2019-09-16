@@ -181,7 +181,7 @@ function Wall_E2(f::Function,df::Function,
         # Line search
         α, xn, fn, last_d, counter_gc, flag_sucess = Armijo_Projected_GC(f,x0,
                                                              fn,D,last_D,
-                                                             d,last_d,ci,cs,α_limit,
+                                                             d,last_d,ci,cs,α_limit,last_α_limit,
                                                              list_r,last_list_r,
                                                              iter,counter_gc,ENABLE_GC)
 
@@ -532,6 +532,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
                              ci::Array{Float64},
                              cs::Array{Float64},
                              alpha_limit::Array{Float64},
+                             last_alpha_limit::Array{Float64},
                              list_r::Array{Int64},
                              last_list_r::Array{Int64},
                              iter::Int64,
@@ -578,6 +579,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
 
                 # Effective step
                 α_eff = max(0.0, α - alpha_limit[r])
+                lα_eff = max(0.0, α - last_alpha_limit[r])
 
                 if α_eff > 0.0
 
@@ -585,7 +587,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
                   D_pos  = Extract_as_scalar(D,list_r[r])
                   lD_pos = Extract_as_scalar(last_D,list_r[r])
                   cima = cima - α_eff  * D_pos^2
-                  baixo = baixo -  α_eff  * lD_pos^2
+                  baixo = baixo -  lα_eff  * lD_pos^2
           
                 end 
               end
