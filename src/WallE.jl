@@ -575,7 +575,8 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
       #
       # Evaluate deflection (limit β)
       #
-      if iter > 1 && length(list_r)>0
+      if false 
+      if iter > 1 && length(list_r)>0 
       cima = α*dot(D,D)
       baixo = α*dot(D,last_d)
       for r in LinearIndices(list_r)
@@ -605,7 +606,11 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
 
       d_eff .= -D
 
-    end
+    end 
+  end
+
+      d_eff .= -D
+
      
       # Normalize
       d_eff .= d_eff / norm(d_eff)
