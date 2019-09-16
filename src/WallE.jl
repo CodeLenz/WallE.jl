@@ -159,6 +159,7 @@ function Wall_E2(f::Function,df::Function,
         #
         # Evaluate deflection using Conjugate Gradients.
         #
+        #=
         if ENABLE_GC && iter>1 && last_list_r == list_r && cont_gc <= n
 
             # Modify d 
@@ -170,6 +171,7 @@ function Wall_E2(f::Function,df::Function,
             cont_gc = 0 
 
         end
+        =#
        
         # Make a copy here  
         last_α           = α
@@ -194,10 +196,10 @@ function Wall_E2(f::Function,df::Function,
         α_limit, list_r = Find_limit_alphas(x0,d,ci,cs)
 
         # Line search
-        α, xn, fn, flag_sucess = Armijo_Projected(f,x0,
-                                                  fn,D,
-                                                  d,ci,cs,α_limit,
-                                                  list_r)
+        α, xn, fn, last_d, flag_sucess = Armijo_Projected_GC(f,x0,
+                                                             fn,D,
+                                                             d,last_d,ci,cs,α_limit,
+                                                             list_r,iter)
 
         # Store the step
         steps[iter] = α
@@ -206,7 +208,6 @@ function Wall_E2(f::Function,df::Function,
         last_x          .= x0
         x0 .= xn
         last_free_x      = copy(free_x)
-        last_d          .= d
         last_D          .= D
        
 
@@ -371,6 +372,15 @@ function Extract_as_vector(v::Array{Float64},pos::Int64)
   return vv
 end
 
+#
+# Return a scalar
+#
+function Extract_as_scalar(v::Array{Float64},pos::Int64)
+  v[pos]
+end
+
+
+
 
 #
 # Given a point, a search direction and a step
@@ -463,17 +473,17 @@ end # Project_d
 # Modified Line Search (Armijo)
 #
 function Armijo_Projected(f::Function,x0::Array{Float64},
-                        f0::Float64,
-                        D::Array{Float64},
-                        d::Array{Float64},
-                        ci::Array{Float64},
-                        cs::Array{Float64},
-                        alpha_limit::Array{Float64},
-                        list_r::Array{Int64},
-                        c::Float64=0.1,
-                        τ::Float64=0.5,
-                        α_ini::Float64=10.0,
-                        α_min::Float64=1E-12)
+                          f0::Float64,
+                          D::Array{Float64},
+                          d::Array{Float64},
+                          ci::Array{Float64},
+                          cs::Array{Float64},
+                          alpha_limit::Array{Float64},
+                          list_r::Array{Int64},
+                          c::Float64=0.1,
+                          τ::Float64=0.5,
+                          α_ini::Float64=10.0,
+                          α_min::Float64=1E-12)
 
 
     # "optimal" value
@@ -523,6 +533,111 @@ function Armijo_Projected(f::Function,x0::Array{Float64},
 
 
 end #Armijo_Projected
+
+
+
+#
+# Modified Line Search (Armijo) - with GC
+#
+function Armijo_Projected_GC(f::Function,x0::Array{Float64},
+                             f0::Float64,
+                             D::Array{Float64},
+                             d::Array{Float64},
+                             last_d::Array{Float64},
+                             ci::Array{Float64},
+                             cs::Array{Float64},
+                             alpha_limit::Array{Float64},
+                             list_r::Array{Int64},
+                             iter::Int64,
+                             c::Float64=0.1,
+                             τ::Float64=0.5,
+                             α_ini::Float64=10.0,
+                             α_min::Float64=1E-12)
+
+
+    # "optimal" value
+    fn = 0.0
+
+    # Local vectors
+    xn = zero(x0)
+    Δx = zero(x0)
+    d_eff = zero(x0)
+
+    # Initial step
+    α = α_ini
+
+    # Flag (sucess)
+    flag_sucess = false
+
+    # Main Loop
+    while true
+
+      #
+      # Evaluate deflection (limit β)
+      #
+      cima = α*dot(D,D)
+      baixo = α*dot(D,last_d)
+      for r in LinearIndices(list_r)
+
+        # Effective step
+        α_eff = max(0.0, α - alpha_limit[r])
+
+        if α_eff > 0.0
+
+          # Correct both terms
+          D_pos = Extract_as_scalar(D,list_r[r]))
+          cima = cima - α_eff  * D_pos^2
+          baixo = baixo -  α_eff  * Extract_as_scalar(last_d,list_r[r]))*D_pos
+  
+        end 
+      end
+
+      # Deflection
+      β_lim = max(0.0,0.9*(cima/baixo))
+
+      @show β_lim
+
+      # GC
+      d_eff .= -D .+ β_lim*last_d
+     
+      # Normalize
+      d_eff .= d_eff / norm(d_eff)
+
+        # Candidate point (xn)
+        Project!(α,x0,xn,d_eff,ci,cs,alpha_limit,list_r)
+ 
+        # Effective delta x
+        Δx .= xn .- x0 
+
+        # Left side
+        fn = f(xn)
+
+        # Rigth side
+        rigth = f0 + c*dot(D,Δx)
+
+        # Armijo condition
+        if fn <= rigth 
+            flag_sucess= true
+            break
+        else
+          α = α*τ
+          if α<=α_min
+             break
+          end 
+        end
+
+    end #while true
+
+    # return effective step, next point, function value at this
+    # point and the flag
+    return α, xn, fn, d_eff, flag_sucess
+
+
+end #Armijo_Projected
+
+
+
+
 
 
 #
