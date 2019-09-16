@@ -182,7 +182,8 @@ function Wall_E2(f::Function,df::Function,
         α, xn, fn, last_d, counter_gc, flag_sucess = Armijo_Projected_GC(f,x0,
                                                              fn,D,last_D,
                                                              d,last_d,ci,cs,α_limit,
-                                                             list_r,iter,counter_gc,ENABLE_GC)
+                                                             list_r,last_list_r,
+                                                             iter,counter_gc,ENABLE_GC)
 
         # Store the step
         steps[iter] = α
@@ -532,6 +533,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
                              cs::Array{Float64},
                              alpha_limit::Array{Float64},
                              list_r::Array{Int64},
+                             last_list_r::Array{Int64},
                              iter::Int64,
                              counter_gc::Int64,
                              ENABLE_GC::Bool=true,
@@ -570,7 +572,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
           cima = α*dot(D,D)
           baixo = α*dot(last_D,last_D)
 
-          if  length(list_r)>0
+          if  length(list_r)>0 && list_r==last_list_r
 
               for r in LinearIndices(list_r)
 
