@@ -156,23 +156,6 @@ function Wall_E2(f::Function,df::Function,
         # List of free variables
         free_x = filter(x-> !(x in blocked_x),lvar)
 
-        #
-        # Evaluate deflection using Conjugate Gradients.
-        #
-        #=
-        if ENABLE_GC && iter>1 && last_list_r == list_r && cont_gc <= n
-
-            # Modify d 
-            GC_projected!(d,D,last_D,last_α, last_list_r, last_α_limit,last_d,free_x,x0,last_x)
-            cont_gc += 1
-
-        else
-            # reset the counter
-            cont_gc = 0 
-
-        end
-        =#
-       
         # Make a copy here  
         last_α           = α
         last_α_limit     = copy(α_limit)
@@ -197,9 +180,9 @@ function Wall_E2(f::Function,df::Function,
 
         # Line search
         α, xn, fn, last_d, flag_sucess = Armijo_Projected_GC(f,x0,
-                                                             fn,D,
+                                                             fn,D,last_D,
                                                              d,last_d,ci,cs,α_limit,
-                                                             list_r,iter)
+                                                             list_r,iter,ENABLE_GC)
 
         # Store the step
         steps[iter] = α
@@ -542,6 +525,7 @@ end #Armijo_Projected
 function Armijo_Projected_GC(f::Function,x0::Array{Float64},
                              f0::Float64,
                              D::Array{Float64},
+                             last_D::Array{Float64},
                              d::Array{Float64},
                              last_d::Array{Float64},
                              ci::Array{Float64},
@@ -549,6 +533,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
                              alpha_limit::Array{Float64},
                              list_r::Array{Int64},
                              iter::Int64,
+                             ENABLE_GC::Bool=true,
                              c::Float64=0.1,
                              τ::Float64=0.5,
                              α_ini::Float64=10.0,
@@ -575,10 +560,9 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
       #
       # Evaluate deflection (limit β)
       #
-      if false 
-      if iter > 1 && length(list_r)>0 
+      if ENABLE_GC && iter > 1 && length(list_r)>0 
       cima = α*dot(D,D)
-      baixo = α*dot(D,last_d)
+      baixo = α*dot(last_D,last_D)
       for r in LinearIndices(list_r)
 
         # Effective step
@@ -587,15 +571,16 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
         if α_eff > 0.0
 
           # Correct both terms
-          D_pos = Extract_as_scalar(D,list_r[r])
+          D_pos  = Extract_as_scalar(D,list_r[r])
+          lD_pos = Extract_as_scalar(last_D,list_r[r])
           cima = cima - α_eff  * D_pos^2
-          baixo = baixo -  α_eff  * Extract_as_scalar(last_d,list_r[r])*D_pos
+          baixo = baixo -  α_eff  * lD_pos
   
         end 
       end
 
       # Deflection
-      β_lim = max(0.0,0.9*(cima/baixo))
+      β_lim = max(0.0,cima/baixo)
 
       @show β_lim
 
@@ -607,10 +592,8 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
       d_eff .= -D
 
     end 
-  end
-
-      d_eff .= -D
-
+  
+     
      
       # Normalize
       d_eff .= d_eff / norm(d_eff)
