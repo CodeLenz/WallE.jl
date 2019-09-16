@@ -560,40 +560,45 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
       #
       # Evaluate deflection (limit β)
       #
-      if ENABLE_GC && iter > 1 && length(list_r)>0 
-      cima = α*dot(D,D)
-      baixo = α*dot(last_D,last_D)
-      for r in LinearIndices(list_r)
+      if ENABLE_GC && iter > 1 
 
-        # Effective step
-        α_eff = max(0.0, α - alpha_limit[r])
 
-        if α_eff > 0.0
+          cima = α*dot(D,D)
+          baixo = α*dot(last_D,last_D)
 
-          # Correct both terms
-          D_pos  = Extract_as_scalar(D,list_r[r])
-          lD_pos = Extract_as_scalar(last_D,list_r[r])
-          cima = cima - α_eff  * D_pos^2
-          baixo = baixo -  α_eff  * lD_pos
-  
-        end 
-      end
+          if  length(list_r)>0
+
+              for r in LinearIndices(list_r)
+
+                # Effective step
+                α_eff = max(0.0, α - alpha_limit[r])
+
+                if α_eff > 0.0
+
+                  # Correct both terms
+                  D_pos  = Extract_as_scalar(D,list_r[r])
+                  lD_pos = Extract_as_scalar(last_D,list_r[r])
+                  cima = cima - α_eff  * D_pos^2
+                  baixo = baixo -  α_eff  * lD_pos
+          
+                end 
+              end
+          end
 
       # Deflection
-      β_lim = max(0.0,cima/baixo)
+      β = max(0.0,cima/baixo)
 
-      @show β_lim
+      @show β
 
       # GC
-      d_eff .= -D .+ β_lim*last_d
+      d_eff .= -D .+ β*last_d
 
-    else
+    else # GC and iter > 1
 
       d_eff .= -D
 
     end 
   
-     
      
       # Normalize
       d_eff .= d_eff / norm(d_eff)
