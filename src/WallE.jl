@@ -58,6 +58,9 @@ function Wall_E2(f::Function,df::Function,
                α_min::Float64=1E-12; ENABLE_GC::Bool=false, ENABLE_QN::Bool=false)
 
     
+    # TODO -> está inconsistente o estudo dos alphas limites e 
+    #         o GC (pois está considerando a direção de steepest)
+
     # Check the consistence of the inputs
     Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,
                  cut_factor,α_ini,α_min,ENABLE_GC,ENABLE_QN)
@@ -581,7 +584,7 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
                 α_eff = max(0.0, α - alpha_limit[r])
                 lα_eff = max(0.0, α - last_alpha_limit[r])
 
-                if α_eff > 0.0
+                if α_eff > 0.0 || lα_eff > 0.0
 
                   # Correct both terms
                   D_pos  = Extract_as_scalar(D,list_r[r])
@@ -596,16 +599,18 @@ function Armijo_Projected_GC(f::Function,x0::Array{Float64},
       # Deflection
       β = max(0.0,cima/baixo)
 
-      # GC
-      d_eff .= -D .+ β*last_d
+      
 
     
-    else # GC and iter > 1
+    else # Steepest Descent
 
-      d_eff .= -D
-
+      β = 0.0
+      
     end 
   
+        # Search direction
+        d_eff .= -D .+ β*last_d
+
      
         # Normalize
         d_eff .= d_eff / norm(d_eff)
