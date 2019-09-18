@@ -153,7 +153,7 @@ function Wall_E2(f::Function,df::Function,
         end
 
         # Line search
-        xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_sucess = Armijo_Projected!(f,x0,fn,D,d,ci,cs)
+        xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,x0,fn,D,d,ci,cs)
 
         # Free positions
         free_x = filter(x-> !(x in active_r),lvar)
