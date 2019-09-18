@@ -180,6 +180,9 @@ function Wall_E2(f::Function,df::Function,
         # Blocked by above. They must be negative
         delta_M = D[active_r_cs]
 
+        # 
+
+
         # We need to fulfil all the first order conditions..
         if iter>2 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                                      (all(delta_M .<= 0.0)||isempty(delta_M))
@@ -190,6 +193,12 @@ function Wall_E2(f::Function,df::Function,
             break
         end # first order conditions
     
+        if !flag_success
+          println("WallE2::The solution cannot be improved during the line-search. Bailing out.")
+          break
+        end
+
+
         # Fancy report for the mob :)
         ProgressMeter.next!(Prg; showvalues = [
                           (:Iteration,counter), 
@@ -453,7 +462,12 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
            # Effective slope
            m = dot(D,Δx) 
 
-           @assert m<0.0 "It should never happen....I quit!"
+           if m>=0
+
+             # There is not much we can do ....
+             break
+ 
+           end
 
         end
 
@@ -475,6 +489,8 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
         end
 
     end #while true
+
+    
 
     # return 
     return xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_sucess
