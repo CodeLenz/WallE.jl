@@ -84,14 +84,7 @@
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,10.0)
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,100.0)
 
-    #
-    # Eigth test - We cannot enable GC and QN at the same time
-    #
-    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,ENABLE_GC=true,ENABLE_QN=true)
-
-
-
+   
 
 
 end
