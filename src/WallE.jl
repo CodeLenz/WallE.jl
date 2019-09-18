@@ -37,6 +37,10 @@ module WallE
       α_ini::Float64      -> Initial step length
       α_min::Float64      -> Minimum value for the step length
 
+  Special argument
+     
+      ENABLE_GC::Bool=false
+
   Outputs: 
 
        x0::Array{Float64} -> Optimal point
