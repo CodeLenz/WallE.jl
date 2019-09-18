@@ -156,7 +156,7 @@
         df2 = 4*(2*x[2]+x[1]-7)+2*(x[2]+2*x[1]-5)
         return [df1 ; df2]
     end
-    # Ponto inicialdot()
+    # Ponto inicial
     x0 = [-5.0 ; -5.0]
 
     # Restrições laterais
