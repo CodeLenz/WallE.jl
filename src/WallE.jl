@@ -551,7 +551,7 @@ function GC_projected!(d::Array{Float64},last_d::Array{Float64},
          β = dot(y,D)/dot(y,last_d)
 
          # Avoid a very unfortunate corner case
-         if isnan(β) || β<0.0
+         if isnan(β) || β<0.0 
              β = 0.0
          end
 
@@ -559,16 +559,18 @@ function GC_projected!(d::Array{Float64},last_d::Array{Float64},
          d .= -D .+ β*last_d
 
          # Let's avoid further problems in the L.S
-         m = dot(d,D) 
+         # m should be -1 for steepest or close
+         # and should be > 0 (or a -δ to avoid problems in the L.S)
+         # This is the cos of the angle between d and D
+         m = dot(d,D)/(norm(d)*norm(D)) 
          
-         flag_sucess = true
-         if m >=0 || β==0.0
-            flag_sucess = false
+         flag_success = true
+         if m >=-1E-3 || β==0.0
+            flag_success = false
             d .= -D
          end
 
-         
-         return flag_sucess
+         return flag_success
 
 end
 
