@@ -193,7 +193,7 @@ function Wall_E2(f::Function,df::Function,
 
 
         # We need to fulfil all the first order conditions..
-        if iter>1 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+        if iter>2 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                                      (all(delta_M .<= 0.0)||isempty(delta_M))
             # Convergence assessed by first order condition. Set the flag and
             # skip the main loop
@@ -201,8 +201,12 @@ function Wall_E2(f::Function,df::Function,
             break
         end # first order conditions
     
-        if !flag_success
+        if !flag_success 
           println("WallE2::The solution cannot be improved during the line-search. Bailing out.")
+          if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+                                                     (all(delta_M .<= 0.0)||isempty(delta_M))
+              flag_conv = true 
+          end
           break
         end
 
