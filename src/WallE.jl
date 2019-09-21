@@ -191,13 +191,10 @@ function Wall_E2(f::Function,df::Function,
         # Blocked by above. They must be negative
         delta_M = D[active_r_cs]
 
-        # 
-
 
         # We need to fulfil all the first order conditions..
-        if iter>2 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+        if iter>1 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                                      (all(delta_M .<= 0.0)||isempty(delta_M))
-
             # Convergence assessed by first order condition. Set the flag and
             # skip the main loop
             flag_conv = true
@@ -412,16 +409,16 @@ end # Project
 # in this subroutine
 #
 function Armijo_Projected!(f::Function,x0::Array{Float64},
-                          f0::Float64,
-                          D::Array{Float64},
-                          d::Array{Float64},
-                          ci::Array{Float64},
-                          cs::Array{Float64},
-                          constrained::Bool,
-                          c::Float64=0.1,
-                          τ::Float64=0.5,
-                          α_ini::Float64=10.0,
-                          α_min::Float64=1E-12)
+                           f0::Float64,
+                           D::Array{Float64},
+                           d::Array{Float64},
+                           ci::Array{Float64},
+                           cs::Array{Float64},
+                           constrained::Bool,
+                           c::Float64=0.1,
+                           τ::Float64=0.5,
+                           α_ini::Float64=10.0,
+                           α_min::Float64=1E-12)
 
 
     # "optimal" value
@@ -498,7 +495,7 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
 
     end #while true
 
-  
+    
     # return 
     return xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_sucess
 
