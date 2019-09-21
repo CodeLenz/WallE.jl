@@ -164,7 +164,7 @@ function Wall_E2(f::Function,df::Function,
         end
 
         # Line search
-        xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,x0,fn,D,d,ci,cs)
+        xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,x0,fn,D,d,ci,cs,constrained)
 
         # Free positions
         free_x = filter(x-> !(x in active_r),lvar)
@@ -417,6 +417,7 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
                           d::Array{Float64},
                           ci::Array{Float64},
                           cs::Array{Float64},
+                          constrained::Bool,
                           c::Float64=0.1,
                           τ::Float64=0.5,
                           α_ini::Float64=10.0,
@@ -456,6 +457,21 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
 
         # Effective slope
         m = dot(D,Δx) 
+
+        # If we are facing a constrained problem
+        # not every initial search direction will
+        # lead to an effective projected step. In 
+        # this case, we must revert to steepest
+        # to make a robust algorithm until we 
+        # set a proper direction in GC
+        if m>=0.0 && constrained
+ 
+           d .= -D
+           xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
+           Δx .= xn .- x0 
+           m = dot(D,Δx) 
+
+        end 
 
         if m<0.0 
 
