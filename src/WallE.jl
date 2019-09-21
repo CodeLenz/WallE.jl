@@ -206,10 +206,11 @@ function Wall_E2(f::Function,df::Function,
         end # first order conditions
     
         if !flag_success 
-          println("WallE2::The solution cannot be improved during the line-search. ")
+          printstyled(IOContext(io, :color => true), "WallE2::The solution cannot be improved during the line-search. ", color=:red)
           if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                               (all(delta_M .<= 0.0)||isempty(delta_M))
-              println("WallE2::But first order conditions are satisfied.")                                       
+              printstyled(IOContext(io, :color => true), "WallE2::But first order conditions are satisfied.", color=:green)
+                  
               flag_conv = true 
           end
           break
