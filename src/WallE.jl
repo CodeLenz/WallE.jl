@@ -222,7 +222,7 @@ function Wall_E2(f::Function,df::Function,
         ProgressMeter.next!(Prg; showvalues = [
                           (:Iteration,counter), 
                           (:Counter_gc,counter_gc),
-                          (:ENABLED_GC,ENABLED_GC),
+                          (:ENABLED_GC,ENABLE_GC),
                           (:GC,used_gc),
                           (:Norm,norm_D), 
                           (:Target,tol_norm*(1+abs(fn))),
