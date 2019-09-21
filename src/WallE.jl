@@ -457,52 +457,32 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
         # Effective slope
         m = dot(D,Δx) 
 
-        if m>=0.0 
+        if m<0.0 
 
-           #println("Not a minimizer direction ($m). Reverting to steepest")
+            # Left side
+            fn = f(xn)
 
-           # Revert
-           d .= -D/norm(D)
+            # Rigth side
+            rigth = f0 + c*m
 
-           # Candidate point (xn) using SD
-           xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
- 
-           # Effective delta x
-           Δx .= xn .- x0
-
-           # Effective slope
-           m = dot(D,Δx) 
-
-           if m>=0
-
-             # There is not much we can do ....
-             break
- 
-           end
-
+            # Armijo condition
+            if fn <= rigth 
+                flag_sucess= true
+                break
+            end
         end
+        
+        # Otherwise, decrease step    
+        α = α*τ
 
-        # Left side
-        fn = f(xn)
-
-        # Rigth side
-        rigth = f0 + c*m
-
-        # Armijo condition
-        if fn <= rigth 
-            flag_sucess= true
-            break
-        else
-          α = α*τ
-          if α<=α_min
+        # Check for minimum step
+        if α<=α_min
              break
-          end 
         end
 
     end #while true
 
-    
-
+  
     # return 
     return xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_sucess
 
