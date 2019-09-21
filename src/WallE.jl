@@ -79,10 +79,9 @@ function Wall_E2(f::Function,df::Function,
     #                     A little message to our customers        #
     #                     (in case of constrained problems)        #
     #                                                              #
-    if ENABLE_GC && constrained 
-       println("The actual implementation can lead to a huge improvement in computational time for \nunconstrained problems, but is still in development for constrained problems. Use with care!")
-    end
-
+    #if ENABLE_GC && constrained 
+    #   println("The actual implementation can lead to a huge improvement in computational time for \nunconstrained problems, but is still in development for constrained problems. Use with care!")
+    #end
 
 
     # Make a copy to unlink initial point with the caller, otherwise 
@@ -206,12 +205,14 @@ function Wall_E2(f::Function,df::Function,
         end # first order conditions
     
         if !flag_success 
-          printstyled("WallE2::The solution cannot be improved during the line-search. ", color=:red)
+          printstyled("\nWallE2::The solution cannot be improved during the line-search. ", color=:red)
           if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                               (all(delta_M .<= 0.0)||isempty(delta_M))
               printstyled("\nWallE2::But first order conditions are satisfied.", color=:green)
                   
               flag_conv = true 
+          else
+              printstyled("\nWallE2::Not all first order conditions are satisfied, procced with care. ", color=:red)     
           end
           break
         end
