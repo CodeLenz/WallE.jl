@@ -33,22 +33,17 @@
 
     # Chama o otimizador
 
-<<<<<<< HEAD
     x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
-
-=======
->>>>>>> 3a34e3d7f2d2c794f99e2bb03556540b114e0e3e
-    # The test
-    @test isapprox(x_opt,[-2.0 ; 3.0],atol=1E-6)
-
-    println("\n","# Results #")
-    show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [-2.0 ; 3.0]])
-
     x_opt_GC, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
+
 
     # The test
     @test isapprox(x_opt,[-2.0 ; 3.0],atol=1E-6)
     @test isapprox(x_opt_GC,[-2.0 ; 3.0],atol=1E-6)
+
+    #println("\n","# Results #")
+    #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [-2.0 ; 3.0]])
+
 
 
     # Second test
@@ -172,10 +167,6 @@
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
     println("\n")
 
-<<<<<<< HEAD
-
-
-
 
    println("\n\n############\n  Test 2.5\n############")
    # Rosenbrook
@@ -214,7 +205,4 @@
     println("\n")
 
  
-end
-=======
 end #testset
->>>>>>> 3a34e3d7f2d2c794f99e2bb03556540b114e0e3e
