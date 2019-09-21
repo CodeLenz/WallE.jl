@@ -110,6 +110,7 @@ function Wall_E2(f::Function,df::Function,
 
     # Some arrays we whant to show after the main loop
     free_x = Int64[]
+    last_free_x = Int64[]
     active_r = Int64[]
     active_r_ci = Int64[]
     active_r_cs = Int64[]
@@ -123,6 +124,7 @@ function Wall_E2(f::Function,df::Function,
   
     # Counter for GC
     counter_gc = 0
+    used_gc = false
 
     # Norm (Gradient, free positions)
     norm_D = 0.0
@@ -154,10 +156,11 @@ function Wall_E2(f::Function,df::Function,
         d .= -D
 
         # If we intend to use GC
-        if ENABLE_GC && iter>1 && counter_gc <= n
+        if ENABLE_GC && iter>1 && counter_gc <= n && free_x == last_free_x
            flag_gc = GC_projected!(d,last_d,D,last_D,active_r,α_I) 
            if flag_gc
               counter_gc += 1
+              used_gc = true
            end
         else 
            counter_gc  = 0
@@ -167,6 +170,7 @@ function Wall_E2(f::Function,df::Function,
         xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,x0,fn,D,d,ci,cs,constrained)
 
         # Free positions
+        last_free_x = copy(free_x)
         free_x = filter(x-> !(x in active_r),lvar)
 
         # Norm of free positions
@@ -204,7 +208,7 @@ function Wall_E2(f::Function,df::Function,
         if !flag_success 
           println("WallE2::The solution cannot be improved during the line-search. ")
           if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
-                                                     (all(delta_M .<= 0.0)||isempty(delta_M))
+                                              (all(delta_M .<= 0.0)||isempty(delta_M))
               println("WallE2::But first order conditions are satisfied.")                                       
               flag_conv = true 
           end
@@ -216,6 +220,7 @@ function Wall_E2(f::Function,df::Function,
         ProgressMeter.next!(Prg; showvalues = [
                           (:Iteration,counter), 
                           (:Counter_gc,counter_gc),
+                          (:GC,used_gc),
                           (:Norm,norm_D), 
                           (:Target,tol_norm*(1+abs(fn))),
                           (:Objective,fn), 
@@ -245,6 +250,7 @@ function Wall_E2(f::Function,df::Function,
       println("First order conditions : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
                                                       " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
       println("Norm(free positions)   : ", norm_D," Reference ",tol_norm*(1+abs(fn)))
+      println("Used GC                : ", used_gc)
       println("Total time             : ", canonicalize(Dates.CompoundPeriod(Dates.Second(floor(Int64,tempo)))))
       println("********************************************************")
     end
