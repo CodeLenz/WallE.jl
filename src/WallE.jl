@@ -238,6 +238,7 @@ function Wall_E2(f::Function,df::Function,
     if flag_show
       println("\n********************************************************")
       println("End of the main optimization Loop")
+      println("Type of problem        : ",ifelse(constrained,"Constrained","unconstrained"))
       println("Number of variables    : $(n)")
       println("Initial objective      : ", f0)
       println("Final objective        : ", fn)
