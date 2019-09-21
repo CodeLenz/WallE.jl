@@ -319,7 +319,7 @@ end
 #
 function Localization(n::Int64,pos::Int64)
   v = zeros(n)
-  v[pos] = 1.0
+  @inbounds v[pos] = 1.0
   return v
 end
 
@@ -329,7 +329,7 @@ end
 #
 function Extract_as_vector(v::Array{Float64},pos::Int64)
   vv = zero(v)
-  vv[pos] = v[pos]
+  @inbounds vv[pos] = v[pos]
   return vv
 end
 
@@ -337,7 +337,7 @@ end
 # Return a scalar
 #
 function Extract_as_scalar(v::Array{Float64},pos::Int64)
-  v[pos]
+  @inbounds v[pos]
 end
 
 
@@ -356,7 +356,7 @@ function Project(α::Float64,x0::Array{Float64},d::Array{Float64},ci::Array{Floa
     n = size(x0,1)
 
     # Next point, without projections
-    xn = x0 + α*d
+    xn = x0 .+ α*d
 
     #
     # This is the mathematical form of appying the 
@@ -371,7 +371,7 @@ function Project(α::Float64,x0::Array{Float64},d::Array{Float64},ci::Array{Floa
     active_r    = Int64[]
     α_I = Float64[]
 
-    for i in LinearIndices(xn)
+    @inbounds for i in LinearIndices(xn)
 
 
       # Depending on the seach direction, we can test for lower OR upper
@@ -474,13 +474,16 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
         # Effective slope
         m = dot(D,Δx) 
 
+        # Normalized slope (to help set a proper limit to skip GC) 
+        nm = m/(norm(D)*norm(Δx))
+
         # If we are facing a constrained problem
         # not every initial search direction will
         # lead to an effective projected step. In 
         # this case, we must revert to steepest
         # to make a robust algorithm until we 
         # set a proper direction in GC
-        if m>=0.0 && constrained
+        if nm>=-1E-3 && constrained
  
            d .= -D
            xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
@@ -541,7 +544,7 @@ function GC_projected!(d::Array{Float64},last_d::Array{Float64},
          y = D .- last_D
 
          # Loop over last (effectivelly) projected variables
-         for r in LinearIndices(active_r)
+         @inbounds for r in LinearIndices(active_r)
 
                  # Projected variable
                  pos = active_r[r]
@@ -560,7 +563,7 @@ function GC_projected!(d::Array{Float64},last_d::Array{Float64},
          end
 
          # New search direction
-         d .= -D .+ β*last_d
+         @inbounds d .= -D .+ β*last_d
 
          # Let's avoid further problems in the L.S
          # m should be -1 for steepest or close
