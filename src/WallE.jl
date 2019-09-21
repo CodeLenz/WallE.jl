@@ -206,6 +206,7 @@ function Wall_E2(f::Function,df::Function,
         end # first order conditions
     
         if !flag_success 
+          io = IOBuffer();
           printstyled(IOContext(io, :color => true), "WallE2::The solution cannot be improved during the line-search. ", color=:red)
           if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                               (all(delta_M .<= 0.0)||isempty(delta_M))
