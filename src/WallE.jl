@@ -69,13 +69,20 @@ function Wall_E2(f::Function,df::Function,
     Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,
                  cut_factor,α_ini,α_min,ENABLE_GC)
 
+    # Internal flag to select the GC for constrained/unconstrained problems
+    constrained = true
+    if ( sum(ci.==-Inf)==length(xini) && sum(cs.==Inf)==length(xini) )
+       constrained = false
+    end
+
     #                                                              #
     #                     A little message to our customers        #
     #                     (in case of constrained problems)        #
     #                                                              #
-    if ENABLE_GC && ( sum(ci.==-Inf)!=length(xini) || sum(cs.==Inf)!=length(xini) ) 
+    if ENABLE_GC && constrained 
        println("The actual implementation can lead to a huge improvement in computational time for \nunconstrained problems, but is still in development for constrained problems. Use with care!")
     end
+
 
 
     # Make a copy to unlink initial point with the caller, otherwise 
