@@ -209,7 +209,7 @@ function Wall_E2(f::Function,df::Function,
           printstyled("WallE2::The solution cannot be improved during the line-search. ", color=:red)
           if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                               (all(delta_M .<= 0.0)||isempty(delta_M))
-              printstyled("WallE2::But first order conditions are satisfied.", color=:green)
+              printstyled("\nWallE2::But first order conditions are satisfied.", color=:green)
                   
               flag_conv = true 
           end
@@ -558,17 +558,15 @@ function GC_projected!(d::Array{Float64},last_d::Array{Float64},
 
          # Let's avoid further problems in the L.S
          m = dot(d,D) 
-         if m>=0.0
-            d .= -D
-         end
-
-         # Return a flag true if we succed
+         
          flag_sucess = true
          if m >=0 || β==0.0
             flag_sucess = false
+            d .= -D
          end
 
-          return flag_sucess
+         
+         return flag_sucess
 
 end
 
