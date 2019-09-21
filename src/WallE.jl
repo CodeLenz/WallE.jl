@@ -431,7 +431,7 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
                            constrained::Bool,
                            c::Float64=0.1,
                            τ::Float64=0.5,
-                           α_ini::Float64=10.0,
+                           α_ini::Float64=1.0,
                            α_min::Float64=1E-12)
 
 
