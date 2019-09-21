@@ -222,6 +222,7 @@ function Wall_E2(f::Function,df::Function,
         ProgressMeter.next!(Prg; showvalues = [
                           (:Iteration,counter), 
                           (:Counter_gc,counter_gc),
+                          (:ENABLED_GC,ENABLED_GC)
                           (:GC,used_gc),
                           (:Norm,norm_D), 
                           (:Target,tol_norm*(1+abs(fn))),
@@ -241,6 +242,10 @@ function Wall_E2(f::Function,df::Function,
     if flag_show
       println("\n********************************************************")
       println("End of the main optimization Loop")
+      println("Method                 : ",ifelse(ENABLE_GC,"Conjugate gradient","Steepest descent"))
+      if ENABLE_GC && used_gc
+         println("Used GC                : Yes")
+      end
       println("Type of problem        : ",ifelse(constrained,"Constrained","unconstrained"))
       println("Number of variables    : $(n)")
       println("Initial objective      : ", f0)
@@ -254,7 +259,6 @@ function Wall_E2(f::Function,df::Function,
       println("First order conditions : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
                                                       " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
       println("Norm(free positions)   : ", norm_D," Reference ",tol_norm*(1+abs(fn)))
-      println("Used GC                : ", used_gc)
       println("Total time             : ", canonicalize(Dates.CompoundPeriod(Dates.Second(floor(Int64,tempo)))))
       println("********************************************************")
     end
