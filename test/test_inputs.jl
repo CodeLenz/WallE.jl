@@ -58,33 +58,50 @@
     
       
     #
-    # Fifth test - Check if cut_factor (τ) is in (0,1)
+    # New test - Check if armijo_c (c) is in (0,0.5)
     #
     x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,-1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5)
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.0)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,1.0)
     @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,2.0)
+
+
+    #
+    # Fifth test - Check if cut_factor (τ) is in (0,1)
+    #
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,-1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,2.0)
 
 
     #
     # Sixth test - Check if α_ini is > 0.0
     #
     x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,-1.0)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,0.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,-1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,0.0)
     
 
     #
     # Seventh test - Check if α_min is << 1.0 and > 0. At least smaller than α_ini
     #
     x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,-1.0)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,0.0)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,10.0)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.5,10.0,100.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,-1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,0.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,10.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,100.0)
 
+    #
+    # New test - σ must be in [τ,1.0)
+    #
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,0.5,0.4)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,0.5,1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,0.5,2.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,0.5,-1.0)
    
-
 
 end

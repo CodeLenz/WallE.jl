@@ -33,6 +33,7 @@ module WallE
       nmax_niter::Int64   -> Maximum number of iterations
       tol_norm::Float64   -> Tolerance for the norm
       flag_show::Bool     -> Enable/Disable printing
+      armijo_c            -> factor to evaluate Wolfe first condition
       cut_factor::Float64 -> Factor to decrease the step length
       α_ini::Float64      -> Initial step length
       α_min::Float64      -> Minimum value for the step length
@@ -59,6 +60,7 @@ function Wall_E2(f::Function,df::Function,
                nmax_iter::Int64=100,
                tol_norm::Float64=1E-6,
                flag_show::Bool=true,
+               armijo_c::Float64=0.1,
                cut_factor::Float64=0.5,
                α_ini::Float64=10.0,
                α_min::Float64=1E-12,
@@ -67,8 +69,8 @@ function Wall_E2(f::Function,df::Function,
                ENABLE_GC::Bool=false)
 
     # Check the consistence of the inputs
-    Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,
-                 cut_factor,α_ini,α_min,ENABLE_GC)
+    Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,armijo_c,
+                 cut_factor,α_ini,α_min,σ,strong,ENABLE_GC)
 
     # Internal flag to select the GC for constrained/unconstrained problems
     constrained = true
@@ -166,7 +168,7 @@ function Wall_E2(f::Function,df::Function,
         end
 
         # Line search
-        xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,c,cut_factor,α_ini,α_min,σ,stong)
+        xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,stong)
 
         # Copy the new derivative and store the old one
         last_D          .= D
@@ -288,9 +290,12 @@ function Check_inputs(f::Function,df::Function,
                nmax_iter::Int64,
                tol_norm::Float64,
                flag_show::Bool,
+               armijo_c::Float64,
                cut_factor::Float64,
                α_ini::Float64,
                α_min::Float64, 
+               σ::Float64,
+               strong::Bool,
                ENABLE_GC::Bool)
 
 
@@ -306,6 +311,9 @@ function Check_inputs(f::Function,df::Function,
     # Check if tol_norm is in (0,1)
     @assert 0.0<tol_norm<1.0 "WallE2::Check_inputs:: tol_norm must be in (0,1)"
 
+    # Check if armijo_c is in (0,0.5)
+    @assert 0.0<armijo_c<0.5 "WallE2::Check_inputs:: armijo_c must be in (0,0.5)"
+
     # Check if cut_factor (τ) is in (0,1)
     @assert 0.0<cut_factor<1.0 "WallE2::Check_inputs:: cut_factor must be in (0,1)"
 
@@ -315,6 +323,8 @@ function Check_inputs(f::Function,df::Function,
     # Check if α_min is << 1.0 and > 0. At least smaller than α_ini
     @assert  0.0<α_min<α_ini   "WallE2::Check_inputs:: α_min must be in (0,α_ini)"
     
+    # Check if σ is in armijo_c <= \sigma < 1.0
+    @assert armijo_c <= σ < 1.0 "WallE2::Check_inputs:: σ must be in [armijo_c,1)"
     
 end
 
