@@ -177,7 +177,7 @@ function Wall_E2(f::Function,df::Function,
         end
 
         # Line search
-        xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,stong)
+        xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,strong)
 
         # Copy the new derivative and store the old one
         last_D          .= D
