@@ -69,7 +69,7 @@ function Wall_E2(f::Function,df::Function,
                ENABLE_GC::Bool=false)
 
     # Size of the problem
-    n = length(x0)
+    n = length(xini)
 
     # If ci or cs are empty, we pass them to ±∞
     if length(ci)==0 
