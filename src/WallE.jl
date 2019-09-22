@@ -55,8 +55,8 @@ module WallE
   """
 function Wall_E2(f::Function,df::Function,
                xini::Array{Float64},
-               ci::Array{Float64}=[],
-               cs::Array{Float64}=[],
+               ci=Float64[],
+               cs=Float64[],
                nmax_iter::Int64=100,
                tol_norm::Float64=1E-6,
                flag_show::Bool=true,
