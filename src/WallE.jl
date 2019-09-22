@@ -36,6 +36,8 @@ module WallE
       cut_factor::Float64 -> Factor to decrease the step length
       α_ini::Float64      -> Initial step length
       α_min::Float64      -> Minimum value for the step length
+      σ::Float64          -> Used to evaluate second Wolfe condition
+      strong::Bool        -> Enable strong Wolfe condition in L.S
 
   Special argument
      
@@ -59,11 +61,10 @@ function Wall_E2(f::Function,df::Function,
                flag_show::Bool=true,
                cut_factor::Float64=0.5,
                α_ini::Float64=10.0,
-               α_min::Float64=1E-12; ENABLE_GC::Bool=false)
-
-    
-    # TODO -> está inconsistente o estudo dos alphas limites e 
-    #         o GC (pois está considerando a direção de steepest)
+               α_min::Float64=1E-12,
+               σ::Float64=0.95,
+               strong::Bool=true;
+               ENABLE_GC::Bool=false)
 
     # Check the consistence of the inputs
     Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,
@@ -99,7 +100,9 @@ function Wall_E2(f::Function,df::Function,
     fn = f0
 
     # Allocate some vectors we use a lot
-    D = zeros(n)
+    # We start evaluating ∇f here, since it is evaluated
+    # in the LS and returned to this function
+    D = df(x0)
     d = zeros(n)
 
     # Lists with function values and norms (D)
@@ -148,9 +151,6 @@ function Wall_E2(f::Function,df::Function,
         # Store function value
         functions[iter] = fn
 
-        # Gradient
-        D .= df(x0)
-
         # Search direction. Default is Steepest Descent
         d .= -D
 
@@ -166,7 +166,11 @@ function Wall_E2(f::Function,df::Function,
         end
 
         # Line search
-        xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,x0,fn,D,d,ci,cs,constrained)
+        xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,c,cut_factor,α_ini,α_min,σ,stong)
+
+        # Copy the new derivative and store the old one
+        last_D          .= D
+        D .= dfn
 
         # Free positions
         last_free_x = copy(free_x)
@@ -185,7 +189,6 @@ function Wall_E2(f::Function,df::Function,
         last_x          .= x0
         last_d          .= d
         x0              .= xn
-        last_D          .= D
        
 
         # Blocked by below. They must be positive
@@ -429,7 +432,7 @@ end # Project
 # Modified Line Search (Armijo). Search direction is modified  (scaled)
 # in this subroutine
 #
-function Armijo_Projected!(f::Function,x0::Array{Float64},
+function Armijo_Projected!(f::Function,df::Function,x0::Array{Float64},
                            f0::Float64,
                            D::Array{Float64},
                            d::Array{Float64},
@@ -439,7 +442,9 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
                            c::Float64=0.1,
                            τ::Float64=0.5,
                            α_ini::Float64=10.0,
-                           α_min::Float64=1E-12)
+                           α_min::Float64=1E-12,
+                           σ::Float64=0.95,
+                           strong::Bool=true)
 
 
     # "optimal" value
@@ -458,8 +463,11 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
     # Initial step
     α = α_ini
 
+    # Derivative on (next) point
+    dfn = zero(x0)
+ 
     # Flag (sucess)
-    flag_sucess = false
+    flag_success = false
 
     # Normalize search direction
     d .= d./norm(d)    
@@ -500,14 +508,22 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
             fn = f(xn)
 
             # Rigth side
-            rigth = f0 + c*m
+            right = f0 + c*m
 
-            # Armijo condition
-            if fn <= rigth 
-                flag_sucess= true
-                break
-            end
-        end
+            # First Wolfe condition
+            if fn <= right 
+
+               # We evaluate derivative anyway, since we 
+               # must return it to the main function
+               dfn = df(xn)
+
+               # Check if we must evaluate second (strong) Wolfe condition
+               if (strong && dot(dfn,Δx) >= σ*dot(D,Δx)) || !strong
+                  flag_success= true
+                  break
+               end      
+            end #fn <= right
+        end # m<=0
         
         # Otherwise, decrease step    
         α = α*τ
@@ -521,7 +537,7 @@ function Armijo_Projected!(f::Function,x0::Array{Float64},
 
     
     # return 
-    return xn, fn, active_r, active_r_ci, active_r_cs, α, α_I, flag_sucess
+    return xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success
 
 
 end #Armijo_Projected
