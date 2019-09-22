@@ -98,10 +98,10 @@
     # New test - σ must be in [τ,1.0)
     #
     x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,0.5,0.4)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,0.5,1.0)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,0.5,2.0)
-    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,0.5,-1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,0.4)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,1.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,2.0)
+    @test_throws AssertionError WallE.Wall_E2(f,df,x0,ci,cs,100,1E-8,true,0.1,0.5,10.0,1E-6,-1.0)
    
 
 end
