@@ -55,8 +55,8 @@ module WallE
   """
 function Wall_E2(f::Function,df::Function,
                xini::Array{Float64},
-               ci::Array{Float64},
-               cs::Array{Float64},
+               ci::Array{Float64}=[],
+               cs::Array{Float64}=[],
                nmax_iter::Int64=100,
                tol_norm::Float64=1E-6,
                flag_show::Bool=true,
@@ -67,6 +67,18 @@ function Wall_E2(f::Function,df::Function,
                σ::Float64=0.95,
                strong::Bool=true;
                ENABLE_GC::Bool=false)
+
+    # Size of the problem
+    n = length(x0)
+
+    # If ci or cs are empty, we pass them to ±∞
+    if length(ci)==0 
+      ci = -Inf*ones(n)
+    end
+
+    if length(cs)==0
+      cs = Inf*ones(n)
+    end
 
     # Check the consistence of the inputs
     Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,armijo_c,
@@ -90,9 +102,6 @@ function Wall_E2(f::Function,df::Function,
     # Make a copy to unlink initial point with the caller, otherwise 
     # we modify it in the caller, leading to potential problems.
     x0 = copy(xini)
-
-    # Size of the problem
-    n = length(x0)
 
     # List with all variables
     lvar = 1:n
