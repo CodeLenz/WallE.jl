@@ -8,11 +8,10 @@ using Test
 println("#"^80, "\n"," "^40,"  Test inputs\n","#"^80)
 @time include("test_inputs.jl")
 
-#=
 println("#"^80, "\n"," "^40,"  Test 1\n","#"^80)
 
 @time include("test_unconstrained.jl")
-=#
+
 println("#"^80, "\n"," "^40,"  Test 2\n","#"^80)
 
 @time include("test_constrained.jl")

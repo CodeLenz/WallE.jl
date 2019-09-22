@@ -65,7 +65,7 @@ function Wall_E2(f::Function,df::Function,
                α_ini::Float64=10.0,
                α_min::Float64=1E-12,
                σ::Float64=0.95,
-               strong::Bool=true;
+               strong::Bool=false;
                ENABLE_GC::Bool=false)
 
     # Size of the problem
