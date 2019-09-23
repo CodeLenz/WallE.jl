@@ -27,7 +27,7 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,100)
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,ENABLE_GC=true)
-    x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,STRONG=true)
+    #x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,STRONG=true)
     x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,STRONG=true,ENABLE_GC=true)
   
 
