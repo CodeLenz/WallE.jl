@@ -71,7 +71,7 @@ module WallE
 
   # TESTING - Do not turn STONG on if !ENABLE_GC
   if STRONG && !ENABLE_GC
-     println("STRONG is not allowed with Steepest Descent by now.")
+     println("STRONG is not allowed with Steepest Descent by now. It will be set to false.")
      STRONG = false
   end
  
