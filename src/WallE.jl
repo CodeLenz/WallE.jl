@@ -270,10 +270,10 @@ module WallE
     if STRONG
      println("Using strong L.S       : Yes, with $σ")
     end
-     if ENABLE_GC && used_gc
-       println("Using GC               : Yes")
+     if ENABLE_GC 
+       println("GC                      : ",ifelse(used_gc,"used","not used"))
      end
-     println("Type of problem        : ",ifelse(constrained,"Constrained","unconstrained"))
+     println("Type of problem        : ",ifelse(constrained,"constrained","unconstrained"))
      println("Number of variables    : $(n)")
      println("Initial objective      : ", f0)
      println("Final objective        : ", fn)
