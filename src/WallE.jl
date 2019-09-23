@@ -251,7 +251,7 @@ function Wall_E2(f::Function,df::Function,
 
 
     end # iter
-    end
+    end # block for timing
 
 
      # Final report
@@ -260,9 +260,9 @@ function Wall_E2(f::Function,df::Function,
       println("End of the main optimization Loop")
       println("Method                 : ",ifelse(ENABLE_GC,"Conjugate gradient","Steepest descent"))
       if STRONG
-         println("Used strong L.S        : Yes with $(σ)")
+         println("Using strong L.S       : Yes, with $σ")
       if ENABLE_GC && used_gc
-         println("Used GC                : Yes")
+         println("Using GC               : Yes")
       end
       println("Type of problem        : ",ifelse(constrained,"Constrained","unconstrained"))
       println("Number of variables    : $(n)")

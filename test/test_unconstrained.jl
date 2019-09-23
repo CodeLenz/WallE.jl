@@ -119,8 +119,8 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    x_opt_S, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
-    x_opt_GC_S, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+    x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
+    x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
 
     # The test
     @test isapprox(x_opt,[3.0 ; 0.5],rtol=1E-2)
@@ -167,8 +167,8 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    x_opt_S, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
-    x_opt_GC_S, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+    x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
+    x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
     # The test
     @test isapprox(x_opt,[0.0 ; -1.0],rtol=1E-2)
     @test flag
@@ -211,8 +211,8 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,10_000)
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    x_opt_S, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,10_000,STRONG=true)
-    x_opt_GC_S, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+    x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,10_000,STRONG=true)
+    x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
 
     # The test
     @test isapprox(x_opt,[1.0 ; 1.0],rtol=1E-2)
