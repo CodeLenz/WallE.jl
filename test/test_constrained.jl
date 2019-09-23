@@ -173,7 +173,7 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true) 
-    x_opt_GC_S, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+    x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
   
 
     # The test
