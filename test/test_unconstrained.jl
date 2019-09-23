@@ -169,6 +169,10 @@
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
     x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
     x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+
+    @show x_opt, x_opt_GC, x_opt_S,x_opt_GC_S
+ 
+
     # The test
     @test isapprox(x_opt,[0.0 ; -1.0],rtol=1E-2)
     @test flag
