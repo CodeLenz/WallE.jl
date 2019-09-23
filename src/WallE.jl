@@ -68,6 +68,14 @@ module WallE
                    STRONG::Bool=false,
                    ENABLE_GC::Bool=false)
 
+
+  # TESTING - Do not turn STONG on if !ENABLE_GC
+  if STRONG && !ENABLE_GC
+     println("STRONG is not allowed with Steepest Descent by now.")
+     STRONG = false
+  end
+ 
+
   # Size of the problem
   n = length(xini)
 
