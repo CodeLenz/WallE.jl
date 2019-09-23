@@ -548,7 +548,7 @@ module WallE
      dfn = df(xn)
 
      # Check if we must evaluate second (strong) Wolfe condition
-     if (strong && abs(dot(dfn,Δx)/dot(D,Δx))<=max(1,σ/(1-σ)) || !strong
+     if (strong && abs(dot(dfn,Δx)/dot(D,Δx))<=max(1,σ/(1-σ))) || !strong
       flag_success= true
       break
     end      
