@@ -27,14 +27,21 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,100)
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,ENABLE_GC=true)
- 
+    x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,STRONG=true)
+    x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,STRONG=true,ENABLE_GC=true)
+  
 
     # The test
     @test isapprox(x_opt,[3.0 ; 5.0],rtol=1E-2)
     @test flag
     @test isapprox(x_opt_GC,[3.0 ; 5.0],rtol=1E-2)
     @test flag_GC
- 
+    @test isapprox(x_opt_S,[3.0 ; 5.0],rtol=1E-2)
+    @test flag_S
+    @test isapprox(x_opt_GC_S,[3.0 ; 5.0],rtol=1E-2)
+    @test flag_GC_S
+
+
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
     println("\n")
@@ -67,13 +74,18 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-  
+    x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
+    x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
 
     # The test
     @test isapprox(x_opt,[1.0 ; 3.0],rtol=1E-2)
     @test flag
     @test isapprox(x_opt_GC,[1.0 ; 3.0],rtol=1E-2)
     @test flag_GC
+    @test isapprox(x_opt_S,[1.0 ; 3.0],rtol=1E-2)
+    @test flag_S
+    @test isapprox(x_opt_GC_S,[1.0 ; 3.0],rtol=1E-2)
+    @test flag_GC_S
  
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
@@ -107,14 +119,18 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
- 
+    x_opt_S, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
+    x_opt_GC_S, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
 
     # The test
     @test isapprox(x_opt,[3.0 ; 0.5],rtol=1E-2)
     @test flag
     @test isapprox(x_opt_GC,[3.0 ; 0.5],rtol=1E-2)
     @test flag_GC
- 
+    @test isapprox(x_opt_S,[3.0 ; 0.5],rtol=1E-2)
+    @test flag_S
+    @test isapprox(x_opt_GC_S,[3.0 ; 0.5],rtol=1E-2)
+    @test flag_GC_S
 
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
@@ -151,13 +167,17 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
- 
-
+    x_opt_S, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
+    x_opt_GC_S, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
     # The test
     @test isapprox(x_opt,[0.0 ; -1.0],rtol=1E-2)
     @test flag
     @test isapprox(x_opt_GC,[0.0 ; -1.0],rtol=1E-2)
     @test flag_GC
+    @test isapprox(x_opt_S,[0.0 ; -1.0],rtol=1E-2)
+    @test flag_S
+    @test isapprox(x_opt_GC_S,[0.0 ; -1.0],rtol=1E-2)
+    @test flag_GC_S
  
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
@@ -191,13 +211,18 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,10_000)
     x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
- 
+    x_opt_S, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,10_000,STRONG=true)
+    x_opt_GC_S, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
 
     # The test
     @test isapprox(x_opt,[1.0 ; 1.0],rtol=1E-2)
     @test flag
     @test isapprox(x_opt_GC,[1.0 ; 1.0],rtol=1E-2)
     @test flag_GC
+    @test isapprox(x_opt_S,[1.0 ; 1.0],rtol=1E-2)
+    @test flag_S
+    @test isapprox(x_opt_GC_S,[1.0 ; 1.0],rtol=1E-2)
+    @test flag_GC_S
  
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])

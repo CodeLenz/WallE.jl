@@ -64,8 +64,8 @@ function Wall_E2(f::Function,df::Function,
                cut_factor::Float64=0.5,
                α_ini::Float64=10.0,
                α_min::Float64=1E-12,
-               σ::Float64=0.95,
-               strong::Bool=false;
+               σ::Float64=0.99;
+               STRONG::Bool=false,
                ENABLE_GC::Bool=false)
 
     # Size of the problem
@@ -82,7 +82,7 @@ function Wall_E2(f::Function,df::Function,
 
     # Check the consistence of the inputs
     Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,armijo_c,
-                 cut_factor,α_ini,α_min,σ,strong,ENABLE_GC)
+                 cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC)
 
     # Internal flag to select the GC for constrained/unconstrained problems
     constrained = true
@@ -177,7 +177,7 @@ function Wall_E2(f::Function,df::Function,
         end
 
         # Line search
-        xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,strong)
+        xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,STRONG)
 
         # Copy the new derivative and store the old one
         last_D          .= D
@@ -259,6 +259,8 @@ function Wall_E2(f::Function,df::Function,
       println("\n********************************************************")
       println("End of the main optimization Loop")
       println("Method                 : ",ifelse(ENABLE_GC,"Conjugate gradient","Steepest descent"))
+      if STRONG
+         println("Used strong L.S        : Yes with $(σ)")
       if ENABLE_GC && used_gc
          println("Used GC                : Yes")
       end
