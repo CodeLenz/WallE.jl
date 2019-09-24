@@ -64,7 +64,7 @@ module WallE
                    cut_factor::Float64=0.5,
                    α_ini::Float64=10.0,
                    α_min::Float64=1E-12,
-                   σ::Float64=0.99;
+                   σ::Float64=0.999;
                    STRONG::Bool=false,
                    ENABLE_GC::Bool=false)
 
