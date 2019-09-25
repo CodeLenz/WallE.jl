@@ -525,7 +525,7 @@ module WallE
     # set a proper direction in GC
   if nm>=-1E-3 && constrained
 
-     @show Steepest
+     @show "Steepest"
      d .= -D
      xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
      Δx .= xn .- x0 
