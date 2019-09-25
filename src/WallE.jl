@@ -549,7 +549,7 @@ module WallE
       dfn = df(xn)
 
       # Check if we must evaluate second (strong) Wolfe condition
-      @show dot(dfn,Δx), σ*dot(D,Δx)
+      @show strong, dot(dfn,Δx), σ*dot(D,Δx), dot(dfn,Δx) >= σ*dot(D,Δx)
       if (strong && dot(dfn,Δx) >= σ*dot(D,Δx)) || !strong
         flag_success= true
         break
