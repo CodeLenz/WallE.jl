@@ -526,7 +526,7 @@ module WallE
   if nm>=-1E-3 && constrained
 
      @show "Steepest"
-     d .= -D
+     d .= -D / norm(D)
      xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
      Δx .= xn .- x0 
      m = dot(D,Δx) 
@@ -549,7 +549,7 @@ module WallE
       dfn = df(xn)
 
       # Check if we must evaluate second (strong) Wolfe condition
-      @show strong, dot(dfn,Δx), σ*dot(D,Δx), dot(dfn,Δx) >= σ*dot(D,Δx)
+      @show strong, α, f0, fn,  dot(dfn,Δx), σ*dot(D,Δx), dot(dfn,Δx) >= σ*dot(D,Δx)
       if (strong && dot(dfn,Δx) >= σ*dot(D,Δx)) || !strong
         flag_success= true
         break
