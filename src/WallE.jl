@@ -62,7 +62,7 @@ module WallE
                    flag_show::Bool=true,
                    armijo_c::Float64=0.1,
                    cut_factor::Float64=0.5,
-                   α_ini::Float64=1.0,
+                   α_ini::Float64=100.0,
                    α_min::Float64=1E-12,
                    σ::Float64=0.95;
                    STRONG::Bool=false,
