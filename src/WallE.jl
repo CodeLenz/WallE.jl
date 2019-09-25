@@ -463,18 +463,18 @@ module WallE
   # in this subroutine
   #
   function Armijo_Projected!(f::Function,df::Function,x0::Array{Float64},
-   f0::Float64,
-   D::Array{Float64},
-   d::Array{Float64},
-   ci::Array{Float64},
-   cs::Array{Float64},
-   constrained::Bool,
-   c::Float64=0.1,
-   τ::Float64=0.5,
-   α_ini::Float64=10.0,
-   α_min::Float64=1E-12,
-   σ::Float64=0.95,
-   strong::Bool=true)
+                             f0::Float64,
+                             D::Array{Float64},
+                             d::Array{Float64},
+                             ci::Array{Float64},
+                             cs::Array{Float64},
+                             constrained::Bool,
+                             c::Float64=0.1,
+                             τ::Float64=0.5,
+                             α_ini::Float64=10.0,
+                             α_min::Float64=1E-12,
+                             σ::Float64=0.95,
+                             strong::Bool=true)
 
 
   # "optimal" value
@@ -523,16 +523,17 @@ module WallE
     # this case, we must revert to steepest
     # to make a robust algorithm until we 
     # set a proper direction in GC
-    if nm>=-1E-3 && constrained
+  if nm>=-1E-3 && constrained
 
+     @show Steepest
      d .= -D
      xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
      Δx .= xn .- x0 
      m = dot(D,Δx) 
 
-   end 
+  end 
 
-   if m<0.0 
+  if m<0.0 
 
     # Left side
     fn = f(xn)
@@ -543,16 +544,18 @@ module WallE
     # First Wolfe condition
     if fn <= right 
 
-     # We evaluate derivative anyway, since we 
-     # must return it to the main function
-     dfn = df(xn)
+      # We evaluate derivative anyway, since we 
+      # must return it to the main function
+      dfn = df(xn)
 
-     # Check if we must evaluate second (strong) Wolfe condition
-     if (strong && dot(dfn,Δx) >= σ*dot(D,Δx)) || !strong
-      flag_success= true
-      break
-    end      
-  end #fn <= right
+      # Check if we must evaluate second (strong) Wolfe condition
+      @show dot(dfn,Δx), σ*dot(D,Δx)
+      if (strong && dot(dfn,Δx) >= σ*dot(D,Δx)) || !strong
+        flag_success= true
+        break
+      end      
+
+    end #fn <= right
   end # m<=0
 
   # Otherwise, decrease step    
