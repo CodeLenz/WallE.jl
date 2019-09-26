@@ -5,14 +5,59 @@ module WallE
 
   using LinearAlgebra, ProgressMeter, Dates
 
-  export Wall_E2
+  export Solve, IWall,OWall
+
+  # 
+  # Main type for input (optional arguments)
+  # 
+  mutable struct IWall
+
+    parameters = Dict()
+
+    # Default constructor 
+    function IWall()
+         
+        parameters = Dict()
+        push!(parameters,"NITER"=>1000)
+        push!(parameters,"TOL_NORM"=>1E-6)
+        push!(parameters,"SHOW"=>true)
+        push!(parameters,"ARMIJO_C"=>0.1)
+        push!(parameters,"ARMIJO_TAU"=>0.5)
+        push!(parameters,"LS_ALPHA_INI"=>100.0)
+        push!(parameters,"LS_ALPHA_MIN"=>1E-12)
+        push!(parameters,"LS_SIGMA"=>0.9)
+        push!(parameters,"LS_STRONG"=>false)
+        push!(parameters,"GC"=>true)
+        
+        new(parameters)
+    end
+
+  end #IWall
+
+  #
+  # Main type for output
+  #
+  mutable struct OWall
+ 
+    outputs = Dict()
+
+    # Default constructor
+    function OWall(x::Array{Float64})
+
+      outputs = Dict()
+      push!(outputs,"result"=>x) 
+
+    end
+
+  end #OWall
+
 
   #
   # Main function
   #
   #
   """
-  Wall_E2 
+  WallE.Solve 
 
   Solve the problem
 
@@ -53,7 +98,7 @@ module WallE
   [functions, norms, steps] -> lists with values for each iteration
 
   """
-  function Wall_E2(f::Function,df::Function,
+  function Solve(f::Function,df::Function,
                    xini::Array{Float64},
                    ci=Float64[],
                    cs=Float64[],
