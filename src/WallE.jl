@@ -42,10 +42,19 @@ module WallE
     outputs::Dict
 
     # Default constructor
-    function OWall(x::Array{Float64})
+    function OWall(x::Array{Float64},
+                   f0::Float64,fn::Float64,flag_conv::Bool,
+                   lists)
 
       outputs = Dict()
-      push!(outputs,"result"=>x) 
+      push!(outputs,"RESULT"=>x) 
+      push!(outputs,"FINI"=>f0) 
+      push!(outputs,"FOPT"=>fn)
+      push!(outputs,"CONVERGENCE"=>flag_conv)
+      push!(outputs,"lists"=>lists) 
+      
+      # Create type 
+      new(outputs)  
 
     end
 
@@ -99,20 +108,24 @@ module WallE
 
   """
   function Solve(f::Function,df::Function,
-                   xini::Array{Float64},
-                   ci=Float64[],
-                   cs=Float64[],
-                   nmax_iter::Int64=100,
-                   tol_norm::Float64=1E-6,
-                   flag_show::Bool=true,
-                   armijo_c::Float64=0.1,
-                   cut_factor::Float64=0.5,
-                   α_ini::Float64=100.0,
-                   α_min::Float64=1E-12,
-                   σ::Float64=0.9;
-                   STRONG::Bool=false,
-                   ENABLE_GC::Bool=true)
+                 xini::Array{Float64},
+                 ci=Float64[],
+                 cs=Float64[],
+                 inputs::IWall)
 
+
+  # First thing is to extract the input parameters to the main routine.
+  #
+  nmax_iter  = inputs.parameters["NITER"]
+  tol_norm   = inputs.parameters["TOL_NORM"]
+  flag_show  = inputs.parameters["SHOW"]
+  armijo_c   = inputs.parameters["ARMIJO_C"]
+  cut_factor = inputs.parameters["ARMIJO_TAU"]
+  α_ini      = inputs.parameters["LS_ALPHA_INI"]
+  α_min      = inputs.parameters["LS_ALPHA_MIN"]
+  σ          = inputs.parameters["LS_SIGMA"]
+  STRONG     = inputs.parameters["LS_STRONG"]
+  ENABLE_GC  = inputs.parameters["GC"]
 
   
   if STRONG 
@@ -266,9 +279,9 @@ module WallE
     printstyled("\nWallE2::The solution cannot be improved during the line-search. ", color=:red)
     if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                         (all(delta_M .<= 0.0)||isempty(delta_M))
-      printstyled("\nWallE2::But first order conditions are satisfied.", color=:green)
+       printstyled("\nWallE2::But first order conditions are satisfied.", color=:green)
 
-      flag_conv = true 
+       flag_conv = true 
     else
       printstyled("\nWallE2::Not all first order conditions are satisfied, procced with care. ", color=:red)     
     end
@@ -327,11 +340,12 @@ module WallE
   end
 
 
+  # Create the output using the OWall type
+  output = OWall(x0,f0,fn,flag_conv,[functions[1:counter], norms[1:counter], steps[1:counter])
 
   # Return the optimal point, initial and final value of the obj
   # function and the list of objectives/norm and αs for each iteration
-  return x0, f0, fn,
-  flag_conv, [functions[1:counter], norms[1:counter], steps[1:counter]]
+  return output
 
   end
 
