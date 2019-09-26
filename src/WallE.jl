@@ -5,34 +5,28 @@ module WallE
 
   using LinearAlgebra, ProgressMeter, Dates
 
-  export Solve, IWall,OWall
+  export Solve, Init, OWall
 
   # 
-  # Main type for input (optional arguments)
+  # Generate the dictionary with defalt values (optional arguments)
   # 
-  mutable struct IWall
+  function Init
 
-    parameters::Dict
-
-    # Default constructor 
-    function IWall()
-         
-        parameters = Dict()
-        push!(parameters,"NITER"=>1000)
-        push!(parameters,"TOL_NORM"=>1E-6)
-        push!(parameters,"SHOW"=>true)
-        push!(parameters,"ARMIJO_C"=>0.1)
-        push!(parameters,"ARMIJO_TAU"=>0.5)
-        push!(parameters,"LS_ALPHA_INI"=>100.0)
-        push!(parameters,"LS_ALPHA_MIN"=>1E-12)
-        push!(parameters,"LS_SIGMA"=>0.9)
-        push!(parameters,"LS_STRONG"=>false)
-        push!(parameters,"GC"=>true)
+        inputs = Dict()
+        push!(inputs,"NITER"=>1000)
+        push!(inputs,"TOL_NORM"=>1E-6)
+        push!(inputs,"SHOW"=>true)
+        push!(inputs,"ARMIJO_C"=>0.1)
+        push!(inputs,"ARMIJO_TAU"=>0.5)
+        push!(inputs,"LS_ALPHA_INI"=>100.0)
+        push!(inputs,"LS_ALPHA_MIN"=>1E-12)
+        push!(inputs,"LS_SIGMA"=>0.9)
+        push!(inputs,"LS_STRONG"=>false)
+        push!(inputs,"GC"=>true)
         
-        new(parameters)
-    end
+        return inputs
 
-  end #IWall
+    end
 
   #
   # Main type for output
@@ -111,21 +105,21 @@ module WallE
                  xini::Array{Float64},
                  ci=Float64[],
                  cs=Float64[],
-                 inputs::IWall)
+                 inputs::Dict)
 
 
   # First thing is to extract the input parameters to the main routine.
   #
-  nmax_iter  = inputs.parameters["NITER"]
-  tol_norm   = inputs.parameters["TOL_NORM"]
-  flag_show  = inputs.parameters["SHOW"]
-  armijo_c   = inputs.parameters["ARMIJO_C"]
-  cut_factor = inputs.parameters["ARMIJO_TAU"]
-  α_ini      = inputs.parameters["LS_ALPHA_INI"]
-  α_min      = inputs.parameters["LS_ALPHA_MIN"]
-  σ          = inputs.parameters["LS_SIGMA"]
-  STRONG     = inputs.parameters["LS_STRONG"]
-  ENABLE_GC  = inputs.parameters["GC"]
+  nmax_iter  = inputs["NITER"]
+  tol_norm   = inputs["TOL_NORM"]
+  flag_show  = inputs["SHOW"]
+  armijo_c   = inputs["ARMIJO_C"]
+  cut_factor = inputs["ARMIJO_TAU"]
+  α_ini      = inputs["LS_ALPHA_INI"]
+  α_min      = inputs["LS_ALPHA_MIN"]
+  σ          = inputs["LS_SIGMA"]
+  STRONG     = inputs["LS_STRONG"]
+  ENABLE_GC  = inputs["GC"]
 
   
   if STRONG 
