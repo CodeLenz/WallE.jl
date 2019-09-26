@@ -44,7 +44,7 @@ module WallE
       push!(outputs,"RESULT"=>x) 
       push!(outputs,"FINI"=>f0) 
       push!(outputs,"FOPT"=>fn)
-      push!(outputs,"CONVERGENCE"=>flag_conv)
+      push!(outputs,"CONVERGED"=>flag_conv)
       push!(outputs,"lists"=>lists) 
       
       # Create type 

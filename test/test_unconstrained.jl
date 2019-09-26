@@ -24,22 +24,19 @@
     cs =  Inf*ones(2)
 
 
-    # Chama o otimizador
-    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,ENABLE_GC=false)
-    x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,ENABLE_GC=true)
-    #x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,STRONG=true)
-    #x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,100,STRONG=true,ENABLE_GC=true)
-  
+    # Call optimizer
+    options = WallE.Init()
+    options["NITER"] = 100
+    options["GC"]    = false
+    outputs = WallE.Solve(f,df,x0,ci,cs,options)
+    options["GC"]    = true
+    outputs_GC = WallE.Solve(f,df,x0,ci,cs,options)
 
-    # The test
-    @test isapprox(x_opt,[3.0 ; 5.0],rtol=1E-2)
-    @test flag
-    @test isapprox(x_opt_GC,[3.0 ; 5.0],rtol=1E-2)
-    @test flag_GC
-    #@test isapprox(x_opt_S,[3.0 ; 5.0],rtol=1E-2)
-    #@test flag_S
-    #@test isapprox(x_opt_GC_S,[3.0 ; 5.0],rtol=1E-2)
-    #@test flag_GC_S
+    # The tests
+    @test isapprox(outputs["RESULTS"],[3.0 ; 5.0],rtol=1E-2)
+    @test outputs["CONVERGED"]
+    @test isapprox(outputs_GC["RESULTS"],[3.0 ; 5.0],rtol=1E-2)
+    @test outputs_GC["CONVERGED"]
 
 
     #println("\n","# Resultado #")
@@ -71,22 +68,20 @@
     ci = -Inf*ones(2)
     cs =  Inf*ones(2)
 
-    # Chama o otimizador
-    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=false)
-    x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    #x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
-    #x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
-
+    # Call de optimizer
+    options = WallE.Init()
+    options["NITER"] = 1000
+    options["GC"]    = false
+    outputs  = WallE.Solve(f,df,x0,ci,cs,options)
+    options["GC"]    = true
+    outputs_GC = WallE.Solve(f,df,x0,ci,cs,options)
+    
     # The test
-    @test isapprox(x_opt,[1.0 ; 3.0],rtol=1E-2)
-    @test flag
-    @test isapprox(x_opt_GC,[1.0 ; 3.0],rtol=1E-2)
-    @test flag_GC
-    #@test isapprox(x_opt_S,[1.0 ; 3.0],rtol=1E-2)
-    #@test flag_S
-    #@test isapprox(x_opt_GC_S,[1.0 ; 3.0],rtol=1E-2)
-    #@test flag_GC_S
- 
+    @test isapprox(outputs["RESULTS"],[1.0 ; 3.0],rtol=1E-2)
+    @test outputs["CONVERGED"]
+    @test isapprox(outputs_GC["RESULTS"],[1.0 ; 3.0],rtol=1E-2)
+    @test outputs_GC["CONVERGED"]
+   
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
     println("\n")
@@ -116,28 +111,23 @@
     ci = -Inf*ones(2)
     cs =  Inf*ones(2)
 
-    # Chama o otimizador
-    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=false)
-    x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    #x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
-    #x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
-
+    # Call the optimizer
+    options = WallE.Init()
+    options["NITER"] = 1000
+    options["GC"]    = false
+    outputs = WallE.Solve(f,df,x0,ci,cs,options)
+    options["GC"]    = true
+    outputs_GC = WallE.Solve(f,df,x0,ci,cs,options)
+   
     # The test
-    @test isapprox(x_opt,[3.0 ; 0.5],rtol=1E-2)
-    @test flag
-    @test isapprox(x_opt_GC,[3.0 ; 0.5],rtol=1E-2)
-    @test flag_GC
-    #@test isapprox(x_opt_S,[3.0 ; 0.5],rtol=1E-2)
-    #@test flag_S
-    #@test isapprox(x_opt_GC_S,[3.0 ; 0.5],rtol=1E-2)
-    #@test flag_GC_S
-
+    @test isapprox(outputs["RESULTS"],[3.0 ; 0.5],rtol=1E-2)
+    @test outputs["CONVERGED"]
+    @test isapprox(outputs_GC["RESULTS"],[3.0 ; 0.5],rtol=1E-2)
+    @test outputs_GC["CONVERGED"]
+    
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
     println("\n")
-
-
-
 
 
    println("\n\n############\n  Test 1.4\n############")
@@ -164,25 +154,23 @@
     ci = -Inf*ones(2)
     cs =  Inf*ones(2)
 
-    # Chama o otimizador
-    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=false)
-    x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    #x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true)
-    #x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+    # Call the optimizer
+    options = WallE.Init()
+    options["NITER"] = 1000
+    options["GC"]    = false
 
-    #@show x_opt, x_opt_GC, x_opt_S,x_opt_GC_S
+    outputs = WallE.Solve(f,df,x0,ci,cs,otions)
+
+    options["GC"]    = true
+    outputs_GC = WallE.Solve(f,df,x0,ci,cs,options)
  
 
     # The test
-    @test isapprox(x_opt,[0.0 ; -1.0],rtol=1E-2)
-    @test flag
-    @test isapprox(x_opt_GC,[0.0 ; -1.0],rtol=1E-2)
-    @test flag_GC
-    #@test_broken isapprox(x_opt_S,[0.0 ; -1.0],rtol=1E-2)
-    #@test flag_S
-    #@test isapprox(x_opt_GC_S,[0.0 ; -1.0],rtol=1E-2)
-    #@test flag_GC_S
- 
+    @test isapprox(output["RESULT"],[0.0 ; -1.0],rtol=1E-2)
+    @test output["CONVERGED"]
+    @test isapprox(output_GC["RESULT"],[0.0 ; -1.0],rtol=1E-2)
+    @test output_GC["CONVERGED"]
+   
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
     println("\n")
@@ -212,21 +200,20 @@
     ci = -Inf*ones(2)
     cs =  Inf*ones(2)
 
-    # Chama o otimizador
-    x_opt, f0, fopt, flag,_ = WallE.Wall_E2(f,df,x0,ci,cs,10_000,ENABLE_GC=false)
-    x_opt_GC, f0, fopt, flag_GC,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    #x_opt_S, f0, fopt, flag_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,10_000,STRONG=true)
-    #x_opt_GC_S, f0, fopt, flag_GC_S,_ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+     # Call the optimizer
+    options = WallE.Init()
+    options["NITER"] = 10_000
+    options["GC"]    = false
+    outputs = WallE.Solve(f,df,x0,ci,cs,options)
 
+    options["GC"]    = true
+    outputs_GC = WallE.Solve(f,df,x0,ci,cs,options)
+  
     # The test
-    @test isapprox(x_opt,[1.0 ; 1.0],rtol=1E-2)
-    @test flag
-    @test isapprox(x_opt_GC,[1.0 ; 1.0],rtol=1E-2)
-    @test flag_GC
-    #@test isapprox(x_opt_S,[1.0 ; 1.0],rtol=1E-2)
-    #@test flag_S
-    #@test isapprox(x_opt_GC_S,[1.0 ; 1.0],rtol=1E-2)
-    #@test flag_GC_S
+    @test isapprox(outputs["RESULT"],[1.0 ; 1.0],rtol=1E-2)
+    @test outputs["CONVERGED"]
+    @test isapprox(outputs_GC["RESULT"],[1.0 ; 1.0],rtol=1E-2)
+    @test outputs_GC["CONVERGED"]
  
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
