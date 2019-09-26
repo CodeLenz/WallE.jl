@@ -554,6 +554,7 @@ module WallE
             @show strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
         end
         if (strong && dot(dfn,Δnorm) >= σ*dot(D,Δnorm)) || !strong
+           @show "Yes", strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
           flag_success = true
           break
         end      
@@ -587,8 +588,8 @@ module WallE
   #
   #
   function GC_projected!(d::Array{Float64},last_d::Array{Float64},
-   D::Array{Float64},last_D::Array{Float64},
-   active_r::Array{Int64},α_I::Array{Float64})
+                         D::Array{Float64},last_D::Array{Float64},
+                         active_r::Array{Int64},α_I::Array{Float64})
 
   #
   # Lets evaluate the left term of both dot products
