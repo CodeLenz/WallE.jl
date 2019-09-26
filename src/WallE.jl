@@ -10,7 +10,7 @@ module WallE
   # 
   # Generate the dictionary with defalt values (optional arguments)
   # 
-  function Init
+  function Init()
 
         inputs = Dict()
         push!(inputs,"NITER"=>1000)
@@ -26,7 +26,7 @@ module WallE
         
         return inputs
 
-    end
+  end
 
   #
   # Main type for output
