@@ -105,7 +105,7 @@ module WallE
                  xini::Array{Float64},
                  ci=Float64[],
                  cs=Float64[],
-                 inputs::Dict())
+                 inputs=Dict())
 
 
   # First thing is to extract the input parameters to the main routine.
