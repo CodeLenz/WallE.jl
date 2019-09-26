@@ -35,7 +35,7 @@
 
     x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+    #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
 
 
 
@@ -44,8 +44,8 @@
     @test flag 
     @test isapprox(x_opt_GC,[-2.0 ; 3.0],rtol=1E-4)
     @test flag_GC
-    @test isapprox(x_opt_GC_S,[-2.0 ; 3.0],rtol=1E-4)
-    @test flag_GC_S
+    #@test isapprox(x_opt_GC_S,[-2.0 ; 3.0],rtol=1E-4)
+    #@test flag_GC_S
 
     #println("\n","# Results #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [-2.0 ; 3.0]])
@@ -81,15 +81,15 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8,ENABLE_GC=true)
-    x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8,STRONG=true,ENABLE_GC=true)
+    #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8,STRONG=true,ENABLE_GC=true)
 
     # The test
     @test isapprox(x_opt,[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-4)
     @test flag
     @test isapprox(x_opt_GC,[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-4)
     @test flag_GC
-    @test isapprox(x_opt_GC_S,[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-4)
-    @test flag_GC_S
+    #@test isapprox(x_opt_GC_S,[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-4)
+    #@test flag_GC_S
 
 
     #println("\n","# Results #")
@@ -132,7 +132,7 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+    #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
 
     # The test
     resp = 10*ones(100); [resp[i]=i for i in 12:2:100]
@@ -140,8 +140,8 @@
     @test flag
     @test isapprox(x_opt_GC,resp,rtol=1E-4)
     @test flag_GC
-    @test_broken isapprox(x_opt_GC_S,resp,rtol=1E-4)
-    @test_broken flag_GC_S
+    #@test_broken isapprox(x_opt_GC_S,resp,rtol=1E-4)
+    #@test_broken flag_GC_S
 
     #println("\n","# Results #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt resp])
@@ -173,7 +173,7 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true) 
-    x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+    #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
   
 
     # The test
@@ -181,8 +181,8 @@
     @test flag
     @test isapprox(x_opt_GC,[0.5 ; 2.0 ],rtol=1E-2)
     @test flag_GC
-    @test isapprox(x_opt_GC_S,[0.5 ; 2.0 ],rtol=1E-2)
-    @test flag_GC_S
+    #@test isapprox(x_opt_GC_S,[0.5 ; 2.0 ],rtol=1E-2)
+    #@test flag_GC_S
 
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
@@ -215,7 +215,7 @@
     # Chama o otimizador
     x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,10_000)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
-    x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
+    #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
   
 
     # The test
@@ -223,8 +223,8 @@
     @test flag
     @test isapprox(x_opt_GC,[0.8 ; 0.64],rtol=1E-2)
     @test flag_GC
-    @test isapprox(x_opt_GC_S,[0.8 ; 0.64],rtol=1E-2)
-    @test flag_GC_S
+    #@test isapprox(x_opt_GC_S,[0.8 ; 0.64],rtol=1E-2)
+    #@test flag_GC_S
 
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])

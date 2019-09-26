@@ -69,11 +69,10 @@ module WallE
                    ENABLE_GC::Bool=false)
 
 
-  # TESTING - Do not turn STONG on if !ENABLE_GC
-  #if STRONG && !ENABLE_GC
-  #   println("STRONG is not allowed with Steepest Descent by now. It will be set to false.")
-  #   STRONG = false
-  #end
+  
+  if STRONG 
+     println("STRONG does not improves the solution in our tests. So, the use is not adviseable.")
+  end
  
 
   # Size of the problem
@@ -97,14 +96,6 @@ module WallE
   if ( sum(ci.==-Inf)==length(xini) && sum(cs.==Inf)==length(xini) )
    constrained = false
   end
-
-  #                                                              #
-  #                     A little message to our customers        #
-  #                     (in case of constrained problems)        #
-  #                                                              #
-  #if ENABLE_GC && constrained 
-  #   println("The actual implementation can lead to a huge improvement in computational time for \nunconstrained problems, but is still in development for constrained problems. Use with care!")
-  #end
 
 
   # Make a copy to unlink initial point with the caller, otherwise 
@@ -271,7 +262,7 @@ module WallE
      println("Using strong L.S       : Yes, with $σ")
     end
      if ENABLE_GC 
-       println("GC                      : ",ifelse(used_gc,"used","not used"))
+       println("GC                     : ",ifelse(used_gc,"used","not used"))
      end
      println("Type of problem        : ",ifelse(constrained,"constrained","unconstrained"))
      println("Number of variables    : $(n)")
@@ -550,13 +541,9 @@ module WallE
 
         # Check if we must evaluate second (strong) Wolfe condition
         Δnorm = Δx / norm(Δx)
-        if (strong && dot(dfn,Δnorm) < σ*dot(D,Δnorm))
-            @show strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
-        end
-        if (strong && dot(dfn,Δnorm) >= σ*dot(D,Δnorm)) || !strong
-           #@show "Yes", strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
-          flag_success = true
-          break
+        if !strong || (strong && dot(dfn,Δnorm) >= σ*dot(D,Δnorm)) 
+            flag_success = true
+            break
         end      
 
       end #fn <= right
