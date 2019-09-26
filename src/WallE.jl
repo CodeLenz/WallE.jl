@@ -550,7 +550,9 @@ module WallE
 
         # Check if we must evaluate second (strong) Wolfe condition
         Δnorm = Δx / norm(Δx)
-        @show strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
+        if (strong && dot(dfn,Δnorm) < σ*dot(D,Δnorm))
+            @show strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
+        end
         if (strong && dot(dfn,Δnorm) >= σ*dot(D,Δnorm)) || !strong
           flag_success = true
           break
