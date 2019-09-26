@@ -304,19 +304,19 @@ module WallE
   # Check if the inputs are consistent
   #
   function Check_inputs(f::Function,df::Function,
-   x0::Array{Float64},
-   ci::Array{Float64},
-   cs::Array{Float64},
-   nmax_iter::Int64,
-   tol_norm::Float64,
-   flag_show::Bool,
-   armijo_c::Float64,
-   cut_factor::Float64,
-   α_ini::Float64,
-   α_min::Float64, 
-   σ::Float64,
-   strong::Bool,
-   ENABLE_GC::Bool)
+                         x0::Array{Float64},
+                         ci::Array{Float64},
+                         cs::Array{Float64},
+                         nmax_iter::Int64,
+                         tol_norm::Float64,
+                         flag_show::Bool,
+                         armijo_c::Float64,
+                         cut_factor::Float64,
+                         α_ini::Float64,
+                         α_min::Float64, 
+                         σ::Float64,
+                         strong::Bool,
+                         ENABLE_GC::Bool)
 
 
   # Check if the length of x0, ci and cs are the same
@@ -431,21 +431,21 @@ module WallE
 
      elseif d[i]>0.0
 
-      # Possible violation 
-      violation =  xn[i] - cs[i]
+        # Possible violation 
+        violation =  xn[i] - cs[i]
 
-      if violation >= 0.0 
-       # Effective α_I
-       αI = α - violation/d[i]
+        if violation >= 0.0 
+           # Effective α_I
+           αI = α - violation/d[i]
 
-       # Keep on the boundary
-       xn[i] = cs[i]
+           # Keep on the boundary
+           xn[i] = cs[i]
 
-       # Store 
-       push!(active_r_cs,i)
-       push!(active_r,i)
-       push!(α_I,αI)
-     end   
+           # Store 
+           push!(active_r_cs,i)
+           push!(active_r,i)
+           push!(α_I,αI)
+       end   
 
     end
 
@@ -554,7 +554,7 @@ module WallE
             @show strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
         end
         if (strong && dot(dfn,Δnorm) >= σ*dot(D,Δnorm)) || !strong
-           @show "Yes", strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
+           #@show "Yes", strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
           flag_success = true
           break
         end      
