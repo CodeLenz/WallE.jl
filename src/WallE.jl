@@ -335,7 +335,7 @@ module WallE
 
 
   # Create the output using the OWall type
-  output = OWall(x0,f0,fn,flag_conv,[functions[1:counter], norms[1:counter], steps[1:counter])
+  output = OWall(x0,f0,fn,flag_conv,[functions[1:counter], norms[1:counter], steps[1:counter]])
 
   # Return the optimal point, initial and final value of the obj
   # function and the list of objectives/norm and αs for each iteration
