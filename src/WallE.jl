@@ -409,45 +409,45 @@ module WallE
     @inbounds for i in LinearIndices(xn)
 
 
-    # Depending on the seach direction, we can test for lower OR upper
-    # violations. If violated, store in the arrays
-    if d[i]<0.0
+      # Depending on the seach direction, we can test for lower OR upper
+      # violations. If violated, store in the arrays
+      if d[i]<0.0
+
+        # Possible violation 
+        violation = ci[i] - xn[i]
+
+        if violation >= 0.0 
+         # Effective α_I
+         αI = α - violation/d[i]
+
+         # Keep on the boundary
+         xn[i] = ci[i]
+
+         # Store 
+         push!(active_r_ci,i)
+         push!(active_r,i)
+         push!(α_I,αI)
+       end   
+
+     elseif d[i]>0.0
 
       # Possible violation 
-      violation = ci[i] - xn[i]
+      violation =  xn[i] - cs[i]
 
       if violation >= 0.0 
        # Effective α_I
        αI = α - violation/d[i]
 
        # Keep on the boundary
-       xn[i] = ci[i]
+       xn[i] = cs[i]
 
        # Store 
-       push!(active_r_ci,i)
+       push!(active_r_cs,i)
        push!(active_r,i)
        push!(α_I,αI)
      end   
 
-   elseif d[i]>0.0
-
-    # Possible violation 
-    violation =  xn[i] - cs[i]
-
-    if violation >= 0.0 
-     # Effective α_I
-     αI = α - violation/d[i]
-
-     # Keep on the boundary
-     xn[i] = cs[i]
-
-     # Store 
-     push!(active_r_cs,i)
-     push!(active_r,i)
-     push!(α_I,αI)
-   end   
-
-  end
+    end
 
   end
 
@@ -523,48 +523,49 @@ module WallE
     # this case, we must revert to steepest
     # to make a robust algorithm until we 
     # set a proper direction in GC
-  if nm>=-1E-3 && constrained
+    if nm>=-1E-6 && constrained
 
-     @show "Steepest"
-     d .= -D / norm(D)
-     xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
-     Δx .= xn .- x0 
-     m = dot(D,Δx) 
+       @show "Steepest"
+       d .= -D / norm(D)
+       xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
+       Δx .= xn .- x0 
+       m = dot(D,Δx) 
 
-  end 
+    end 
 
-  if m<0.0 
+    if m<0.0 
 
-    # Left side
-    fn = f(xn)
+      # Left side
+      fn = f(xn)
 
-    # Rigth side
-    right = f0 + c*m
+      # Rigth side
+      right = f0 + c*m
 
-    # First Wolfe condition
-    if fn <= right 
+      # First Wolfe condition
+      if fn <= right 
 
-      # We evaluate derivative anyway, since we 
-      # must return it to the main function
-      dfn = df(xn)
+        # We evaluate derivative anyway, since we 
+        # must return it to the main function
+        dfn = df(xn)
 
-      # Check if we must evaluate second (strong) Wolfe condition
-      @show strong, α, f0, fn,  dot(dfn,Δx), σ*dot(D,Δx), dot(dfn,Δx) >= σ*dot(D,Δx)
-      if (strong && dot(dfn,Δx) >= σ*dot(D,Δx)) || !strong
-        flag_success= true
-        break
-      end      
+        # Check if we must evaluate second (strong) Wolfe condition
+        Δnorm = Δx / norm(Δx)
+        @show strong, α, f0, fn,  dot(dfn,Δnorm), σ*dot(D,Δnorm), dot(dfn,Δnorm) >= σ*dot(D,Δnorm)
+        if (strong && dot(dfn,Δnorm) >= σ*dot(D,Δnorm)) || !strong
+          flag_success = true
+          break
+        end      
 
-    end #fn <= right
-  end # m<=0
+      end #fn <= right
+    end # m<=0
 
-  # Otherwise, decrease step    
-  α = α*τ
+    # Otherwise, decrease step    
+    α = α*τ
 
-  # Check for minimum step
-  if α<=α_min
-   break
-  end
+    # Check for minimum step
+    if α<=α_min
+      break
+    end
 
   end #while true
 
