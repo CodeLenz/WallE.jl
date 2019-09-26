@@ -514,7 +514,7 @@ module WallE
     # this case, we must revert to steepest
     # to make a robust algorithm until we 
     # set a proper direction in GC
-    if nm>=-1E-6 && constrained
+    if nm>=-1E-1 && constrained
 
        @show "Steepest"
        d .= -D / norm(D)
@@ -614,7 +614,7 @@ module WallE
   m = dot(d,D)/(norm(d)*norm(D)) 
 
   flag_success = true
-  if m >=-1E-3 || β==0.0
+  if m >=-1E-1 || β==0.0
     flag_success = false
     d .= -D
   end
