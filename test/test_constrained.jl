@@ -33,7 +33,7 @@
 
     # Chama o otimizador
 
-    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=false)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
     #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
 
@@ -79,7 +79,7 @@
     x0 = max.(ci,30*rand(100))
 
     # Chama o otimizador
-    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8)
+    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8,ENABLE_GC=false)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8,ENABLE_GC=true)
     #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,1E-8,STRONG=true,ENABLE_GC=true)
 
@@ -130,7 +130,7 @@
     x0 = max.(ci,60*rand(100))
 
     # Chama o otimizador
-    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=false)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
     #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
 
@@ -171,7 +171,7 @@
     cs =  [0.5 ; 2.0]
 
     # Chama o otimizador
-    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000)
+    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=false)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true) 
     #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
   
@@ -213,7 +213,7 @@
     cs = [0.8 ; Inf] 
 
     # Chama o otimizador
-    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,10_000)
+    x_opt, f0, fopt, flag, _ = WallE.Wall_E2(f,df,x0,ci,cs,10_000,ENABLE_GC=false)
     x_opt_GC, f0, fopt, flag_GC, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,ENABLE_GC=true)
     #x_opt_GC_S, f0, fopt, flag_GC_S, _ = WallE.Wall_E2(f,df,x0,ci,cs,1000,STRONG=true,ENABLE_GC=true)
   

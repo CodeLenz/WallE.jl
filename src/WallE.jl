@@ -66,7 +66,7 @@ module WallE
                    α_min::Float64=1E-12,
                    σ::Float64=0.9;
                    STRONG::Bool=false,
-                   ENABLE_GC::Bool=false)
+                   ENABLE_GC::Bool=true)
 
 
   
@@ -514,9 +514,8 @@ module WallE
     # this case, we must revert to steepest
     # to make a robust algorithm until we 
     # set a proper direction in GC
-    if nm>=-1E-1 && constrained
+    if nm>=-1E-3 && constrained
 
-       @show "Steepest"
        d .= -D / norm(D)
        xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
        Δx .= xn .- x0 
@@ -524,6 +523,7 @@ module WallE
 
     end 
 
+    # We just test for this point if the slope is negative
     if m<0.0 
 
       # Left side
@@ -614,7 +614,7 @@ module WallE
   m = dot(d,D)/(norm(d)*norm(D)) 
 
   flag_success = true
-  if m >=-1E-1 || β==0.0
+  if m >=-1E-3 || β==0.0
     flag_success = false
     d .= -D
   end
