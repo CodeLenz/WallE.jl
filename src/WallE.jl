@@ -12,7 +12,7 @@ module WallE
   # 
   mutable struct IWall
 
-    parameters = Dict()
+    parameters::Dict
 
     # Default constructor 
     function IWall()
@@ -39,7 +39,7 @@ module WallE
   #
   mutable struct OWall
  
-    outputs = Dict()
+    outputs::Dict
 
     # Default constructor
     function OWall(x::Array{Float64})
