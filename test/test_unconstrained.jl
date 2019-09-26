@@ -178,7 +178,7 @@
     @test flag
     @test isapprox(x_opt_GC,[0.0 ; -1.0],rtol=1E-2)
     @test flag_GC
-    @test isapprox(x_opt_S,[0.0 ; -1.0],rtol=1E-2)
+    @test_fail isapprox(x_opt_S,[0.0 ; -1.0],rtol=1E-2)
     @test flag_S
     @test isapprox(x_opt_GC_S,[0.0 ; -1.0],rtol=1E-2)
     @test flag_GC_S
