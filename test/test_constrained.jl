@@ -40,11 +40,11 @@
 
 
     # The test
-    @test isapprox(x_opt,[-2.0 ; 3.0],atol=1E-6)
+    @test isapprox(x_opt,[-2.0 ; 3.0],rtol=1E-4)
     @test flag 
-    @test isapprox(x_opt_GC,[-2.0 ; 3.0],atol=1E-6)
+    @test isapprox(x_opt_GC,[-2.0 ; 3.0],rtol=1E-4)
     @test flag_GC
-    @test isapprox(x_opt_GC_S,[-2.0 ; 3.0],atol=1E-6)
+    @test isapprox(x_opt_GC_S,[-2.0 ; 3.0],rtol=1E-4)
     @test flag_GC_S
 
     #println("\n","# Results #")
