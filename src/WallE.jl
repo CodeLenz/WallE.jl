@@ -122,7 +122,7 @@ module WallE
   end
 
   # If inputs is empty, we use default parameters
-  if isemtpy(inputs)
+  if isempty(inputs)
      inputs = Init()
   end
 
