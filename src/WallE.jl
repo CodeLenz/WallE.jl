@@ -28,15 +28,10 @@ module WallE
 
   end
 
-  #
-  # Main type for output
-  #
-  mutable struct OWall
- 
-    outputs::Dict
-
-    # Default constructor
-    function OWall(x::Array{Float64},
+  # 
+  # Generate the dictionary with the outputs
+  # 
+  function Outputs(x::Array{Float64},
                    f0::Float64,fn::Float64,flag_conv::Bool,
                    lists)
 
@@ -46,14 +41,13 @@ module WallE
       push!(outputs,"FOPT"=>fn)
       push!(outputs,"CONVERGED"=>flag_conv)
       push!(outputs,"lists"=>lists) 
-      
-      # Create type 
-      new(outputs)  
 
-    end
+      return outputs
 
-  end #OWall
+  end    
 
+       
+  
 
   #
   # Main function
@@ -326,7 +320,7 @@ module WallE
 
 
   # Create the output using the OWall type
-  output = OWall(x0,f0,fn,flag_conv,[functions[1:counter], norms[1:counter], steps[1:counter]])
+  output = Outputs(x0,f0,fn,flag_conv,[functions[1:counter], norms[1:counter], steps[1:counter]])
 
   # Return the optimal point, initial and final value of the obj
   # function and the list of objectives/norm and αs for each iteration
