@@ -159,7 +159,7 @@
     options["NITER"] = 1000
     options["GC"]    = false
 
-    outputs = WallE.Solve(f,df,x0,ci,cs,otions)
+    outputs = WallE.Solve(f,df,x0,ci,cs,options)
 
     options["GC"]    = true
     outputs_GC = WallE.Solve(f,df,x0,ci,cs,options)
