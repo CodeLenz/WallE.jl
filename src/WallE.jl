@@ -64,27 +64,27 @@ module WallE
 
   The inputs for this function are:
 
-  f::Function         -> Objective function     -> f(x)->Float64
-  df::Function        -> Gradient of f(x)       -> df(x)->Array{Float64,1}
-  x0::Array{Float64}  -> Initial point
-  ci::Array{Float64}  -> Lower side constraints
-  cs::Array{Float64}  -> Upper side constraints
+  f::Function         -> Objective function     -> f(x)->Float64  
+  df::Function        -> Gradient of f(x)       -> df(x)->Array{Float64,1}  
+  x0::Array{Float64}  -> Initial point  
+  ci::Array{Float64}  -> Lower side constraints  
+  cs::Array{Float64}  -> Upper side constraints  
 
   Optional (with default values) inputs are defined in a dictionary
   with keys (and default values)
 
-   "NITER"=>1000
-   "TOL_NORM"=>1E-6
-   "SHOW"=>true
-   "ARMIJO_C"=>0.1
-   "ARMIJO_TAU"=>0.5
-   "LS_ALPHA_INI"=>100.0
-   "LS_ALPHA_MIN"=>1E-12
-   "LS_SIGMA"=>0.9
-   "LS_STRONG"=>false
-   "GC"=>true
+   "NITER"=>1000  
+   "TOL_NORM"=>1E-6  
+   "SHOW"=>true  
+   "ARMIJO_C"=>0.1  
+   "ARMIJO_TAU"=>0.5  
+   "LS_ALPHA_INI"=>100.0  
+   "LS_ALPHA_MIN"=>1E-12  
+   "LS_SIGMA"=>0.9  
+   "LS_STRONG"=>false  
+   "GC"=>true  
 
-
+  
 where NITER is the number of iterations, TOL_NORM is the (relative) 
 tolerance of the norm with respect to the objective function, 
 SHOW enables a summary at the end of the optimization, 
@@ -100,19 +100,19 @@ the program automatically switch to steepest descent.
  
 The outputs are returned in another dictionary with keys
 
-   "RESULT"
-   "FINI"
-   "FOPT"
-   "CONVERGED"
+   "RESULT"  
+   "FINI"  
+   "FOPT"  
+   "CONVERGED"  
 
 where RESULT is the vector of optimal design variables, 
 FINI is the initial value of the objective function,
 FOPT is the optimal value of the objective function and 
 CONVERGED is the flag indicating if the optimal solution 
-satisfies first order optimality conditions.
-
-Example:
-
+satisfies first order optimality conditions.  
+  
+Example:  
+  
 ```julia
     using WallE
 
