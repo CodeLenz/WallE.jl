@@ -28,15 +28,15 @@
     options = WallE.Init()
     options["NITER"] = 100
     options["GC"]    = false
-    outputs = WallE.Solve(f,df,x0,ci,cs,options)
+    output = WallE.Solve(f,df,x0,ci,cs,options)
     options["GC"]    = true
-    outputs_GC = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC = WallE.Solve(f,df,x0,ci,cs,options)
 
     # The tests
-    @test isapprox(outputs["RESULT"],[3.0 ; 5.0],rtol=1E-2)
-    @test outputs["CONVERGED"]
-    @test isapprox(outputs_GC["RESULT"],[3.0 ; 5.0],rtol=1E-2)
-    @test outputs_GC["CONVERGED"]
+    @test isapprox(output["RESULT"],[3.0 ; 5.0],rtol=1E-2)
+    @test output["CONVERGED"]
+    @test isapprox(output_GC["RESULT"],[3.0 ; 5.0],rtol=1E-2)
+    @test output_GC["CONVERGED"]
 
 
     #println("\n","# Resultado #")
@@ -72,15 +72,15 @@
     options = WallE.Init()
     options["NITER"] = 1000
     options["GC"]    = false
-    outputs  = WallE.Solve(f,df,x0,ci,cs,options)
+    output  = WallE.Solve(f,df,x0,ci,cs,options)
     options["GC"]    = true
-    outputs_GC = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC = WallE.Solve(f,df,x0,ci,cs,options)
     
     # The test
-    @test isapprox(outputs["RESULT"],[1.0 ; 3.0],rtol=1E-2)
-    @test outputs["CONVERGED"]
-    @test isapprox(outputs_GC["RESULT"],[1.0 ; 3.0],rtol=1E-2)
-    @test outputs_GC["CONVERGED"]
+    @test isapprox(output["RESULT"],[1.0 ; 3.0],rtol=1E-2)
+    @test output["CONVERGED"]
+    @test isapprox(output_GC["RESULT"],[1.0 ; 3.0],rtol=1E-2)
+    @test output_GC["CONVERGED"]
    
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
@@ -115,15 +115,15 @@
     options = WallE.Init()
     options["NITER"] = 1000
     options["GC"]    = false
-    outputs = WallE.Solve(f,df,x0,ci,cs,options)
+    output = WallE.Solve(f,df,x0,ci,cs,options)
     options["GC"]    = true
-    outputs_GC = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC = WallE.Solve(f,df,x0,ci,cs,options)
    
     # The test
-    @test isapprox(outputs["RESULT"],[3.0 ; 0.5],rtol=1E-2)
-    @test outputs["CONVERGED"]
-    @test isapprox(outputs_GC["RESULT"],[3.0 ; 0.5],rtol=1E-2)
-    @test outputs_GC["CONVERGED"]
+    @test isapprox(output["RESULT"],[3.0 ; 0.5],rtol=1E-2)
+    @test output["CONVERGED"]
+    @test isapprox(output_GC["RESULT"],[3.0 ; 0.5],rtol=1E-2)
+    @test output_GC["CONVERGED"]
     
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
