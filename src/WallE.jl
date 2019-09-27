@@ -62,7 +62,7 @@ module WallE
 
   where x ∈ ℜ^n and x ∈ [ci, cs]. 
 
-  The inputs for this function are:
+  The inputs are:
 
   f::Function         -> Objective function     -> f(x)->Float64  <br/>
   df::Function        -> Gradient of f(x)       -> df(x)->Array{Float64,1}  <br/>
@@ -110,40 +110,6 @@ FINI is the initial value of the objective function,
 FOPT is the optimal value of the objective function and 
 CONVERGED is the flag indicating if the optimal solution 
 satisfies first order optimality conditions.  
-
-Example:  
-  
-```julia
-    using WallE
-
-    function f(x) 
-        100*(x[2]-x[1]^2)^2+(x[1]-1)^2
-    end
-
-       
-    function df(x)
-        df1 = 2.0*(x[1]-1)-400*x[1]*(x[2]-x[1]^2)
-        df2 = 200.0*(x[2]-x[1]^2)
-        return [df1 ; df2]
-    end
-
-    # Initial point
-    x0 = [0.0 ; 3.0]
-
-    # Side constraints
-    ci = [-Inf ; 0.5]
-    cs = [0.8 ; Inf] 
-
-    # Call optimizer
-    options = WallE.Init()
-    options["NITER"] = 10_000
-    output = WallE.Solve(f,df,x0,ci,cs,options)
-
-    # Recovering solution
-    x_opt = output["RESULT"]
-    flag_converged = output["CONVERGED"]
-
-```
 
   """
   function Solve(f::Function,df::Function,
