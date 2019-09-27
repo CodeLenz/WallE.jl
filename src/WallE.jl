@@ -74,26 +74,26 @@ module WallE
   with keys (and default values)<br/>
 
    "NITER"=>1000  <br/>
-   "TOL_NORM"=>1E-6  <br/>
+   "TOL\_NORM"=>1E-6  <br/>
    "SHOW"=>true  <br/>
-   "ARMIJO_C"=>0.1  <br/>
-   "ARMIJO_TAU"=>0.5  <br/>
-   "LS_ALPHA_INI"=>100.0  <br/>
-   "LS_ALPHA_MIN"=>1E-12  <br/>
-   "LS_SIGMA"=>0.9  <br/>
-   "LS_STRONG"=>false  <br/>
+   "ARMIJO\_C"=>0.1  <br/>
+   "ARMIJO\_TAU"=>0.5  <br/>
+   "LS\_ALPHA\_INI"=>100.0  <br/>
+   "LS\_ALPHA\_MIN"=>1E-12  <br/>
+   "LS\_SIGMA"=>0.9  <br/>
+   "LS\_STRONG"=>false  <br/>
    "GC"=>true  <br/>
 
   
-where NITER is the number of iterations, TOL_NORM is the (relative) 
+where NITER is the number of iterations, TOL\_NORM is the (relative) 
 tolerance of the norm with respect to the objective function, 
 SHOW enables a summary at the end of the optimization, 
-ARMIJO_C is the constant associated to the expected decrease of the
-objective function (first  Wolfe condition), LS_ALPHA_INI is the 
-initial step in Armijo's Backtracking line search, LS_ALPHA_MIN is
-the minimum allowable step, LS_SIGMA is the parameter associated to
+ARMIJO\_C is the constant associated to the expected decrease of the
+objective function (first  Wolfe condition), LS\_ALPHA_INI is the 
+initial step in Armijo's Backtracking line search, LS\_ALPHA_MIN is
+the minimum allowable step, LS\_SIGMA is the parameter associated to
 the expected decrese in curvature (second Wolfe condition) that is 
-used only if LS_STRONG is true. GC enables the (experimental) 
+used only if LS\_STRONG is true. LS\_GC enables the (experimental) 
 constrained conjugate gradient. If it cannot be used in some iteration,
 the program automatically switch to steepest descent.<br/>
 <br/>
