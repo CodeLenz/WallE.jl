@@ -124,8 +124,6 @@
     @test_throws AssertionError WallE.Solve(f,df,x0,ci,cs,options)
     options["LS_ALPHA_MIN"]=0.0
     @test_throws AssertionError WallE.Solve(f,df,x0,ci,cs,options)
-    options["LS_ALPHA_MIN"]=10.0
-    @test_throws AssertionError WallE.Solve(f,df,x0,ci,cs,options)
     options["LS_ALPHA_INI"]=1.0
     options["LS_ALPHA_MIN"]=1.0
     @test_throws AssertionError WallE.Solve(f,df,x0,ci,cs,options)

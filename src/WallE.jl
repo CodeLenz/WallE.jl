@@ -127,7 +127,7 @@ module WallE
   end
 
   # Check and extract the consistence of the inputs
-  nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,strong,ENABLE_GC = Check_inputs(f,df,xini,ci,cs,inputs)
+  nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC = Check_inputs(f,df,xini,ci,cs,inputs)
 
   # Internal flag to select the GC for constrained/unconstrained problems
   constrained = true
@@ -361,34 +361,34 @@ module WallE
     ENABLE_GC  = inputs["GC"]
 
     # Check if the length of x0, ci and cs are the same
-    @assert length(x0)==length(ci)==length(cs) "WallE2::Check_inputs:: length of ci, cs and x0 must be the same"
+    @assert length(x0)==length(ci)==length(cs) "Solve::Check_inputs:: length of ci, cs and x0 must be the same"
 
     # Check if x0 is inside the bounds
-    @assert  sum(ci .<= x0 .<= cs)==length(x0) "WallE2::Check_inputs:: x0 must be inside the bounds ci and cs" 
+    @assert  sum(ci .<= x0 .<= cs)==length(x0) "Solve::Check_inputs:: x0 must be inside the bounds ci and cs" 
 
     # Check if nmax_iter is positive
-    @assert  nmax_iter > 0 "WallE2::Check_inputs:: NITER must be larger than zero "    
+    @assert  nmax_iter > 0 "Solve::Check_inputs:: NITER must be larger than zero "    
 
     # Check if tol_norm is in (0,1)
-    @assert 0.0<tol_norm<1.0 "WallE2::Check_inputs:: TOL_NORM must be in (0,1)"
+    @assert 0.0<tol_norm<1.0 "Solve::Check_inputs:: TOL_NORM must be in (0,1)"
 
     # Check if armijo_c is in (0,0.5)
-    @assert 0.0<armijo_c<0.5 "WallE2::Check_inputs:: ARMIJO_C must be in (0,0.5)"
+    @assert 0.0<armijo_c<0.5 "Solve::Check_inputs:: ARMIJO_C must be in (0,0.5)"
 
     # Check if cut_factor (τ) is in (0,1)
-    @assert 0.0<cut_factor<1.0 "WallE2::Check_inputs:: ARMIJO_TAU must be in (0,1)"
+    @assert 0.0<cut_factor<1.0 "Solve::Check_inputs:: ARMIJO_TAU must be in (0,1)"
 
     # Check if α_ini is positive
-    @assert 0.0<α_ini "WallE2::Check_inputs:: LS_ALPHA_INI must larger than zero"
+    @assert 0.0<α_ini "Solve::Check_inputs:: LS_ALPHA_INI must larger than zero"
 
     # Check if α_min is << 1.0 and > 0. At least smaller than α_ini
-    @assert  0.0<α_min<α_ini   "WallE2::Check_inputs:: LS_ALPHA_MIN must be in (0,α_ini)"
+    @assert  0.0<α_min<α_ini   "Solve::Check_inputs:: LS_ALPHA_MIN must be in (0,LS_ALPHA_INI)"
 
     # Check if σ is in armijo_c <= \sigma < 1.0
-    @assert armijo_c <= σ < 1.0 "WallE2::Check_inputs:: LS_SIGMA must be in [armijo_c,1)"
+    @assert armijo_c <= σ < 1.0 "Solve::Check_inputs:: LS_SIGMA must be in [ARMIJO_C,1)"
 
     # Return input parameters to the main routine
-    return nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,strong,ENABLE_GC
+    return nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC
 
   end
 
