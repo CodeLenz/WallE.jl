@@ -6,28 +6,27 @@ Example
 ```julia
     using WallE
 
-    # Objective function
     function f(x) 
-       (x[1]+2*x[2]-7)^2 + (2*x[1]+x[2]-5)^2 
+        100*(x[2]-x[1]^2)^2+(x[1]-1)^2
     end
 
-    # Gradient 
+       
     function df(x)
-        df1 = 2*(2*x[2]+x[1]-7)+4*(x[2]+2*x[1]-5)
-        df2 = 4*(2*x[2]+x[1]-7)+2*(x[2]+2*x[1]-5)
+        df1 = 2.0*(x[1]-1)-400*x[1]*(x[2]-x[1]^2)
+        df2 = 200.0*(x[2]-x[1]^2)
         return [df1 ; df2]
     end
 
     # Initial point
-    x0 = [-5.0 ; -5.0]
+    x0 = [0.0 ; 3.0]
 
     # Side constraints
-    ci =  -Inf*ones(2)
-    cs =  [0.5 ; 2.0]
+    ci = [-Inf ; 0.5]
+    cs = [0.8 ; Inf] 
 
     # Call optimizer
     options = WallE.Init()
-    options["NITER"] = 1000
+    options["NITER"] = 10_000
     output = WallE.Solve(f,df,x0,ci,cs,options)
 
     # Recovering solution
