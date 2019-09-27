@@ -108,24 +108,6 @@ module WallE
                  inputs=Dict())
 
 
-  # First thing is to extract the input parameters to the main routine.
-  #
-  nmax_iter  = inputs["NITER"]
-  tol_norm   = inputs["TOL_NORM"]
-  flag_show  = inputs["SHOW"]
-  armijo_c   = inputs["ARMIJO_C"]
-  cut_factor = inputs["ARMIJO_TAU"]
-  α_ini      = inputs["LS_ALPHA_INI"]
-  α_min      = inputs["LS_ALPHA_MIN"]
-  σ          = inputs["LS_SIGMA"]
-  STRONG     = inputs["LS_STRONG"]
-  ENABLE_GC  = inputs["GC"]
-
-  
-  if STRONG 
-     println("STRONG does not improves the solution in our tests. So, the use is not adviseable.")
-  end
- 
 
   # Size of the problem
   n = length(xini)
@@ -139,9 +121,13 @@ module WallE
     cs = Inf*ones(n)
   end
 
-  # Check the consistence of the inputs
-  Check_inputs(f,df,xini,ci,cs,nmax_iter,tol_norm,flag_show,armijo_c,
-               cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC)
+  # If inputs is empty, we use default parameters
+  if isemtpy(inputs)
+     inputs = Init()
+  end
+
+  # Check and extract the consistence of the inputs
+  nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,strong,ENABLE_GC = Check_inputs(f,df,xini,ci,cs,inputs)
 
   # Internal flag to select the GC for constrained/unconstrained problems
   constrained = true
@@ -149,6 +135,11 @@ module WallE
    constrained = false
   end
 
+  # Just a little remainder to the user
+  if STRONG 
+     println("STRONG does not improves the solution in our tests. So, the use is not adviseable.")
+  end
+ 
 
   # Make a copy to unlink initial point with the caller, otherwise 
   # we modify it in the caller, leading to potential problems.
@@ -204,7 +195,7 @@ module WallE
 
   # We can now enter in the main loop (Steepest)
   tempo = @elapsed  begin
-  Prg = Progress(nmax_iter, 1, "Minimizing...")
+  Prg = Progress(nmax_iter, 1, "Minimizing objective function...")
   for iter=1:nmax_iter
 
     # Increment counter
@@ -218,73 +209,73 @@ module WallE
 
     # If we intend to use GC
     if ENABLE_GC && iter>1 && counter_gc <= n && free_x == last_free_x
-     flag_gc = GC_projected!(d,last_d,D,last_D,active_r,α_I) 
-     if flag_gc
-      counter_gc += 1
-      used_gc = true
+      flag_gc = GC_projected!(d,last_d,D,last_D,active_r,α_I) 
+      if flag_gc
+        counter_gc += 1
+        used_gc = true
+      end
+    else 
+      counter_gc  = 0
     end
-  else 
-   counter_gc  = 0
-  end
 
-  # Line search
-  xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,STRONG)
+    # Line search
+    xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,STRONG)
 
-  # Copy the new derivative and store the old one
-  last_D          .= D
-  D .= dfn
+    # Copy the new derivative and store the old one
+    last_D   .= D
+    D        .= dfn
 
-  # Free positions
-  last_free_x = copy(free_x)
-  free_x = filter(x-> !(x in active_r),lvar)
+    # Free positions
+    last_free_x = copy(free_x)
+    free_x = filter(x-> !(x in active_r),lvar)
 
-  # Norm of free positions
-  norm_D = norm(D[free_x])  
+    # Norm of free positions
+    norm_D = norm(D[free_x])  
 
-  # Store the norm (d)
-  norms[iter] = norm_D
+    # Store the norm (d)
+    norms[iter] = norm_D
 
-  # Store the step
-  steps[iter] = α
+    # Store the step
+    steps[iter] = α
 
-  # Rollover Bethoven
-  last_x          .= x0
-  last_d          .= d
-  x0              .= xn
+    # Rollover Bethoven
+    last_x          .= x0
+    last_d          .= d
+    x0              .= xn
 
 
-  # Blocked by below. They must be positive
-  delta_m = D[active_r_ci]
+    # Blocked by below. They must be positive
+    delta_m = D[active_r_ci]
 
-  # Blocked by above. They must be negative
-  delta_M = D[active_r_cs]
+    # Blocked by above. They must be negative
+    delta_M = D[active_r_cs]
 
 
-  # We need to fulfil all the first order conditions..
-  if iter>2 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
-   (all(delta_M .<= 0.0)||isempty(delta_M))
-   # Convergence assessed by first order condition. Set the flag and
-   # skip the main loop
-   flag_conv = true
-   break
-  end # first order conditions
+    # We need to fulfil all the first order conditions..
+    if iter>2 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+                                                 (all(delta_M .<= 0.0)||isempty(delta_M))
+      # Convergence assessed by first order condition. Set the flag and
+      # skip the main loop
+      flag_conv = true
+      break
+    end # first order conditions
 
-  if !flag_success 
-    printstyled("\nWallE2::The solution cannot be improved during the line-search. ", color=:red)
-    if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
-                                        (all(delta_M .<= 0.0)||isempty(delta_M))
-       printstyled("\nWallE2::But first order conditions are satisfied.", color=:green)
+    if !flag_success 
+        printstyled("\nWallE2::The solution cannot be improved during the line-search. ", color=:red)
+        if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+                                            (all(delta_M .<= 0.0)||isempty(delta_M))
+          printstyled("\nWallE2::But first order conditions are satisfied.", color=:green)
 
-       flag_conv = true 
-    else
-      printstyled("\nWallE2::Not all first order conditions are satisfied, procced with care. ", color=:red)     
+          flag_conv = true 
+        else
+          printstyled("\nWallE2::Not all first order conditions are satisfied, procced with care. ", color=:red)     
+        end
+        break
     end
-    break
-  end
 
 
-  # Fancy report for the mob :)
-  ProgressMeter.next!(Prg; showvalues = [
+    # Fancy report for the mob :)
+    ProgressMeter.next!(Prg; showvalues = [
                       (:Iteration,counter), 
                       (:Counter_gc,counter_gc),
                       (:Enable_GC,ENABLE_GC),
@@ -301,8 +292,8 @@ module WallE
                       valuecolor = :yellow)
 
 
-  end # iter
-  end # block for timing
+    end # iter
+    end # block for timing
 
 
   # Final report
@@ -348,47 +339,56 @@ module WallE
   # Check if the inputs are consistent
   #
   function Check_inputs(f::Function,df::Function,
-                         x0::Array{Float64},
-                         ci::Array{Float64},
-                         cs::Array{Float64},
-                         nmax_iter::Int64,
-                         tol_norm::Float64,
-                         flag_show::Bool,
-                         armijo_c::Float64,
-                         cut_factor::Float64,
-                         α_ini::Float64,
-                         α_min::Float64, 
-                         σ::Float64,
-                         strong::Bool,
-                         ENABLE_GC::Bool)
+                        x0::Array{Float64},
+                        ci::Array{Float64},
+                        cs::Array{Float64},
+                        inputs::Dict)
 
+                 
 
-  # Check if the length of x0, ci and cs are the same
-  @assert length(x0)==length(ci)==length(cs) "WallE2::Check_inputs:: length of ci, cs and x0 must be the same"
+    #
+    # First thing is to extract the input parameters 
+    #
+    nmax_iter  = inputs["NITER"]
+    tol_norm   = inputs["TOL_NORM"]
+    flag_show  = inputs["SHOW"]
+    armijo_c   = inputs["ARMIJO_C"]
+    cut_factor = inputs["ARMIJO_TAU"]
+    α_ini      = inputs["LS_ALPHA_INI"]
+    α_min      = inputs["LS_ALPHA_MIN"]
+    σ          = inputs["LS_SIGMA"]
+    STRONG     = inputs["LS_STRONG"]
+    ENABLE_GC  = inputs["GC"]
 
-  # Check if x0 is inside the bounds
-  @assert  sum(ci .<= x0 .<= cs)==length(x0) "WallE2::Check_inputs:: x0 must be inside the bounds ci and cs" 
+    # Check if the length of x0, ci and cs are the same
+    @assert length(x0)==length(ci)==length(cs) "WallE2::Check_inputs:: length of ci, cs and x0 must be the same"
 
-  # Check if nmax_iter is positive
-  @assert  nmax_iter > 0 "WallE2::Check_inputs:: nmax_iter must be larger than zero "    
+    # Check if x0 is inside the bounds
+    @assert  sum(ci .<= x0 .<= cs)==length(x0) "WallE2::Check_inputs:: x0 must be inside the bounds ci and cs" 
 
-  # Check if tol_norm is in (0,1)
-  @assert 0.0<tol_norm<1.0 "WallE2::Check_inputs:: tol_norm must be in (0,1)"
+    # Check if nmax_iter is positive
+    @assert  nmax_iter > 0 "WallE2::Check_inputs:: NITER must be larger than zero "    
 
-  # Check if armijo_c is in (0,0.5)
-  @assert 0.0<armijo_c<0.5 "WallE2::Check_inputs:: armijo_c must be in (0,0.5)"
+    # Check if tol_norm is in (0,1)
+    @assert 0.0<tol_norm<1.0 "WallE2::Check_inputs:: TOL_NORM must be in (0,1)"
 
-  # Check if cut_factor (τ) is in (0,1)
-  @assert 0.0<cut_factor<1.0 "WallE2::Check_inputs:: cut_factor must be in (0,1)"
+    # Check if armijo_c is in (0,0.5)
+    @assert 0.0<armijo_c<0.5 "WallE2::Check_inputs:: ARMIJO_C must be in (0,0.5)"
 
-  # Check if α_ini is positive
-  @assert 0.0<α_ini "WallE2::Check_inputs:: α_ini must larger than zero"
+    # Check if cut_factor (τ) is in (0,1)
+    @assert 0.0<cut_factor<1.0 "WallE2::Check_inputs:: ARMIJO_TAU must be in (0,1)"
 
-  # Check if α_min is << 1.0 and > 0. At least smaller than α_ini
-  @assert  0.0<α_min<α_ini   "WallE2::Check_inputs:: α_min must be in (0,α_ini)"
+    # Check if α_ini is positive
+    @assert 0.0<α_ini "WallE2::Check_inputs:: LS_ALPHA_INI must larger than zero"
 
-  # Check if σ is in armijo_c <= \sigma < 1.0
-  @assert armijo_c <= σ < 1.0 "WallE2::Check_inputs:: σ must be in [armijo_c,1)"
+    # Check if α_min is << 1.0 and > 0. At least smaller than α_ini
+    @assert  0.0<α_min<α_ini   "WallE2::Check_inputs:: LS_ALPHA_MIN must be in (0,α_ini)"
+
+    # Check if σ is in armijo_c <= \sigma < 1.0
+    @assert armijo_c <= σ < 1.0 "WallE2::Check_inputs:: LS_SIGMA must be in [armijo_c,1)"
+
+    # Return input parameters to the main routine
+    return nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,strong,ENABLE_GC
 
   end
 
