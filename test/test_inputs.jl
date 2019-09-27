@@ -19,8 +19,7 @@
     # parameters (Solve must use default parameters)
     #
     x0 = ones(10); ci = zeros(5);  cs = 2*ones(10)
-    #@test_throws AssertionError 
-    WallE.Solve(f,df,x0,ci,cs)
+    @test_throws AssertionError WallE.Solve(f,df,x0,ci,cs)
 
     x0 = ones(1); ci = zeros(10);  cs = 2*ones(10)
     @test_throws AssertionError WallE.Solve(f,df,x0,ci,cs)
