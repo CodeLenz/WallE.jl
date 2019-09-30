@@ -32,6 +32,7 @@ Example
     # Recovering solution
     x_opt = output["RESULT"]
     flag_converged = output["CONVERGED"]
+    opt_norm = output["NORM"]
 
 ```
 
@@ -59,5 +60,10 @@ The output options are
     "FINI"
     "FOPT"
     "CONVERGED"
+    "NORM"
+    "COUNTER_ITER"
+
 ```
-where RESULT is the vector of optimal design variables, FINI is the initial value of the objective function, FOPT is the optimal value of the objective function and CONVERGED is the flag indicating if the optimal solution satisfies first order optimality conditions.
+where RESULT is the vector of optimal design variables, FINI is the initial value of the objective function, FOPT is the optimal value of the objective function and CONVERGED is the flag indicating if the optimal solution satisfies first order optimality conditions. NORM is the norm of free positions (not blocked) and COUNTER_ITER
+is the effective number of iterations.
+

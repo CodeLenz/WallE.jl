@@ -33,6 +33,7 @@ module WallE
   # 
   function Outputs(x::Array{Float64},
                    f0::Float64,fn::Float64,flag_conv::Bool,
+                   norm_D::Float64,counter::Int64,
                    lists)
 
       outputs = Dict()
@@ -40,6 +41,8 @@ module WallE
       push!(outputs,"FINI"=>f0) 
       push!(outputs,"FOPT"=>fn)
       push!(outputs,"CONVERGED"=>flag_conv)
+      push!(outputs,"NORM"=>norm_D)
+      push!(outputs,"COUNTER_ITER"=>counter)
       push!(outputs,"lists"=>lists) 
 
       return outputs
@@ -103,12 +106,17 @@ Outputs are returned in another dictionary with keys <br/>
    "FINI"  <br/>
    "FOPT"  <br/>
    "CONVERGED"  <br/>
+   "NORM" <br/>
+   "COUNTER_ITER" <br/>
 
 where RESULT is the vector of optimal design variables, 
 FINI is the initial value of the objective function,
 FOPT is the optimal value of the objective function and 
 CONVERGED is the flag indicating if the optimal solution 
-satisfies first order optimality conditions.  
+satisfies first order optimality conditions. NORM is the 
+norm of free positions (not blocked) and COUNTER_ITER
+is the effective number of iterations.
+
 Example:  
   
 ```julia
@@ -140,6 +148,7 @@ Example:
     # Recovering solution
     x_opt = output["RESULT"]
     flag_converged = output["CONVERGED"]
+    opt_norm = output["NORM"]
 
 ```
 """
@@ -368,7 +377,7 @@ Example:
 
 
   # Create the output using the OWall type
-  output = Outputs(x0,f0,fn,flag_conv,[functions[1:counter], norms[1:counter], steps[1:counter]])
+  output = Outputs(x0,f0,fn,flag_conv,norm_D,counter,[functions[1:counter], norms[1:counter], steps[1:counter]])
 
   # Return the optimal point, initial and final value of the obj
   # function and the list of objectives/norm and αs for each iteration
