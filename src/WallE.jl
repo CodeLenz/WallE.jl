@@ -601,7 +601,7 @@ module WallE
 
     # Check for minimum step
     if α<=α_min
-      break
+      # break # Está saindo com norma zero quando a otimização cai aqui
     end
 
   end #while true
