@@ -161,7 +161,8 @@
 
     output = WallE.Solve(f,df,x0,ci,cs,options)
 
-    options["GC"]    = true
+    options["GC"]       = true
+    options["TOL_NORM"] = 1E-5
     output_GC = WallE.Solve(f,df,x0,ci,cs,options)
  
 
