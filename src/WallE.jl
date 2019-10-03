@@ -191,6 +191,9 @@ Example:
      println("STRONG does not improves the solution in our tests. So, the use is not advisable.")
   end
  
+  # Used to track limit values of α during optimization
+  αs = 0.0
+  αi = maxintfloat(Float64)
 
   # Make a copy to unlink initial point with the caller, otherwise 
   # we modify it in the caller, leading to potential problems.
@@ -272,6 +275,11 @@ Example:
     # Line search
     xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,STRONG)
 
+
+    # keep track of αs and αi
+    αs = max(αs,α)
+    αi = min(αi,α)
+
     # Copy the new derivative and store the old one
     last_D   .= D
     D        .= dfn
@@ -302,21 +310,21 @@ Example:
 
     # Breaking condition when function doesn't improve
     if !flag_success 
-        printstyled("\nWallE2::The solution cannot be improved during the line-search. ", color=:red)
+        printstyled("\nWallE.Solve::The solution cannot be improved during the line-search. ", color=:red)
         if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
                                             (all(delta_M .<= 0.0)||isempty(delta_M))
-          printstyled("\nWallE2::But first order conditions are satisfied.", color=:green)
+          printstyled("\nWallE.Solve::But first order conditions are satisfied.", color=:green)
 
           flag_conv = true 
         else
-          printstyled("\nWallE2::Not all first order conditions are satisfied, proceed with care. ", color=:red)
+          printstyled("\nWallE.Solve::Not all first order conditions are satisfied, proceed with care. ", color=:red)
         end
         break
     end
 
     # We need to fulfil all the first order conditions..
-    if iter>2 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
-                                                 (all(delta_M .<= 0.0)||isempty(delta_M))
+    if flag_success && iter>2 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+       (all(delta_M .<= 0.0)||isempty(delta_M))
       # Convergence assessed by first order condition. Set the flag and
       # skip the main loop
       flag_conv = true
@@ -332,7 +340,9 @@ Example:
                       (:GC,used_gc),
                       (:Norm,norm_D), 
                       (:Target,tol_norm*(1+abs(fn))),
-                      (:Step,α),
+                      (:"Current Step",α),
+                      (:"Smaller Step",αi),
+                      (:"Larger  Step",αs),
                       (:Objective,fn), 
                       (:ci,length(active_r_ci)),
                       (:cs,length(active_r_cs)),
@@ -368,8 +378,10 @@ Example:
     println("Blocked variables      : ", length(active_r),": ",  length(active_r_ci)," for lower bound ",length(active_r_cs)," for upper bound")
     println("Number of iterations   : ", counter , " of ",nmax_iter)
     println("First order conditions : ", flag_conv, " ", all(delta_m .>= -tol_norm)||isempty(delta_m),
-      " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
+                                      " ", all(delta_M .<=  tol_norm)||isempty(delta_M))
     println("Norm(free positions)   : ", norm_D," Reference ",tol_norm*(1+abs(fn)))
+    println("Smaller step           : ", αi)
+    println("Larger  step           : ", αs)
     println("Total time             : ", canonicalize(Dates.CompoundPeriod(Dates.Second(floor(Int64,tempo)))))
     println("********************************************************")
   end
