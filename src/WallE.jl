@@ -294,7 +294,6 @@ Example:
     last_d          .= d
     x0              .= xn
 
-
     # Blocked by below. They must be positive
     delta_m = D[active_r_ci]
 
@@ -573,10 +572,10 @@ Example:
 
 
   # "optimal" value
-  fn = 0.0
+  fn = f0
 
   # Local vectors
-  xn = zero(x0)
+  xn = copy(x0)
   Δx = zero(x0)
 
   # Local lists to be returned
@@ -589,7 +588,7 @@ Example:
   α = α_ini
 
   # Derivative on (next) point
-  dfn = zero(x0)
+  dfn = copy(D) #zero(x0)
 
   # Flag (success)
   flag_success = false
@@ -641,7 +640,7 @@ Example:
 
         # We evaluate derivative anyway, since we 
         # must return it to the main function
-        dfn = df(xn)
+        dfn .= df(xn)
 
         # Check if we must evaluate second (strong) Wolfe condition
         Δnorm = Δx / norm(Δx)
@@ -669,8 +668,6 @@ Example:
 
 
   end #Armijo_Projected
-
-
 
 
   #
