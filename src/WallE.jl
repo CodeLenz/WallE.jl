@@ -8,7 +8,7 @@ module WallE
   export Solve, Init
 
   # 
-  # Generate the dictionary with defalt values (optional arguments)
+  # Generate the dictionary with default values (optional arguments)
   # 
   function Init()
 
@@ -188,7 +188,7 @@ Example:
 
   # Just a little remainder to the user
   if STRONG 
-     println("STRONG does not improves the solution in our tests. So, the use is not adviseable.")
+     println("STRONG does not improves the solution in our tests. So, the use is not advisable.")
   end
  
 
@@ -214,7 +214,7 @@ Example:
   norms     = zeros(nmax_iter)
   steps     = zeros(nmax_iter)
 
-  # Some arrays we whant to show after the main loop
+  # Some arrays we want to show after the main loop
   free_x = Int64[]
   last_free_x = Int64[]
   active_r = Int64[]
@@ -301,6 +301,19 @@ Example:
     # Blocked by above. They must be negative
     delta_M = D[active_r_cs]
 
+    # Breaking condition when function doesn't improve
+    if !flag_success 
+        printstyled("\nWallE2::The solution cannot be improved during the line-search. ", color=:red)
+        if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
+                                            (all(delta_M .<= 0.0)||isempty(delta_M))
+          printstyled("\nWallE2::But first order conditions are satisfied.", color=:green)
+
+          flag_conv = true 
+        else
+          printstyled("\nWallE2::Not all first order conditions are satisfied, proceed with care. ", color=:red)
+        end
+        break
+    end
 
     # We need to fulfil all the first order conditions..
     if iter>2 && norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
@@ -311,20 +324,7 @@ Example:
       break
     end # first order conditions
 
-    if !flag_success 
-        printstyled("\nWallE2::The solution cannot be improved during the line-search. ", color=:red)
-        if  norm_D<=tol_norm*(1+abs(fn)) && (all(delta_m .>= 0.0)||isempty(delta_m)) &&
-                                            (all(delta_M .<= 0.0)||isempty(delta_M))
-          printstyled("\nWallE2::But first order conditions are satisfied.", color=:green)
-
-          flag_conv = true 
-        else
-          printstyled("\nWallE2::Not all first order conditions are satisfied, procced with care. ", color=:red)     
-        end
-        break
-    end
-
-
+      
     # Fancy report for the mob :)
     ProgressMeter.next!(Prg; showvalues = [
                       (:Iteration,counter), 
@@ -418,7 +418,7 @@ Example:
     @assert  sum(ci .<= x0 .<= cs)==length(x0) "Solve::Check_inputs:: x0 must be inside the bounds ci and cs" 
 
     # Check if nmax_iter is positive
-    @assert  nmax_iter > 0 "Solve::Check_inputs:: NITER must be larger than zero "    
+    @assert  nmax_iter > 0 "Solve::Check_inputs:: NITER must be larger than zero "
 
     # Check if tol_norm is in (0,1)
     @assert 0.0<tol_norm<1.0 "Solve::Check_inputs:: TOL_NORM must be in (0,1)"
@@ -489,7 +489,7 @@ Example:
     xn = x0 .+ α*d
 
     #
-    # This is the mathematical form of appying the 
+    # This is the mathematical form of applying the 
     # projections, as explained in the companion text.
     # 
     #
@@ -504,7 +504,7 @@ Example:
     @inbounds for i in LinearIndices(xn)
 
 
-      # Depending on the seach direction, we can test for lower OR upper
+      # Depending on the search direction, we can test for lower OR upper
       # violations. If violated, store in the arrays
       if d[i]<0.0
 
@@ -591,7 +591,7 @@ Example:
   # Derivative on (next) point
   dfn = zero(x0)
 
-  # Flag (sucess)
+  # Flag (success)
   flag_success = false
 
   # Normalize search direction
@@ -637,7 +637,7 @@ Example:
       right = f0 + c*m
 
       # First Wolfe condition
-      if fn <= right 
+      if fn <= right
 
         # We evaluate derivative anyway, since we 
         # must return it to the main function
@@ -648,7 +648,7 @@ Example:
         if !strong || (strong && dot(dfn,Δnorm) >= σ*dot(D,Δnorm)) 
             flag_success = true
             break
-        end      
+        end
 
       end #fn <= right
     end # m<=0
@@ -684,12 +684,12 @@ Example:
 
   #
   # Lets evaluate the left term of both dot products
-  # 
+  #
 
   # It starts with the difference in gradient
   y = D .- last_D
 
-  # Loop over last (effectivelly) projected variables
+  # Loop over last (effectively) projected variables
   @inbounds for r in LinearIndices(active_r)
 
    # Projected variable
