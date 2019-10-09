@@ -828,6 +828,9 @@ Example:
         # must return it to the main function
         dfn .= df(xn)
 
+        # Skip the loop
+        break
+
     end 
 
     # Otherwise, decrease step    
