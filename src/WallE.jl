@@ -463,6 +463,13 @@ Example:
     # Check the hidden option
     @assert (LS_TYPE=="Armijo" || LS_TYPE=="Wall") "Solve::Check_inputs:: LS_TYPE must be Armijo OR Wall"
 
+    # Finally, we cannot assert anything on using GC and Wall, so we revert to Steepest
+    if LS_TYPE=="Wall" && ENABLE_GC
+       println("WallE::Solve::GC cannot be used with Wall LS. Disabling")
+       ENABLE_GC = false
+    end
+
+
     # Return input parameters to the main routine
     return nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC
 
@@ -783,7 +790,6 @@ Example:
 
   # Local vectors
   xn = copy(x0)
-  Δx = zero(x0)
 
   # Local lists to be returned
   active_r = Int64[]
@@ -811,9 +817,6 @@ Example:
 
     # Candidate point (xn)
     xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
-
-    # Effective delta x
-    Δx .= xn .- x0 
 
     # Function at this next point
     fn = f(xn)
