@@ -23,6 +23,9 @@ module WallE
         push!(inputs,"LS_SIGMA"=>0.9)
         push!(inputs,"LS_STRONG"=>false)
         push!(inputs,"GC"=>true)
+
+        # "Hidden" option :)
+        push!(inputs,"LS_TYPE"=>"Armijo")
         
         return inputs
 
@@ -245,7 +248,7 @@ Example:
   counter = 0
 
   # Step in LS
-  α = 0.0
+  α = α_ini
 
   # We can now enter in the main loop (Steepest)
   tempo = @elapsed  begin
@@ -273,8 +276,13 @@ Example:
     end
 
     # Line search
-    xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,STRONG)
-
+    if inputs["LS_TYPE"]=="Armijo"
+       xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,STRONG)
+    elseif inputs["LS_TYPE"]=="Wall"
+       xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Wall_Seach_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,α,armijo_c,cut_factor,α_ini,α_min,σ,STRONG)
+    else
+       error("WallE::Solve::Hidden option LS_TYPE should be Armijo or Wall")   
+    end
 
     # keep track of αs and αi
     αs = max(αs,α)
@@ -422,6 +430,9 @@ Example:
     STRONG     = inputs["LS_STRONG"]
     ENABLE_GC  = inputs["GC"]
 
+    # Hidden option
+    LS_TYPE    = inputs["LS_TYPE"]
+
     # Check if the length of x0, ci and cs are the same
     @assert length(x0)==length(ci)==length(cs) "Solve::Check_inputs:: length of ci, cs and x0 must be the same"
 
@@ -448,6 +459,9 @@ Example:
 
     # Check if σ is in armijo_c <= \sigma < 1.0
     @assert armijo_c <= σ < 1.0 "Solve::Check_inputs:: LS_SIGMA must be in [ARMIJO_C,1)"
+
+    # Check the hidden option
+    @assert (LS_TYPE=="Armijo" || "Wall") "Solve::Check_inputs:: LS_TYPE must be Armijo OR Wall"
 
     # Return input parameters to the main routine
     return nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC
@@ -735,6 +749,103 @@ Example:
   return flag_success
 
   end
+
+
+
+
+  ##################################################################################
+  ############################### HIDDEN FUNCTION ##################################
+  ##################################################################################
+
+
+  #
+  # Not fair L.S. Search direction is modified  (scaled)
+  # in this subroutine
+  #
+  function Wall_Seach_Projected!(f::Function,df::Function,x0::Array{Float64},
+                                 f0::Float64,
+                                 D::Array{Float64},
+                                 d::Array{Float64},
+                                 ci::Array{Float64},
+                                 cs::Array{Float64},
+                                 constrained::Bool,
+                                 last_α::Float64,
+                                 c::Float64=0.1,
+                                 τ::Float64=0.5,
+                                 α_ini::Float64=1.0,
+                                 α_min::Float64=1E-12,
+                                 σ::Float64=0.95,
+                                 strong::Bool=true)
+
+
+  # "optimal" value
+  fn = f0
+
+  # Local vectors
+  xn = copy(x0)
+  Δx = zero(x0)
+
+  # Local lists to be returned
+  active_r = Int64[]
+  active_r_ci = Int64[]
+  active_r_cs = Int64[]
+  α_I = Float64[]
+
+  # Initial step
+  α = 2*last_α
+  if α>α_ini
+     α = α_ini
+  end
+
+  # Derivative on (next) point
+  dfn = copy(D) 
+
+  # Flag (success)
+  flag_success = false
+
+  # Normalize search direction
+  d .= d./norm(d)    
+
+  # Main Loop
+  while true
+
+    # Candidate point (xn)
+    xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x0,d,ci,cs)
+
+    # Effective delta x
+    Δx .= xn .- x0 
+
+    # Function at this next point
+    fn = f(xn)
+
+    # if improved we bail out
+    if fn < f0 
+
+        # We are done here
+        flag_success = true 
+
+        # We evaluate derivative anyway, since we 
+        # must return it to the main function
+        dfn .= df(xn)
+
+    end 
+
+    # Otherwise, decrease step    
+    α = α*τ
+
+    # Check for minimum step
+    if α<=α_min
+      break
+    end
+
+  end #while true
+
+
+  # return 
+  return xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success
+
+
+  end # Dirty LS
 
 
 end # module
