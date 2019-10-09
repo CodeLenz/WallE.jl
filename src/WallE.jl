@@ -461,7 +461,7 @@ Example:
     @assert armijo_c <= σ < 1.0 "Solve::Check_inputs:: LS_SIGMA must be in [ARMIJO_C,1)"
 
     # Check the hidden option
-    @assert (LS_TYPE=="Armijo" || "Wall") "Solve::Check_inputs:: LS_TYPE must be Armijo OR Wall"
+    @assert (LS_TYPE=="Armijo" || LS_TYPE=="Wall") "Solve::Check_inputs:: LS_TYPE must be Armijo OR Wall"
 
     # Return input parameters to the main routine
     return nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC
