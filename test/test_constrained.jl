@@ -46,6 +46,12 @@
     @test isapprox(output_GC["RESULT"],[-2.0 ; 3.0],rtol=1E-4)
     @test output_GC["CONVERGED"]
  
+ 
+    # The "hidden" option :)
+    options["LS_TYPE"]    = "Wall"
+    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    @test isapprox(output_GC_WALL["RESULT"],[-2.0 ; 3.0],rtol=1E-3)
+
     #println("\n","# Results #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [-2.0 ; 3.0]])
 
@@ -91,6 +97,11 @@
     @test isapprox(output_GC["RESULT"],[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-4)
     @test output_GC["CONVERGED"]
     
+
+    # The "hidden" option :)
+    options["LS_TYPE"]    = "Wall"
+    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    @test isapprox(output_GC_WALL["RESULT"],[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-3)
 
     #println("\n","# Results #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [10*ones(10) ; 11:49 ; 50*ones(51)]])
@@ -144,6 +155,12 @@
     @test output["CONVERGED"]
     @test isapprox(output_GC["RESULT"],resp,rtol=1E-4)
     @test output_GC["CONVERGED"]
+
+
+    # The "hidden" option :)
+    options["LS_TYPE"]    = "Wall"
+    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    @test isapprox(output_GC_WALL["RESULT"],resp,rtol=1E-3)
     
     #println("\n","# Results #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt resp])
@@ -187,6 +204,13 @@
     @test isapprox(output_GC["RESULT"],[0.5 ; 2.0 ],rtol=1E-2)
     @test output_GC["CONVERGED"]
  
+
+    # The "hidden" option :)
+    options["LS_TYPE"]    = "Wall"
+    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    @test isapprox(output_GC_WALL["RESULT"],[0.5 ; 2.0 ],rtol=1E-2)
+    
+
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
     println("\n")
@@ -229,6 +253,12 @@
     @test output["CONVERGED"]
     @test isapprox(output_GC["RESULT"],[0.8 ; 0.64],rtol=1E-2)
     @test output_GC["CONVERGED"]
+
+    # The "hidden" option :)
+    options["LS_TYPE"]    = "Wall"
+    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    @test isapprox(output_GC_WALL["RESULT"],[0.8 ; 0.64 ],rtol=1E-2)
+    
   
     #println("\n","# Resultado #")
     #show(IOContext(stdout, :compact => false, :limit => false), "text/plain", [x_opt [3.0 ; 5.0]])
