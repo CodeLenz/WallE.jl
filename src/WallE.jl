@@ -722,11 +722,11 @@ Example:
   # Loop over last (effectively) projected variables
   @inbounds for r in LinearIndices(active_r)
 
-   # Projected variable
-   pos = active_r[r]
+     # Projected variable
+     pos = active_r[r]
 
-   # Correction Assuming Ae = d_r e_r
-   y .= y .+ α_I[r]*last_d[pos].*Extract_as_vector(last_d,pos)
+     # Correction Assuming An_r = d_r n_r
+     y .= y .+ α_I[r]*last_d[pos].*Extract_as_vector(last_d,pos)
 
   end # r
 
