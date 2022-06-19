@@ -7,9 +7,4 @@ Bounding Box Optimizer for large problems where the optimal solution lies on the
  ]\add https://github.com/CodeLenz/WallE.git#version-2.0 
  ```
 
- Also take a look at
- 
- https://github.com/CodeLenz/GDP
- 
- for a new algorithm without line search.
  
