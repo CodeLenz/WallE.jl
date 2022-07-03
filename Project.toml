@@ -1,7 +1,7 @@
 name = "WallE"
 uuid = "409c7e06-86dc-11e9-30a5-6d15a9183e58"
 authors = ["CodeLenz <eduardobarplenz@gmail.com>"]
-repo-url = "https://github.com/CodeLenz/WallE.git"
+repo-url = "https://github.com/CodeLenz/WallE.jl.git"
 version = "2.0.0"
 
 [deps]
@@ -9,3 +9,7 @@ Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+julia = "1.7"
+ProgressMeter = "1"
