@@ -490,7 +490,7 @@ Example:
   # Return a vector with just one position 
   #
   function Extract_as_vector(v::Array{T},pos::Int64) where T
-    vv = zero(T,v)
+    vv = zero(v)
     @inbounds vv[pos] = v[pos]
     return vv
   end
