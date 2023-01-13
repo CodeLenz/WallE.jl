@@ -34,10 +34,10 @@ module WallE
   # 
   # Generate the dictionary with the outputs
   # 
-  function Outputs(x::Array{Float64},
-                   f0::Float64,fn::Float64,flag_conv::Bool,
+  function Outputs(x::Array{T},
+                   f0::T1,fn::T1,flag_conv::Bool,
                    norm_D::Float64,counter::Int64,
-                   lists)
+                   lists) where{T,T1}
 
       outputs = Dict()
       push!(outputs,"RESULT"=>x) 
@@ -156,10 +156,10 @@ Example:
 ```
 """
   function Solve(f::Function,df::Function,
-                 xini::Array{Float64},
+                 xini::Array{T},
                  ci=Float64[],
                  cs=Float64[],
-                 inputs=Dict())
+                 inputs=Dict()) where T
 
 
 
@@ -168,11 +168,11 @@ Example:
 
   # If ci or cs are empty, we pass them to ±∞
   if length(ci)==0 
-    ci = -Inf*ones(n)
+    ci = -Inf*ones(T,n)
   end
 
   if length(cs)==0
-    cs = Inf*ones(n)
+    cs = Inf*ones(T,n)
   end
 
   # If inputs is empty, we use default parameters
@@ -213,7 +213,7 @@ Example:
   # We start evaluating ∇f here, since it is evaluated
   # in the LS and returned to this function
   D = df(x0)
-  d = zeros(n)
+  d = zeros(T,n)
 
   # Lists with function values and norms (D)
   functions = zeros(nmax_iter)
@@ -229,9 +229,9 @@ Example:
   α_I = Float64[]
   delta_m = Int64[]  
   delta_M = Int64[]
-  last_x = zeros(n)
-  last_d = zeros(n)
-  last_D = zeros(n)
+  last_x = zeros(T,n)
+  last_d = zeros(T,n)
+  last_D = zeros(T,n)
 
 
   # Counter for GC
@@ -409,10 +409,10 @@ Example:
   # Check if the inputs are consistent
   #
   function Check_inputs(f::Function,df::Function,
-                        x0::Array{Float64},
-                        ci::Array{Float64},
-                        cs::Array{Float64},
-                        inputs::Dict)
+                        x0::Array{T},
+                        ci::Array{T},
+                        cs::Array{T},
+                        inputs::Dict) where T
 
                  
 
@@ -489,8 +489,8 @@ Example:
   #
   # Return a vector with just one position 
   #
-  function Extract_as_vector(v::Array{Float64},pos::Int64)
-    vv = zero(v)
+  function Extract_as_vector(v::Array{T},pos::Int64) where T
+    vv = zero(T,v)
     @inbounds vv[pos] = v[pos]
     return vv
   end
@@ -498,7 +498,7 @@ Example:
   #
   # Return a scalar
   #
-  function Extract_as_scalar(v::Array{Float64},pos::Int64)
+  function Extract_as_scalar(v::Array{T},pos::Int64) where T
     @inbounds v[pos]
   end
 
@@ -510,7 +510,7 @@ Example:
   # return the projected point and the list of
   # effective blocks
   #
-  function Project(α::Float64,x0::Array{Float64},d::Array{Float64},ci::Array{Float64},cs::Array{Float64})
+  function Project(α::Float64,x0::Array{T},d::Array{T},ci::Array{T},cs::Array{T}) where T
 
 
 
@@ -538,12 +538,13 @@ Example:
 
       # Depending on the search direction, we can test for lower OR upper
       # violations. If violated, store in the arrays
-      if d[i]<0.0
+      if d[i] < zero(T)
 
         # Possible violation 
         violation = ci[i] - xn[i]
 
-        if violation >= 0.0 
+        if violation >= zero(T) 
+        
          # Effective α_I
          αI = α - violation/d[i]
 
@@ -556,12 +557,13 @@ Example:
          push!(α_I,αI)
        end   
 
-     elseif d[i]>0.0
+     elseif d[i] > zero(T)
 
         # Possible violation 
         violation =  xn[i] - cs[i]
 
-        if violation >= 0.0 
+        if violation >= zero(T)
+        
            # Effective α_I
            αI = α - violation/d[i]
 
@@ -589,19 +591,19 @@ Example:
   # Modified Line Search (Armijo). Search direction is modified  (scaled)
   # in this subroutine
   #
-  function Armijo_Projected!(f::Function,df::Function,x0::Array{Float64},
+  function Armijo_Projected!(f::Function,df::Function,x0::Array{T},
                              f0::Float64,
-                             D::Array{Float64},
-                             d::Array{Float64},
-                             ci::Array{Float64},
-                             cs::Array{Float64},
+                             D::Array{T},
+                             d::Array{T},
+                             ci::Array{T},
+                             cs::Array{T},
                              constrained::Bool,
                              c::Float64=0.1,
                              τ::Float64=0.5,
                              α_ini::Float64=1.0,
                              α_min::Float64=1E-12,
                              σ::Float64=0.95,
-                             strong::Bool=true)
+                             strong::Bool=true) where T
 
 
   # "optimal" value
@@ -660,7 +662,7 @@ Example:
     end 
 
     # We just test for this point if the slope is negative
-    if m<0.0 
+    if m < 0.0 
 
       # Left side
       fn = f(xn)
@@ -708,9 +710,9 @@ Example:
   #
   #
   #
-  function GC_projected!(d::Array{Float64},last_d::Array{Float64},
-                         D::Array{Float64},last_D::Array{Float64},
-                         active_r::Array{Int64},α_I::Array{Float64})
+  function GC_projected!(d::Array{T},last_d::Array{T},
+                         D::Array{T},last_D::Array{T},
+                         active_r::Array{Int64},α_I::Array{Float64}) where T
 
   #
   # Lets evaluate the left term of both dot products
@@ -769,12 +771,12 @@ Example:
   # Not fair L.S. Search direction is modified  (scaled)
   # in this subroutine
   #
-  function Wall_Seach_Projected!(f::Function,df::Function,x0::Array{Float64},
+  function Wall_Seach_Projected!(f::Function,df::Function,x0::Array{T},
                                  f0::Float64,
-                                 D::Array{Float64},
-                                 d::Array{Float64},
-                                 ci::Array{Float64},
-                                 cs::Array{Float64},
+                                 D::Array{T},
+                                 d::Array{T},
+                                 ci::Array{T},
+                                 cs::Array{T},
                                  constrained::Bool,
                                  last_α::Float64,
                                  c::Float64=0.1,
@@ -782,7 +784,7 @@ Example:
                                  α_ini::Float64=1.0,
                                  α_min::Float64=1E-12,
                                  σ::Float64=0.95,
-                                 strong::Bool=true)
+                                 strong::Bool=true) where T
 
 
   # "optimal" value
