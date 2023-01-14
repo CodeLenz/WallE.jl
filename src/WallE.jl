@@ -157,8 +157,8 @@ Example:
 """
   function Solve(f::Function,df::Function,
                  xini::Array{T},
-                 ci=Float64[],
-                 cs=Float64[],
+                 ci=T[],
+                 cs=T[],
                  inputs=Dict()) where T
 
 
@@ -167,11 +167,11 @@ Example:
   n = length(xini)
 
   # If ci or cs are empty, we pass them to ±∞
-  if length(ci)==0 
+  if isempty(ci)
     ci = -Inf*ones(T,n)
   end
 
-  if length(cs)==0
+  if isempty(cs)
     cs = Inf*ones(T,n)
   end
 
