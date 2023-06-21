@@ -1,6 +1,8 @@
 # WallE
 Bounding Box Optimizer for large problems where the optimal solution lies on the boundary. The algorithm is a modified Steepest Descent projecting infeasible variables to the boundary of the feasible design space (defined by the side constraints ci and cs). Unless disabled by the user (GC=false), a modified Conjugate Gradient is tried at each iteration to improve convergence. Line search is performed by a modified (projected) Armijo backtracking and strong conditions can be enabled (LS_STRONG=true). 
 
+[![DOI](https://zenodo.org/badge/190200352.svg)](https://zenodo.org/badge/latestdoi/190200352)
+
 Example
 
 ```julia
