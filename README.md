@@ -6,7 +6,7 @@ To add this package to julia
 ]add https://github.com/CodeLenz/WallE.jl.git
 ```
 To cite this repository:
-[![DOI](https://zenodo.org/badge/190200352.svg)](https://zenodo.org/badge/latestdoi/190200352)
+[![DOI](https://zenodo.org/badge/190200352.svg)](https://zenodo.org/badge/latestdoi/190200352) 
 
 Example
 
