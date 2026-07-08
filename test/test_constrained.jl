@@ -16,11 +16,11 @@
 
     println("\n\n############\n  Test 2.1\n############")
     
-    function f(x) 
+    function f21(x) 
         return (x[1]*(x[2]-3))^2 + 4*x[1]
     end
 
-    function df(x)
+    function df21(x)
         return [2*x[1]*(x[2]-3)^2 + 4 ; 2*x[1]^2*(x[2]-3)]
     end
 
@@ -35,9 +35,9 @@
     options = WallE.Init()
     options["NITER"] = 1000
     options["GC"]    = false
-    output = WallE.Solve(f,df,x0,ci,cs,options)
+    output = WallE.Solve(f21,df21,x0,ci,cs,options)
     options["GC"]    = true
-    output_GC = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC = WallE.Solve(f21,df21,x0,ci,cs,options)
 
     
     # The test
@@ -49,7 +49,7 @@
  
     # The "hidden" option :)
     options["LS_TYPE"]    = "Wall"
-    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC_WALL = WallE.Solve(f21,df21,x0,ci,cs,options)
     @test isapprox(output_GC_WALL["RESULT"],[-2.0 ; 3.0],rtol=1E-3)
 
     #println("\n","# Results #")
@@ -59,7 +59,7 @@
     # Second test
     println("\n\n\n############\n  Test 2.2\n############")
 
-    function f(x)
+    function f22(x)
         valor = 0.0
         for i=1:100
             valor += (x[i]-i)^2
@@ -67,7 +67,7 @@
         return valor
     end
 
-    function df(x)
+    function df22(x)
         d = zeros(100)
         for i=1:100
             d[i] = 2*(x[i]-i)
@@ -87,9 +87,9 @@
     options["NITER"] = 1000
     options["TOL_NORM"] = 1E-8
     options["GC"]    = false
-    output = WallE.Solve(f,df,x0,ci,cs,options)
+    output = WallE.Solve(f22,df22,x0,ci,cs,options)
     options["GC"]    = true
-    output_GC = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC = WallE.Solve(f22,df22,x0,ci,cs,options)
 
     # The test
     @test isapprox(output["RESULT"],[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-4)
@@ -100,7 +100,7 @@
 
     # The "hidden" option :)
     options["LS_TYPE"]    = "Wall"
-    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC_WALL = WallE.Solve(f22,df22,x0,ci,cs,options)
     @test isapprox(output_GC_WALL["RESULT"],[10*ones(10) ; 11:49 ; 50*ones(51)],rtol=1E-3)
 
     #println("\n","# Results #")
@@ -109,7 +109,7 @@
     # Third test
     println("\n\n\n############\n  Test 2.3\n############")
 
-    function f(x)
+    function f23(x)
         valor = 0.0
         for i=1:100
             if isodd(i)
@@ -121,7 +121,7 @@
         return valor
     end
 
-    function df(x)
+    function df23(x)
         d = zeros(100)
         for i=1:100
             if isodd(i)
@@ -144,9 +144,9 @@
     options = WallE.Init()
     options["NITER"] = 1000
     options["GC"]    = false
-    output = WallE.Solve(f,df,x0,ci,cs,options)
+    output = WallE.Solve(f23,df23,x0,ci,cs,options)
     options["GC"]    = true
-    output_GC = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC = WallE.Solve(f23,df23,x0,ci,cs,options)
 
   
     # The test
@@ -159,7 +159,7 @@
 
     # The "hidden" option :)
     options["LS_TYPE"]    = "Wall"
-    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC_WALL = WallE.Solve(f23,df23,x0,ci,cs,options)
     @test isapprox(output_GC_WALL["RESULT"],resp,rtol=1E-3)
     
     #println("\n","# Results #")
@@ -173,11 +173,11 @@
    # Dica de ponto inicial = (-5,-5)
    # minimo (0.5 , 2.0)
 
-    function f(x) 
+    function f24(x) 
        (x[1]+2*x[2]-7)^2 + (2*x[1]+x[2]-5)^2 
     end
 
-    function df(x)
+    function df24(x)
         df1 = 2*(2*x[2]+x[1]-7)+4*(x[2]+2*x[1]-5)
         df2 = 4*(2*x[2]+x[1]-7)+2*(x[2]+2*x[1]-5)
         return [df1 ; df2]
@@ -193,9 +193,9 @@
     options = WallE.Init()
     options["NITER"] = 1000
     options["GC"]    = false
-    output = WallE.Solve(f,df,x0,ci,cs,options)
+    output = WallE.Solve(f24,df24,x0,ci,cs,options)
     options["GC"]    = true
-    output_GC = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC = WallE.Solve(f24,df24,x0,ci,cs,options)
 
 
     # The test
@@ -207,7 +207,7 @@
 
     # The "hidden" option :)
     options["LS_TYPE"]    = "Wall"
-    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC_WALL = WallE.Solve(f24,df24,x0,ci,cs,options)
     @test isapprox(output_GC_WALL["RESULT"],[0.5 ; 2.0 ],rtol=1E-2)
     
 
@@ -221,12 +221,12 @@
    # partida [0,3] solução sem bloqueio é (1,1)
    # x1 <= 0.8 e x2 >= 0.5 -> sol em (0.8 , 0.64)
 
-    function f(x) 
+    function f25(x) 
         100*(x[2]-x[1]^2)^2+(x[1]-1)^2
     end
 
        
-    function df(x)
+    function df25(x)
         df1 = 2.0*(x[1]-1)-400*x[1]*(x[2]-x[1]^2)
         df2 = 200.0*(x[2]-x[1]^2)
         return [df1 ; df2]
@@ -243,9 +243,9 @@
     options = WallE.Init()
     options["NITER"] = 10_000
     options["GC"]    = false
-    output = WallE.Solve(f,df,x0,ci,cs,options)
+    output = WallE.Solve(f25,df25,x0,ci,cs,options)
     options["GC"]    = true
-    output_GC = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC = WallE.Solve(f25,df25,x0,ci,cs,options)
 
 
     # The test
@@ -256,7 +256,7 @@
 
     # The "hidden" option :)
     options["LS_TYPE"]    = "Wall"
-    output_GC_WALL = WallE.Solve(f,df,x0,ci,cs,options)
+    output_GC_WALL = WallE.Solve(f25,df25,x0,ci,cs,options)
     @test isapprox(output_GC_WALL["RESULT"],[0.8 ; 0.64 ],rtol=1E-2)
     
   

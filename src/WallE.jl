@@ -23,6 +23,8 @@ module WallE
         push!(inputs,"LS_SIGMA"=>0.9)
         push!(inputs,"LS_STRONG"=>false)
         push!(inputs,"GC"=>true)
+        push!(inputs,"BETA"=>"HS_proj_sec")
+        push!(inputs,"GATE"=>"non_conservative")
 
         # "Hidden" option :)
         push!(inputs,"LS_TYPE"=>"Armijo")
@@ -89,19 +91,25 @@ module WallE
    "LS_SIGMA"=>0.9  <br/>
    "LS_STRONG"=>false  <br/>
    "GC"=>true  <br/>
+   "BETA"=>"HS_proj_sec"  <br/>
+   "GATE"=>"non_conservative"  <br/>
+   "LS_TYPE"=>"Armijo"  <br/>
 
   
 where NITER is the number of iterations, TOL_NORM is the (relative) 
 tolerance of the norm with respect to the objective function, 
-SHOW enables a summary at the end of the optimization, 
+SHOW enables progress and a summary at the end of the optimization, 
 ARMIJO_C is the constant associated to the expected decrease of the
 objective function (first  Wolfe condition), LS_ALPHA_INI is the 
 initial step in Armijo's Backtracking line search, LS_ALPHA_MIN is
 the minimum allowable step, LS_SIGMA is the parameter associated to
-the expected decrese in curvature (second Wolfe condition) that is 
-used only if LS_STRONG is true. LS_GC enables the (experimental) 
-constrained conjugate gradient. If it cannot be used in some iteration,
-the program automatically switch to steepest descent.<br/>
+the expected decrease in curvature (second Wolfe condition) that is 
+used only if LS_STRONG is true. GC enables the constrained conjugate
+gradient. BETA selects the beta formula (SD, FR, PRP, HS_zero,
+HS_proj_e or HS_proj_sec), GATE selects the GC acceptance rule
+(conservative or non_conservative), and LS_TYPE selects Armijo or Wall line
+search. If GC cannot be used in some iteration, the program
+automatically switches to steepest descent.<br/>
 
 Outputs are returned in another dictionary with keys <br/>
 
@@ -111,6 +119,9 @@ Outputs are returned in another dictionary with keys <br/>
    "CONVERGED"  <br/>
    "NORM" <br/>
    "COUNTER_ITER" <br/>
+   "NITER" <br/>
+   "GC_FRACTION" <br/>
+   "N_GC_USED" <br/>
 
 where RESULT is the vector of optimal design variables, 
 FINI is the initial value of the objective function,
@@ -118,7 +129,10 @@ FOPT is the optimal value of the objective function and
 CONVERGED is the flag indicating if the optimal solution 
 satisfies first order optimality conditions. NORM is the 
 norm of free positions (not blocked) and COUNTER_ITER
-is the effective number of iterations.
+is the effective number of iterations. NITER is an alias for
+COUNTER_ITER, GC_FRACTION is the fraction of iterations that used a
+conjugate-gradient direction and N_GC_USED is the number of such
+iterations.
 
 Example:  
   
@@ -181,7 +195,7 @@ Example:
   end
 
   # Check and extract the consistence of the inputs
-  nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC = Check_inputs(f,df,xini,ci,cs,inputs)
+  nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC,BETA_VAR,GATE_VAR = Check_inputs(f,df,xini,ci,cs,inputs)
 
   # Internal flag to select the GC for constrained/unconstrained problems
   constrained = true
@@ -237,6 +251,7 @@ Example:
   # Counter for GC
   counter_gc = 0
   used_gc = false
+  n_gc_used = 0
 
   # Norm (Gradient, free positions)
   norm_D = 0.0
@@ -252,7 +267,7 @@ Example:
 
   # We can now enter in the main loop (Steepest)
   tempo = @elapsed  begin
-  Prg = Progress(nmax_iter, 1, "Minimizing objective function...")
+  Prg = flag_show ? Progress(nmax_iter; dt=1, desc="Minimizing objective function...") : nothing
   for iter=1:nmax_iter
 
     # Increment counter
@@ -264,21 +279,34 @@ Example:
     # Search direction. Default is Steepest Descent
     d .= -D
 
+    # Track whether GC actually produced the direction for this iteration.
+    used_gc_iter = false
+
     # If we intend to use GC
-    if ENABLE_GC && iter>1 && counter_gc <= n && free_x == last_free_x
-      flag_gc = GC_projected!(d,last_d,D,last_D,active_r,α_I) 
+    gate_ok = if GATE_VAR == "non_conservative"
+      ENABLE_GC && iter>1 && counter_gc <= n
+    else
+      ENABLE_GC && iter>1 && counter_gc <= n && free_x == last_free_x
+    end
+
+    if gate_ok
+      flag_gc = GC_projected!(d,last_d,D,last_D,active_r,α_I,
+                              x0,last_x,BETA_VAR,GATE_VAR,free_x,
+                              ci,cs,α_ini) 
       if flag_gc
         counter_gc += 1
         used_gc = true
+        used_gc_iter = true
       end
     else 
       counter_gc  = 0
     end
+    used_gc_iter && (n_gc_used += 1)
 
     # Line search
-    if inputs["LS_TYPE"]=="Armijo"
+    if get(inputs,"LS_TYPE","Armijo")=="Armijo"
        xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Armijo_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,armijo_c,cut_factor,α_ini,α_min,σ,STRONG)
-    elseif inputs["LS_TYPE"]=="Wall"
+    elseif get(inputs,"LS_TYPE","Armijo")=="Wall"
        xn, fn, dfn, active_r, active_r_ci, active_r_cs, α, α_I, flag_success = Wall_Seach_Projected!(f,df,x0,fn,D,d,ci,cs,constrained,α,armijo_c,cut_factor,α_ini,α_min,σ,STRONG)
     else
        error("WallE::Solve::Hidden option LS_TYPE should be Armijo or Wall")   
@@ -341,7 +369,7 @@ Example:
 
       
     # Fancy report for the mob :)
-    ProgressMeter.next!(Prg; showvalues = [
+    flag_show && ProgressMeter.next!(Prg; showvalues = [
                       (:Iteration,counter), 
                       (:Counter_gc,counter_gc),
                       (:Enable_GC,ENABLE_GC),
@@ -395,8 +423,11 @@ Example:
   end
 
 
-  # Create the output using the OWall type
+  # Create the output dictionary
   output = Outputs(x0,f0,fn,flag_conv,norm_D,counter,[functions[1:counter], norms[1:counter], steps[1:counter]])
+  push!(output,"NITER"=>counter)
+  push!(output,"GC_FRACTION"=> counter>0 ? n_gc_used/counter : 0.0)
+  push!(output,"N_GC_USED"=>n_gc_used)
 
   # Return the optimal point, initial and final value of the obj
   # function and the list of objectives/norm and αs for each iteration
@@ -429,9 +460,11 @@ Example:
     σ          = inputs["LS_SIGMA"]
     STRONG     = inputs["LS_STRONG"]
     ENABLE_GC  = inputs["GC"]
+    BETA_VAR   = get(inputs,"BETA","HS_proj_sec")
+    GATE_VAR   = get(inputs,"GATE","non_conservative")
 
     # Hidden option
-    LS_TYPE    = inputs["LS_TYPE"]
+    LS_TYPE    = get(inputs,"LS_TYPE","Armijo")
 
     # Check if the length of x0, ci and cs are the same
     @assert length(x0)==length(ci)==length(cs) "Solve::Check_inputs:: length of ci, cs and x0 must be the same"
@@ -463,6 +496,10 @@ Example:
     # Check the hidden option
     @assert (LS_TYPE=="Armijo" || LS_TYPE=="Wall") "Solve::Check_inputs:: LS_TYPE must be Armijo OR Wall"
 
+    @assert BETA_VAR in ("SD","FR","PRP","HS_zero","HS_proj_e","HS_proj_sec") "Solve::Check_inputs:: BETA must be SD, FR, PRP, HS_zero, HS_proj_e OR HS_proj_sec"
+
+    @assert GATE_VAR in ("conservative","non_conservative") "Solve::Check_inputs:: GATE must be conservative OR non_conservative"
+
     # Finally, we cannot assert anything on using GC and Wall, so we revert to Steepest
     if LS_TYPE=="Wall" && ENABLE_GC
        println("WallE::Solve::GC cannot be used with Wall LS. Disabling")
@@ -471,7 +508,7 @@ Example:
 
 
     # Return input parameters to the main routine
-    return nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC
+    return nmax_iter,tol_norm,flag_show,armijo_c,cut_factor,α_ini,α_min,σ,STRONG,ENABLE_GC,BETA_VAR,GATE_VAR
 
   end
 
@@ -545,8 +582,9 @@ Example:
 
         if violation >= zero(T) 
         
-         # Effective α_I
-         αI = α - violation/d[i]
+         # Infeasible part of the step after hitting the lower bound.
+         αS = (ci[i] - x0[i]) / d[i]
+         αI = max(0.0, α - αS)
 
          # Keep on the boundary
          xn[i] = ci[i]
@@ -564,8 +602,9 @@ Example:
 
         if violation >= zero(T)
         
-           # Effective α_I
-           αI = α - violation/d[i]
+           # Infeasible part of the step after hitting the upper bound.
+           αS = (cs[i] - x0[i]) / d[i]
+           αI = max(0.0, α - αS)
 
            # Keep on the boundary
            xn[i] = cs[i]
@@ -640,6 +679,15 @@ Example:
     # Effective delta x
     Δx .= xn .- x0 
 
+    # Projection can fully block a direction, producing no effective step.
+    if norm(Δx)==0.0
+      α = α*τ
+      if α<=α_min
+        break
+      end
+      continue
+    end
+
     # Effective slope
     m = dot(D,Δx) 
 
@@ -706,53 +754,122 @@ Example:
 
 
   #
+  # Check the projected descent condition for the current point and direction.
+  #
+  function Projected_descent(D::Array{T},d::Array{T},x::Array{T},
+                             ci::Array{T},cs::Array{T},
+                             α::Float64) where T
+
+    dnorm = norm(d)
+    if dnorm == 0.0
+      return false
+    end
+
+    direction = d ./ dnorm
+    xn, active_r, active_r_ci, active_r_cs, α_I = Project(α,x,direction,ci,cs)
+
+    lhs = α*dot(D,direction)
+    rhs = 0.0
+    @inbounds for r in LinearIndices(active_r)
+      pos = active_r[r]
+      rhs += α_I[r]*direction[pos]*D[pos]
+    end
+
+    return lhs < 0.0 && lhs <= rhs
+
+  end
+
+
+  #
   # Evaluate the deflection for GC
-  #
-  #
   #
   function GC_projected!(d::Array{T},last_d::Array{T},
                          D::Array{T},last_D::Array{T},
-                         active_r::Array{Int64},α_I::Array{Float64}) where T
+                         active_r::Array{Int64},α_I::Array{Float64},
+                         x::Array{T},last_x::Array{T},
+                         BETA_VAR::String,GATE_VAR::String,
+                         free_x::Array{Int64},
+                         ci::Array{T},cs::Array{T},
+                         α_ini::Float64) where T
 
-  #
-  # Lets evaluate the left term of both dot products
-  #
+  n = length(D)
+  β = 0.0
 
-  # It starts with the difference in gradient
-  y = D .- last_D
+  if BETA_VAR == "SD"
 
-  # Loop over last (effectively) projected variables
-  @inbounds for r in LinearIndices(active_r)
+    β = 0.0
 
-     # Projected variable
-     pos = active_r[r]
+  elseif BETA_VAR == "FR"
 
-     # Correction Assuming An_r = d_r n_r
-     y .= y .+ α_I[r]*last_d[pos].*Extract_as_vector(last_d,pos)
+    den = dot(last_D,last_D)
+    β = den>0.0 ? dot(D,D)/den : 0.0
 
-  end # r
+  elseif BETA_VAR == "PRP"
 
-  # Now we can evaluate beta 
-  β = dot(y,D)/dot(y,last_d)
+    den = dot(last_D,last_D)
+    β = den>0.0 ? dot(D,D .- last_D)/den : 0.0
 
-  # Avoid a very unfortunate corner case
-  if isnan(β) || β<0.0 
-   β = 0.0
+  elseif BETA_VAR == "HS_zero"
+
+    y  = D .- last_D
+    yf = zeros(T,n)
+    df = zeros(T,n)
+    @inbounds for i in free_x
+      yf[i] = y[i]
+      df[i] = last_d[i]
+    end
+    den = dot(yf,df)
+    β = abs(den)>1E-300 ? dot(yf,D)/den : 0.0
+
+  elseif BETA_VAR == "HS_proj_e"
+
+    y = D .- last_D
+    @inbounds for r in LinearIndices(active_r)
+      pos = active_r[r]
+      y .= y .+ α_I[r]*last_d[pos].*Extract_as_vector(last_d,pos)
+    end
+    den = dot(y,last_d)
+    β = abs(den)>1E-300 ? dot(y,D)/den : 0.0
+
+  elseif BETA_VAR == "HS_proj_sec"
+
+    y = D .- last_D
+    @inbounds for r in LinearIndices(active_r)
+      pos = active_r[r]
+      dxr = x[pos] - last_x[pos]
+      Anr = abs(dxr)>1E-300 ? (D[pos]-last_D[pos])/dxr : 0.0
+      y .= y .+ α_I[r]*last_d[pos]*Anr.*Extract_as_vector(last_d,pos)
+    end
+    den = dot(y,last_d)
+    β = abs(den)>1E-300 ? dot(y,D)/den : 0.0
+
   end
 
-  # New search direction
+  if isnan(β) || β<0.0
+    β = 0.0
+  end
+
   @inbounds d .= -D .+ β*last_d
 
-  # Let's avoid further problems in the L.S
-  # m should be -1 for steepest or close
-  # and should be > 0 (or a -δ to avoid problems in the L.S)
-  # This is the cos of the angle between d and D
-  m = dot(d,D)/(norm(d)*norm(D)) 
-
   flag_success = true
-  if m >=-1E-3 || β==0.0
-    flag_success = false
-    d .= -D
+
+  if GATE_VAR == "non_conservative"
+
+    if β==0.0 || !Projected_descent(D,d,x,ci,cs,α_ini)
+      flag_success = false
+      d .= -D
+    else
+      d ./= norm(d)
+    end
+
+  else
+
+    m = dot(d,D)/(norm(d)*norm(D))
+    if m >=-1E-3 || β==0.0
+      flag_success = false
+      d .= -D
+    end
+
   end
 
   return flag_success

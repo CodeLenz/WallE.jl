@@ -140,5 +140,19 @@
     options["LS_TAU"]=0.1
     options["LS_SIGMA"]=0.09
     @test_throws AssertionError WallE.Solve(f,df,x0,ci,cs,options)
+
+    # Restore default parameters
+    options = WallE.Init()
+
+    #
+    # New options - BETA and GATE must use known variants
+    #
+    x0 = ones(10); ci = zeros(10);  cs = 2*ones(10)
+    options["BETA"]="unknown"
+    @test_throws AssertionError WallE.Solve(f,df,x0,ci,cs,options)
+
+    options = WallE.Init()
+    options["GATE"]="unknown"
+    @test_throws AssertionError WallE.Solve(f,df,x0,ci,cs,options)
   
 end
